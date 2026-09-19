@@ -17,6 +17,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Confirm } from '@/components/ui/confirm';
 import { cn } from '@/lib/utils';
+import { trialDaysRemaining } from '@/lib/trial';
 import { useUser } from '@/components/user-context';
 
 const SIDEBAR_TRANSLATIONS = {
@@ -140,14 +141,7 @@ export function Sidebar() {
               {tSidebar.trialPremium}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">
-              {(() => {
-                let trialDaysLeft = 14;
-                if (currentUser.createdAt) {
-                  const elapsedMs = Date.now() - new Date(currentUser.createdAt).getTime();
-                  trialDaysLeft = Math.max(0, Math.ceil((14 * 24 * 60 * 60 * 1000 - elapsedMs) / (24 * 60 * 60 * 1000)));
-                }
-                return tSidebar.daysRemaining(trialDaysLeft);
-              })()}
+              {tSidebar.daysRemaining(trialDaysRemaining(currentUser.createdAt))}
             </div>
           </Link>
         )}

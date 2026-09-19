@@ -96,16 +96,11 @@ export default function CookiesPage() {
             Sous-traitants tiers
           </h2>
           <p>
-            <strong>Stripe</strong> et <strong>Mapbox</strong> peuvent déposer
-            leurs propres cookies lors du chargement de leurs scripts (page de
-            paiement, carte). Ces cookies sont régis par leurs politiques
-            respectives :{' '}
+            <strong>Stripe</strong> peut déposer ses propres cookies lors du
+            chargement de ses scripts (page de paiement). Ces cookies sont
+            régis par sa politique :{' '}
             <a href="https://stripe.com/cookies-policy/legal" className="text-veloce hover:underline" target="_blank" rel="noopener noreferrer">
               Stripe
-            </a>{' '}
-            ·{' '}
-            <a href="https://www.mapbox.com/legal/privacy" className="text-veloce hover:underline" target="_blank" rel="noopener noreferrer">
-              Mapbox
             </a>
             .
           </p>

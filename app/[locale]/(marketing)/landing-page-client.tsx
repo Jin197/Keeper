@@ -617,7 +617,11 @@ export function LandingPageClient({ locale }: { locale: string }) {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Two tiers at launch. The Fleet/family card is parked until the
+              multi-account, API and priority-support promises it carried are
+              actually implemented — the checkout route still accepts
+              tier="family", so restoring the card is all that's needed. */}
+          <div className="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Standard Plan */}
             <Card className="p-8 border border-white/[0.08] bg-[#16161A]/50 rounded-[2.5rem] flex flex-col justify-between shadow-xl">
               <div className="space-y-6">
@@ -640,7 +644,7 @@ export function LandingPageClient({ locale }: { locale: string }) {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? 'Carte interactive des stations' : locale === 'es' ? 'Mapa de estaciones' : 'Station map'}
+                    {locale === 'fr' ? 'Suivi des dépenses et coût au kilomètre' : locale === 'es' ? 'Seguimiento de gastos y coste por kilómetro' : 'Expense tracking & cost per kilometre'}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-[#007AFF]" />
@@ -702,59 +706,6 @@ export function LandingPageClient({ locale }: { locale: string }) {
                 <CheckoutButton
                   interval="yearly"
                   tier="premium"
-                  label={tPricing('premiumCtaYearly')}
-                  variant="outline"
-                  className="rounded-full py-6 text-white border-white/10 hover:bg-white/5"
-                />
-              </div>
-            </Card>
-
-            {/* Family/Pro Plan */}
-            <Card className="p-8 border border-white/[0.08] bg-[#16161A]/50 rounded-[2.5rem] flex flex-col justify-between shadow-xl relative">
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-display text-xl font-bold text-white">{tPricing('fleetName')}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{tPricing('fleetDescription')}</p>
-                </div>
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-mono text-5xl font-bold text-white">16,99</span>
-                    <span className="text-muted-foreground font-mono">{tPricing('fleetPerMonth')}</span>
-                  </div>
-                  <div className="text-[10px] text-emerald-400 mt-1">{tPricing('fleetPerYear')}</div>
-                </div>
-                <ul className="space-y-3 text-sm text-muted-foreground pt-4 border-t border-white/[0.04]">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? 'Toutes les fonctionnalités Premium' : locale === 'es' ? 'Todas las funciones Premium' : 'All Premium features included'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? "Jusqu'à 5 conducteurs / comptes liés" : locale === 'es' ? 'Hasta 5 conductores / cuentas vinculadas' : 'Up to 5 drivers / linked accounts'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? 'Rapports et analyses consolidés' : locale === 'es' ? 'Informes y análisis consolidados' : 'Consolidated reports & analytics'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? 'Accès API & Export comptable direct' : locale === 'es' ? 'Acceso API y Exportación contable directa' : 'Direct API access & accounting export'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? 'Support prioritaire sous 2 heures' : locale === 'es' ? 'Soporte prioritario en menos de 2 horas' : 'Priority support under 2 hours'}
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-[#007AFF]" />
-                    {locale === 'fr' ? '5 jumeaux numériques actifs' : locale === 'es' ? '5 gemelos digitales activos' : '5 active digital twins'}
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8 grid gap-3">
-                <CheckoutButton interval="monthly" tier="family" label={tPricing('premiumCtaMonthly')} />
-                <CheckoutButton
-                  interval="yearly"
-                  tier="family"
                   label={tPricing('premiumCtaYearly')}
                   variant="outline"
                   className="rounded-full py-6 text-white border-white/10 hover:bg-white/5"

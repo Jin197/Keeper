@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { isTrialActive } from '@/lib/trial';
 import type {
   Vehicle,
   FuelEntry,
@@ -12,6 +13,9 @@ import type {
   Currency,
   Locale,
 } from '@/lib/types';
+
+// Re-exported for the many call sites that already import it from '@/lib/data'.
+export { isTrialActive };
 
 /**
  * Convert Supabase row (snake_case) → app type (camelCase).
@@ -125,13 +129,6 @@ function mapGarage(row: Record<string, unknown>): Garage {
     services: (row.services as string[]) ?? [],
     imageUrl: (row.image_url as string) ?? undefined,
   };
-}
-
-export function isTrialActive(createdAt: string | Date | undefined, planTier: string): boolean {
-  if (planTier !== 'free' || !createdAt) return false;
-  const date = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
-  const elapsedMs = Date.now() - date.getTime();
-  return elapsedMs >= 0 && elapsedMs < 14 * 24 * 60 * 60 * 1000;
 }
 
 function mapProfile(row: Record<string, unknown>): UserProfile {

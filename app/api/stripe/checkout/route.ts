@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { env } from '@/lib/env';
+import { TRIAL_DAYS } from '@/lib/trial';
 
 const bodySchema = z.object({
   interval: z.enum(['monthly', 'yearly']).default('monthly'),
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       subscription_data: {
-        trial_period_days: 30,
+        trial_period_days: TRIAL_DAYS,
         metadata: { user_id: user.id },
       },
       automatic_tax: { enabled: true },

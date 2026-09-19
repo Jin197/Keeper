@@ -11,6 +11,19 @@ import { isSupabaseConfigured } from '@/lib/env';
 const GRACE_PERIOD_DAYS = 14;
 const GRACE_PERIOD_MS = GRACE_PERIOD_DAYS * 24 * 60 * 60 * 1000;
 
+/**
+ * Launch flag: when false, `mustEnable` never goes true, so the app-layout
+ * redirect to /settings/security stays inert and the MFA banner degrades to
+ * a nudge instead of a wall.
+ *
+ * Off for the initial release. Forcing TOTP enrolment on day 14 of a
+ * car-expense tracker — the same day the free trial lapses — stacks two
+ * interruptions on the one session where a new user is deciding whether to
+ * pay. Re-enable once activation numbers justify it; the enforcement path
+ * below is otherwise unchanged.
+ */
+const MFA_MANDATORY = false;
+
 export interface MfaStatus {
   /** True when the user has at least one verified TOTP factor. */
   enabled: boolean;
@@ -82,8 +95,8 @@ export async function getMfaStatus(): Promise<MfaStatus> {
     gracePeriodEnd: gracePeriodEnd.toISOString(),
     gracePeriodActive,
     daysRemaining,
-    mustEnable: !enabled && !gracePeriodActive,
+    mustEnable: MFA_MANDATORY && !enabled && !gracePeriodActive,
   };
 }
 
-export { GRACE_PERIOD_DAYS };
+export { GRACE_PERIOD_DAYS, MFA_MANDATORY };

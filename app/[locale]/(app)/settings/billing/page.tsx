@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
+import { TRIAL_DAYS, trialDaysRemaining } from '@/lib/trial';
 import { ManageSubscriptionButton } from './manage-button';
 import { BillingPricingSelector } from './billing-pricing';
 
@@ -20,7 +21,7 @@ const TRANSLATIONS = {
     trialTitle: "Essai Velocewealth Premium",
     standardTitle: "Velocewealth Standard",
     renewsAuto: "Renouvellement automatique. Modifiez votre abonnement à tout moment.",
-    trialDesc: (days: number) => `Profitez de toutes les fonctions Premium pendant 14 jours (sans carte bancaire). Il vous reste ${days} jour${days > 1 ? 's' : ''}.`,
+    trialDesc: (days: number) => `Profitez de toutes les fonctions Premium pendant ${TRIAL_DAYS} jours (sans carte bancaire). Il vous reste ${days} jour${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Passez Premium pour OCR illimité, carnet certifié et export fiscal.",
     trialPriceNote: "€ (Période d'essai — puis 9,99 €/mois)",
     perMonth: "€/mois",
@@ -50,7 +51,7 @@ const TRANSLATIONS = {
     trialTitle: "Velocewealth Premium Trial",
     standardTitle: "Velocewealth Standard",
     renewsAuto: "Automatic renewal. Modify your subscription at any time.",
-    trialDesc: (days: number) => `Enjoy all Premium features for 14 days (no credit card required). You have ${days} day${days > 1 ? 's' : ''} left.`,
+    trialDesc: (days: number) => `Enjoy all Premium features for ${TRIAL_DAYS} days (no credit card required). You have ${days} day${days > 1 ? 's' : ''} left.`,
     upgradeDesc: "Upgrade to Premium for unlimited OCR, certified logbook, and tax export.",
     trialPriceNote: "€ (Trial period — then €9.99/mo)",
     perMonth: "€/month",
@@ -80,7 +81,7 @@ const TRANSLATIONS = {
     trialTitle: "Prueba Velocewealth Premium",
     standardTitle: "Velocewealth Estándar",
     renewsAuto: "Renovación automática. Modifica tu suscripción en cualquier momento.",
-    trialDesc: (days: number) => `Disfruta de todas las funciones Premium durante 14 días (sin tarjeta de crédito). Te quedan ${days} día${days > 1 ? 's' : ''}.`,
+    trialDesc: (days: number) => `Disfruta de todas las funciones Premium durante ${TRIAL_DAYS} días (sin tarjeta de crédito). Te quedan ${days} día${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Pásate a Premium para obtener OCR ilimitado, carnet certificado y exportación fiscal.",
     trialPriceNote: "€ (Período de prueba — luego 9,99 €/mes)",
     perMonth: "€/mes",
@@ -110,7 +111,7 @@ const TRANSLATIONS = {
     trialTitle: "تجربة Velocewealth بريميوم",
     standardTitle: "Velocewealth قياسي",
     renewsAuto: "تجديد تلقائي. تعديل اشتراكك في أي وقت.",
-    trialDesc: (days: number) => `استمتع بجميع الميزات البريميوم لمدة 14 يومًا (لا تتطلب بطاقة ائتمان). المتبقي ${days} يوم.`,
+    trialDesc: (days: number) => `استمتع بجميع الميزات البريميوم لمدة ${TRIAL_DAYS} يومًا (لا تتطلب بطاقة ائتمان). المتبقي ${days} يوم.`,
     upgradeDesc: "قم بالترقية إلى بريميوم للحصول على مسح OCR غير محدود، ودفتر معتمد، وتصدير ضريبي.",
     trialPriceNote: "يورو (فترة تجريبية — ثم 9.99 يورو/شهر)",
     perMonth: "يورو/شهر",
@@ -140,7 +141,7 @@ const TRANSLATIONS = {
     trialTitle: "Teste Velocewealth Premium",
     standardTitle: "Velocewealth Padrão",
     renewsAuto: "Renovação automática. Altere sua assinatura a qualquer momento.",
-    trialDesc: (days: number) => `Aproveite todos os recursos Premium por 14 dias (sem necessidade de cartão de crédito). Restam-lhe ${days} dia${days > 1 ? 's' : ''}.`,
+    trialDesc: (days: number) => `Aproveite todos os recursos Premium por ${TRIAL_DAYS} dias (sem necessidade de cartão de crédito). Restam-lhe ${days} dia${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Atualize para o Premium para obter OCR ilimitado, caderneta certificada e exportação fiscal.",
     trialPriceNote: "€ (Período de teste — depois 9,99 €/mês)",
     perMonth: "€/mês",
@@ -177,11 +178,8 @@ export default async function BillingPage({ params }: PageProps) {
   const isTrial = profile?.isTrial ?? false;
   const isSubscribed = (isPremium || isFamily) && !isTrial;
 
-  let remainingDays = 0;
-  if (isTrial && profile?.createdAt) {
-    const elapsedMs = Date.now() - new Date(profile.createdAt).getTime();
-    remainingDays = Math.max(0, Math.ceil((14 * 24 * 60 * 60 * 1000 - elapsedMs) / (24 * 60 * 60 * 1000)));
-  }
+  const remainingDays =
+    isTrial && profile?.createdAt ? trialDaysRemaining(profile.createdAt) : 0;
 
   return (
     <div className="space-y-6">

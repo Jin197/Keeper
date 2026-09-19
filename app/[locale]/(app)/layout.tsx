@@ -8,6 +8,7 @@ import { MfaBanner } from '@/components/domain/mfa-banner';
 import { getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { getMfaStatus, type MfaStatus } from '@/lib/security/mfa-status';
+import { trialDaysRemaining } from '@/lib/trial';
 import {
   getRecentNotifications,
   getUnreadNotificationCount,
@@ -138,8 +139,7 @@ export default async function AppLayout({
 
 function TrialWarningBanner({ profile, t }: { profile: any; t: any }) {
   if (!profile?.isTrial || !profile?.createdAt) return null;
-  const elapsedMs = Date.now() - new Date(profile.createdAt).getTime();
-  const trialDaysLeft = Math.max(0, Math.ceil((14 * 24 * 60 * 60 * 1000 - elapsedMs) / (24 * 60 * 60 * 1000)));
+  const trialDaysLeft = trialDaysRemaining(profile.createdAt);
   const isUrgent = trialDaysLeft <= 2;
   
   return (

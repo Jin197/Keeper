@@ -18,6 +18,7 @@ const LABELS: Record<
   Locale,
   {
     encourage: (days: number) => string;
+    nudge: string;
     mandatory: string;
     cta: string;
   }
@@ -25,6 +26,7 @@ const LABELS: Record<
   fr: {
     encourage: (d) =>
       `Sécurisez votre compte avec la 2FA — ${d} jour${d > 1 ? 's' : ''} restant${d > 1 ? 's' : ''} avant qu'elle ne devienne obligatoire.`,
+    nudge: 'Sécurisez votre compte en activant la double authentification.',
     mandatory:
       "L'activation de la 2FA est désormais obligatoire. Configurez-la pour reprendre une utilisation normale.",
     cta: 'Activer maintenant',
@@ -32,6 +34,7 @@ const LABELS: Record<
   en: {
     encourage: (d) =>
       `Secure your account with 2FA — ${d} day${d > 1 ? 's' : ''} left before it becomes mandatory.`,
+    nudge: 'Secure your account by turning on two-factor authentication.',
     mandatory:
       '2FA is now mandatory. Set it up to resume normal usage of your account.',
     cta: 'Enable now',
@@ -39,6 +42,7 @@ const LABELS: Record<
   es: {
     encourage: (d) =>
       `Protege tu cuenta con 2FA — quedan ${d} día${d > 1 ? 's' : ''} antes de que sea obligatoria.`,
+    nudge: 'Protege tu cuenta activando la autenticación de dos factores.',
     mandatory:
       'La 2FA ahora es obligatoria. Configúrala para seguir usando tu cuenta normalmente.',
     cta: 'Activar ahora',
@@ -46,6 +50,7 @@ const LABELS: Record<
   ar: {
     encourage: (d) =>
       `قم بتأمين حسابك بالمصادقة الثنائية — متبقي ${d} يوم قبل أن تصبح إلزامية.`,
+    nudge: 'قم بتأمين حسابك عبر تفعيل المصادقة الثنائية.',
     mandatory:
       'أصبحت المصادقة الثنائية إلزامية الآن. قم بتفعيلها لاستئناف الاستخدام العادي.',
     cta: 'تفعيل الآن',
@@ -53,6 +58,7 @@ const LABELS: Record<
   pt: {
     encourage: (d) =>
       `Proteja a sua conta com 2FA — restam ${d} dia${d > 1 ? 's' : ''} antes de se tornar obrigatória.`,
+    nudge: 'Proteja a sua conta ativando a autenticação de dois fatores.',
     mandatory:
       'A 2FA passou a ser obrigatória. Configure-a para retomar a utilização normal da sua conta.',
     cta: 'Ativar agora',
@@ -61,11 +67,16 @@ const LABELS: Record<
 
 /**
  * Persistent header banner shown on every authenticated page while the
- * user has NOT enabled MFA. Tone shifts after grace expires:
- *   - During grace (mustEnable=false): blue/veloce, low-urgency reminder
- *     with the day countdown.
- *   - After grace (mustEnable=true):   red/destructive, indicates that
- *     the app will redirect non-settings pages until MFA is on.
+ * user has NOT enabled MFA. Three tones:
+ *   - mustEnable=true:              red/destructive, the app will redirect
+ *                                   non-settings pages until MFA is on.
+ *   - grace still running:          blue/veloce reminder with a countdown.
+ *   - no deadline (MFA optional):   blue/veloce nudge, no countdown.
+ *
+ * That last branch matters while `MFA_MANDATORY` is off in mfa-status.ts:
+ * grace still expires, so daysRemaining reaches 0, but nothing becomes
+ * mandatory — showing "0 days left before it becomes mandatory" would be
+ * both broken copy and an empty threat.
  *
  * The banner itself doesn't gate navigation — the layout's redirect logic
  * does that. This is just the visible nudge + the canonical CTA target.
@@ -74,7 +85,11 @@ export function MfaBanner({ daysRemaining, mustEnable }: Props) {
   const rawLocale = useLocale();
   const t = LABELS[rawLocale as Locale] ?? LABELS.fr;
 
-  const message = mustEnable ? t.mandatory : t.encourage(daysRemaining);
+  const message = mustEnable
+    ? t.mandatory
+    : daysRemaining > 0
+      ? t.encourage(daysRemaining)
+      : t.nudge;
 
   return (
     <div

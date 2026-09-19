@@ -133,10 +133,6 @@ export default function PrivacyPage() {
               <strong>Google Cloud Vision</strong> (UE) — OCR sur tickets, sans
               conservation post-traitement.
             </li>
-            <li>
-              <strong>Mapbox</strong> (USA) — affichage de carte ; SCC
-              (Standard Contractual Clauses) appliquées pour le transfert.
-            </li>
           </ul>
         </Article>
 
@@ -198,9 +194,11 @@ export default function PrivacyPage() {
 
         <Article number="9" title="Transferts hors UE">
           <p>
-            La majorité des traitements ont lieu dans l&apos;UE. Pour les
-            sous-traitants situés hors UE (Mapbox notamment), les Standard
-            Contractual Clauses de la Commission européenne sont appliquées.
+            Les traitements décrits à l&apos;article 8 ont lieu dans
+            l&apos;Union européenne. Si un sous-traitant situé hors UE devait
+            être introduit, cette politique serait mise à jour et les Standard
+            Contractual Clauses de la Commission européenne appliquées au
+            transfert.
           </p>
         </Article>
 

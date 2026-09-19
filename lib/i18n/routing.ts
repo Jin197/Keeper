@@ -1,8 +1,23 @@
 import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
 
-export const locales = ['fr', 'en', 'es', 'ar', 'pt'] as const;
-export type Locale = (typeof locales)[number];
+/**
+ * Every locale we hold a message catalogue for. Stays wide because existing
+ * profiles may already have `locale = 'es' | 'pt' | 'ar'` stored, and the
+ * catalogues under messages/ are kept intact for when we re-enable them.
+ */
+export const allLocales = ['fr', 'en', 'es', 'ar', 'pt'] as const;
+export type Locale = (typeof allLocales)[number];
+
+/**
+ * Locales actually routable at launch. Narrowed to FR + EN: the landing page
+ * still carries hard-coded `locale === 'fr' ? … : locale === 'es' ? … : <english>`
+ * ternaries, so PT and AR silently fell back to English, and AR additionally
+ * needs the RTL pass validated. Everything that enumerates languages — the
+ * switcher, the sitemap, generateStaticParams, the middleware — reads this
+ * list, so widening it back is a one-line change.
+ */
+export const locales = ['fr', 'en'] as const satisfies readonly Locale[];
 
 export const defaultLocale: Locale = 'fr';
 

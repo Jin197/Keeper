@@ -202,7 +202,9 @@ export function BillingPricingSelector({ currentLocale }: { currentLocale?: stri
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto pt-2">
+      {/* Single tier at launch — the Family/Pro card is parked alongside the
+          landing-page one until its multi-account promises are implemented. */}
+      <div className="grid gap-6 max-w-md mx-auto pt-2">
         {/* Premium Plan Card */}
         <Card className="p-6 border border-[#007AFF]/40 bg-gradient-to-b from-[#007AFF]/10 to-transparent backdrop-blur-md rounded-card flex flex-col justify-between relative shadow-lg">
           <Badge className="bg-[#007AFF] text-white absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border-none shadow-[0_0_10px_rgba(0,122,255,0.4)] px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
@@ -241,46 +243,6 @@ export function BillingPricingSelector({ currentLocale }: { currentLocale?: stri
               tier="premium"
               label={t.trial30Start}
               className="w-full bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold text-xs py-5 rounded-full shadow-glow-veloce transition-all"
-            />
-          </div>
-        </Card>
-
-        {/* Family/Pro Plan Card */}
-        <Card className="p-6 border border-white/[0.08] bg-[#16161A]/50 backdrop-blur-md rounded-card flex flex-col justify-between shadow-md">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-display text-base font-bold text-white">Family / Pro</h4>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {t.familyFleetDesc}
-              </p>
-            </div>
-            <div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-mono text-3xl font-bold text-white">
-                  {interval === 'yearly' ? '12,50' : '16,99'}
-                </span>
-                <span className="text-xs text-muted-foreground">{t.perMonth}</span>
-              </div>
-              <div className="text-[10px] text-emerald-400 mt-0.5">
-                {interval === 'yearly' ? t.billedYearlyFamily : t.noCommitment}
-              </div>
-            </div>
-            <ul className="space-y-2 text-xs text-muted-foreground pt-3 border-t border-white/[0.04]">
-              {t.familyFeatures.map((feat) => (
-                <li key={feat} className="flex items-center gap-2">
-                  <Check className="h-3.5 w-3.5 text-white" />
-                  {feat}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="pt-6">
-            <CheckoutButton
-              interval={interval}
-              tier="family"
-              label={t.trial30Choose}
-              variant="outline"
-              className="w-full text-white border-white/10 hover:bg-white/5 font-semibold text-xs py-5 rounded-full transition-all"
             />
           </div>
         </Card>

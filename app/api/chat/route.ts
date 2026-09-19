@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { searchKnowledgeBase, SYSTEM_PROMPT } from '@/lib/knowledge-base';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
+import { isTrialActive } from '@/lib/trial';
 
 // Simulated delay to mimic AI thinking
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,8 +41,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 });
     }
 
-    const createdAt = profile.created_at ? new Date(profile.created_at) : new Date();
-    const isTrial = profile.plan_tier === 'free' && (Date.now() - createdAt.getTime()) < 14 * 24 * 60 * 60 * 1000;
+    const isTrial = isTrialActive(profile.created_at ?? undefined, profile.plan_tier);
     const isPremium = profile.plan_tier === 'premium' || profile.plan_tier === 'family' || isTrial;
 
     if (!isPremium) {
