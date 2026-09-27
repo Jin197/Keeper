@@ -33,3 +33,7 @@ tsconfig.tsbuildinfo
 
 # Sentry
 .sentryclirc
+/data/
+
+# Supabase CLI scratch (project ref, pooler config)
+supabase/.temp/
