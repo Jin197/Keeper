@@ -23,8 +23,17 @@ export interface LookupResponse {
   success: boolean;
   data?: LookupResult;
   inputType: InputType;
-  /** Message d'erreur user-facing */
-  error?: string;
+  /**
+   * Key into the `errors` message namespace. The API route turns it into a
+   * localised sentence; keeping a key here leaves this module pure and testable.
+   */
+  errorKey?:
+    | 'plateNotInSiv'
+    | 'sivNotConfigured'
+    | 'plateNotInDvla'
+    | 'dvlaNotConfigured'
+    | 'vinNotRecognised'
+    | 'plateFormatUnknown';
   /** Suggestion de fallback pour le frontend */
   fallback?: 'try-vin' | 'manual-entry';
 }
@@ -95,9 +104,7 @@ export async function lookupVehicle(
         return {
           success: false,
           inputType,
-          error: isSivConfigured()
-            ? 'Véhicule introuvable dans le SIV pour cette plaque.'
-            : "Recherche par plaque non disponible (API SIV non configurée).",
+          errorKey: isSivConfigured() ? 'plateNotInSiv' : 'sivNotConfigured',
           fallback: 'try-vin',
         };
       }
@@ -113,9 +120,7 @@ export async function lookupVehicle(
         return {
           success: false,
           inputType,
-          error: isDvlaConfigured()
-            ? 'Vehicle not found in DVLA records.'
-            : 'UK plate lookup not available (DVLA API not configured).',
+          errorKey: isDvlaConfigured() ? 'plateNotInDvla' : 'dvlaNotConfigured',
           fallback: 'try-vin',
         };
       }
@@ -129,7 +134,7 @@ export async function lookupVehicle(
         return {
           success: false,
           inputType,
-          error: 'VIN non reconnu. Vérifiez les 17 caractères.',
+          errorKey: 'vinNotRecognised',
           fallback: 'manual-entry',
         };
       }
@@ -140,7 +145,7 @@ export async function lookupVehicle(
       return {
         success: false,
         inputType: 'unknown',
-        error: "Format non reconnu. Entrez une plaque FR (AA-123-AA), UK (AA12 AAA), ou un VIN (17 caractères).",
+        errorKey: 'plateFormatUnknown',
         fallback: 'manual-entry',
       };
     }

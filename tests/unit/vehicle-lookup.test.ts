@@ -184,3 +184,17 @@ describe('Vehicle Lookup - Routeur & Regex Validation', () => {
     });
   });
 });
+
+describe('lookup errors are message keys, never sentences', () => {
+  it('never leaks a hard-coded language into the response', async () => {
+    const { lookupVehicle } = await import('@/lib/vehicle-lookup/router');
+    for (const input of ['HELLO', 'AA-123-AA', 'AB12CDE', 'X'.repeat(17)]) {
+      const res = await lookupVehicle(input);
+      if (res.success) continue;
+      // The route localises `errorKey`; a raw `error` string would ship one language.
+      expect(res).not.toHaveProperty('error');
+      expect(typeof res.errorKey).toBe('string');
+      expect(res.errorKey).toMatch(/^[a-zA-Z]+$/);
+    }
+  });
+});

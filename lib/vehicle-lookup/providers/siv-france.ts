@@ -51,6 +51,7 @@ export async function lookupBySivFrance(plate: string): Promise<LookupResult | n
       color: raw.couleur || raw.color || '',
       trim: raw.version || raw.trim || '',
       source: 'siv',
+      country: 'FR',
     };
   } catch {
     return null;

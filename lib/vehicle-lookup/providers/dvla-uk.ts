@@ -51,6 +51,12 @@ export async function lookupByDvla(plate: string): Promise<LookupResult | null> 
       color: raw.colour || '',
       trim: '',
       source: 'dvla',
+      country: 'GB',
+      motExpiryDate: raw.motExpiryDate || null,
+      motStatus: raw.motStatus || null,
+      taxDueDate: raw.taxDueDate || null,
+      taxStatus: raw.taxStatus || null,
+      co2Emissions: typeof raw.co2Emissions === 'number' ? raw.co2Emissions : null,
     };
   } catch {
     return null;

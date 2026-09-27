@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { lookupVehicle, detectInputType, isValidFrenchPlate } from '@/lib/vehicle-lookup/router';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
+import { err } from '@/lib/errors';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * API Route: Vehicle Lookup — Routeur Intelligent International
@@ -21,7 +24,7 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
     }
 
     // ── Rate-limiting (5 requêtes par minute) ──────────────────────
@@ -43,7 +46,7 @@ export async function GET(request: Request) {
 
     if (!input || input.length < 4) {
       return NextResponse.json(
-        { error: "Plaque d'immatriculation ou VIN requis (min 4 caractères)." },
+        { error: await err('plateOrVinRequired') },
         { status: 400 }
       );
     }
@@ -53,7 +56,7 @@ export async function GET(request: Request) {
     const inputType = detectInputType(input);
     if (inputType === 'plate-fr' && !isValidFrenchPlate(input)) {
       return NextResponse.json(
-        { error: 'Format de plaque française invalide. Attendu : AA-123-AA.' },
+        { error: await err('invalidFrenchPlate') },
         { status: 422 }
       );
     }
@@ -66,7 +69,7 @@ export async function GET(request: Request) {
       const status = response.fallback === 'try-vin' ? 404 : 422;
       return NextResponse.json(
         {
-          error: response.error,
+          error: response.errorKey ? await err(response.errorKey) : await err('generic'),
           fallback: response.fallback,
           inputType: response.inputType,
         },

@@ -28,6 +28,14 @@ export interface LookupResult {
   color: string;
   trim: string;
   source: 'siv' | 'nhtsa' | 'dvla' | 'cache' | 'carte-grise-ocr';
+  /** ISO-3166 alpha-2 registration country when the provider implies one. */
+  country?: string;
+  /** DVLA VES extras (UK only). ISO dates. */
+  motExpiryDate?: string | null;
+  motStatus?: string | null;
+  taxDueDate?: string | null;
+  taxStatus?: string | null;
+  co2Emissions?: number | null;
 }
 
 /**
