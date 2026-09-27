@@ -4,7 +4,8 @@ import { Link } from '@/lib/i18n/routing';
 import { useRouter } from '@/lib/i18n/routing';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { ChevronLeft, Camera, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { ChevronLeft, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/domain/page-header';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,6 +23,8 @@ export function NewMaintenanceForm({
   defaultVehicleId: string;
   defaultCurrency: string;
 }) {
+  const t = useTranslations('maintenanceForm');
+  const tCat = useTranslations('categories');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
@@ -34,8 +37,8 @@ export function NewMaintenanceForm({
         setError(res.error);
         return;
       }
-      toast.success('Intervention ajoutée au carnet certifié', {
-        description: res.hash ? `Hash : ${res.hash.slice(0, 12)}…` : undefined,
+      toast.success(t('added'), {
+        description: res.hash ? t('hash', { hash: res.hash.slice(0, 12) }) : undefined,
       });
       router.push('/maintenance');
     });
@@ -45,13 +48,13 @@ export function NewMaintenanceForm({
     <div className="container py-6 lg:py-8 max-w-2xl space-y-6">
       <Button variant="ghost" size="sm" asChild className="-ml-3">
         <Link href="/maintenance">
-          <ChevronLeft className="h-4 w-4" /> Retour
+          <ChevronLeft className="h-4 w-4" /> {t('back')}
         </Link>
       </Button>
 
       <PageHeader
-        title="Nouvelle intervention"
-        description="Cette ligne sera signée et ajoutée au carnet certifié"
+        title={t('title')}
+        description={t('subtitle')}
       />
 
       <form action={handleSubmit} className="space-y-6">
@@ -59,7 +62,7 @@ export function NewMaintenanceForm({
           <input type="hidden" name="currency" value={defaultCurrency} />
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="vehicleId">Véhicule</Label>
+              <Label htmlFor="vehicleId">{t('vehicle')}</Label>
               <Select
                 id="vehicleId"
                 name="vehicleId"
@@ -73,19 +76,17 @@ export function NewMaintenanceForm({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="category">Catégorie</Label>
+              <Label htmlFor="category">{t('category')}</Label>
               <Select id="category" name="category" defaultValue="oil">
-                <option value="oil">Vidange</option>
-                <option value="tires">Pneumatiques</option>
-                <option value="brakes">Freinage</option>
-                <option value="filter">Filtres</option>
-                <option value="battery">Batterie</option>
-                <option value="inspection">Contrôle technique</option>
-                <option value="other">Autre</option>
+                {(['oil', 'tires', 'brakes', 'filter', 'battery', 'inspection', 'belt', 'fluid', 'gearbox', 'other'] as const).map((c) => (
+                  <option key={c} value={c}>
+                    {tCat(c)}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="occurredAt">Date</Label>
+              <Label htmlFor="occurredAt">{t('date')}</Label>
               <Input
                 id="occurredAt"
                 name="occurredAt"
@@ -95,7 +96,7 @@ export function NewMaintenanceForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="mileageKm">Kilométrage</Label>
+              <Label htmlFor="mileageKm">{t('mileage')}</Label>
               <Input
                 id="mileageKm"
                 name="mileageKm"
@@ -105,7 +106,7 @@ export function NewMaintenanceForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cost">Coût</Label>
+              <Label htmlFor="cost">{t('cost')}</Label>
               <Input
                 id="cost"
                 name="cost"
@@ -116,27 +117,27 @@ export function NewMaintenanceForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="garageName">Garage</Label>
+              <Label htmlFor="garageName">{t('garage')}</Label>
               <Input
                 id="garageName"
                 name="garageName"
-                placeholder="Nom du garage"
+                placeholder={t('garagePlaceholder')}
                 required
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('description')}</Label>
             <Textarea
               id="description"
               name="description"
-              placeholder="Pièces remplacées, prestations…"
+              placeholder={t('descriptionPlaceholder')}
               required
             />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="nextDueMileage">Prochain entretien (km)</Label>
+              <Label htmlFor="nextDueMileage">{t('nextDueKm')}</Label>
               <Input
                 id="nextDueMileage"
                 name="nextDueMileage"
@@ -145,28 +146,21 @@ export function NewMaintenanceForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="nextDueDate">Prochaine échéance</Label>
+              <Label htmlFor="nextDueDate">{t('nextDueDate')}</Label>
               <Input id="nextDueDate" name="nextDueDate" type="date" />
             </div>
           </div>
-          <button
-            type="button"
-            className="w-full rounded-card border-2 border-dashed border-border hover:border-veloce hover:bg-veloce/5 p-6 flex flex-col items-center gap-2 text-muted-foreground transition-colors"
-          >
-            <Camera className="h-5 w-5" strokeWidth={1.5} />
-            <span className="text-sm">Joindre la facture (Phase 3b)</span>
-          </button>
         </Card>
 
         <FormError message={error} />
 
         <div className="flex gap-3">
           <Button type="button" variant="outline" asChild className="flex-1">
-            <Link href="/maintenance">Annuler</Link>
+            <Link href="/maintenance">{t('cancel')}</Link>
           </Button>
           <Button type="submit" className="flex-1" disabled={pending}>
             {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {pending ? 'Signature en cours…' : 'Enregistrer & signer'}
+            {pending ? t('signing') : t('submit')}
           </Button>
         </div>
       </form>

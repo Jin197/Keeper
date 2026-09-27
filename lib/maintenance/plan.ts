@@ -2,12 +2,22 @@ import type { Vehicle, FuelEntry, MaintenanceEntry } from '@/lib/types';
 import {
   KNOWLEDGE_BASE,
   firstInspectionMonths,
+  inspectionCycleFor,
   type Category,
   type IntervalSpec,
   type Severity,
 } from './knowledge-base';
+import type { ResolvedSchedule, WeakPoint } from './schedules';
+import { activeWeakPoints } from './schedules';
 
-export type PlanSource = 'generic' | 'digital-twin' | 'hybrid';
+/**
+ * Where a task's interval came from:
+ *  generic      — knowledge-base default for the fuel type
+ *  model        — the manufacturer's schedule for this exact model generation
+ *  digital-twin — the owner's own logged intervals
+ *  hybrid       — one logged service + a manufacturer figure
+ */
+export type PlanSource = 'generic' | 'model' | 'digital-twin' | 'hybrid';
 
 export interface MaintenanceTask {
   category: Category;
@@ -21,6 +31,8 @@ export interface MaintenanceTask {
   daysUntilDue: number;
   /** Km from current mileage until due (negative = overdue). */
   kmUntilDue?: number;
+  /** Effective service interval in km (OEM or observed) — lets the UI draw "life remaining". */
+  intervalKm?: number;
   severity: Severity;
   estimatedCost: number;
   /** Where this prediction came from. */
@@ -29,12 +41,21 @@ export interface MaintenanceTask {
   confidence: number;
   /** Reason text shown in UI ("Basé sur 4 vidanges historiques", etc.) */
   reasoning: string;
+  /** Manufacturer note for this item (wet belt, LongLife…), when a model schedule applies. */
+  note?: string;
+  /** Known weak points of this model that fall on this category at the current mileage. */
+  weakPoints?: WeakPoint[];
+  /** Whether the manufacturer figures behind this task were checked against the handbook. */
+  scheduleVerified?: boolean;
 }
 
 export interface MaintenancePlan {
   vehicleId: string;
   generatedAt: string;
   source: PlanSource;
+  /** Label of the matched manufacturer schedule ("Ford Focus Mk3 (2011–2018) · 1.0 EcoBoost"), if any. */
+  scheduleLabel: string | null;
+  scheduleVerified: boolean;
   /** Estimated annual mileage in km/year, computed from fuel history. */
   annualMileageKm: number;
   /** Source confidence — proportion of categories with history (0–1). */
@@ -44,14 +65,38 @@ export interface MaintenancePlan {
   budget12mo: number;
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  oil: 'Vidange moteur',
-  filter: 'Filtres',
-  brakes: 'Freinage',
-  tires: 'Pneumatiques',
-  battery: 'Batterie',
-  inspection: 'Contrôle technique',
-  other: 'Refroidissement',
+export type PlanLocale = 'en' | 'fr';
+
+const CATEGORY_LABELS: Record<PlanLocale, Record<Category, string>> = {
+  fr: {
+    oil: 'Vidange moteur',
+    filter: 'Filtres',
+    brakes: 'Freinage',
+    tires: 'Pneumatiques',
+    battery: 'Batterie',
+    inspection: 'Contrôle technique',
+    belt: 'Distribution',
+    fluid: 'Liquide de frein',
+    gearbox: 'Boîte de vitesses',
+    other: 'Refroidissement',
+  },
+  en: {
+    oil: 'Oil change',
+    filter: 'Filters',
+    brakes: 'Brakes',
+    tires: 'Tyres',
+    battery: 'Battery',
+    inspection: 'MOT / inspection',
+    belt: 'Timing belt',
+    fluid: 'Brake fluid',
+    gearbox: 'Gearbox oil',
+    other: 'Coolant',
+  },
+};
+
+const FUEL_LABEL: Record<PlanLocale, Record<Vehicle['fuelType'], string>> = {
+  fr: { electric: 'EV', hybrid: 'hybride', thermal: 'thermique' },
+  en: { electric: 'EV', hybrid: 'hybrid', thermal: 'petrol/diesel' },
 };
 
 /**
@@ -150,10 +195,25 @@ function buildTask(
   history: MaintenanceEntry[],
   annualMileageKm: number,
   today: Date,
+  locale: PlanLocale,
+  opts: PlanOptions,
 ): MaintenanceTask | null {
-  const spec: IntervalSpec = KNOWLEDGE_BASE[category][vehicle.fuelType];
+  const generic: IntervalSpec = KNOWLEDGE_BASE[category][vehicle.fuelType];
+  const modelInterval = opts.schedule?.intervals[category];
 
-  // Skip if the category doesn't apply to this fuel type
+  // Manufacturer schedule wins over the generic table when we have one for
+  // this model. `null/null` from the schedule means "not applicable on this
+  // engine" (e.g. chain instead of belt) and hides the task.
+  const spec: IntervalSpec = modelInterval
+    ? {
+        ...generic,
+        km: modelInterval.km,
+        months: modelInterval.months,
+        estimatedCostEur: modelInterval.estimatedCostEur ?? generic.estimatedCostEur,
+      }
+    : generic;
+
+  // Skip if the category doesn't apply to this fuel type / engine
   if (spec.km === null && spec.months === null) return null;
 
   const obs = observedInterval(vehicle.id, category, history);
@@ -161,25 +221,37 @@ function buildTask(
 
   // Decide source & effective interval
   let effectiveKm = spec.km;
-  let source: PlanSource = 'generic';
-  let confidence = 0.5;
-  let reasoning = `Recommandation constructeur (${vehicle.fuelType === 'electric' ? 'EV' : vehicle.fuelType === 'hybrid' ? 'hybride' : 'thermique'})`;
+  let source: PlanSource = modelInterval ? 'model' : 'generic';
+  let confidence = modelInterval ? 0.7 : 0.5;
+  const fuelLabel = FUEL_LABEL[locale][vehicle.fuelType];
+  const scheduleLabel = opts.schedule ? `${opts.schedule.schedule.label}${opts.schedule.engine ? ` · ${opts.schedule.engine.label}` : ''}` : null;
+  let reasoning = modelInterval
+    ? locale === 'fr'
+      ? `Carnet constructeur — ${scheduleLabel}`
+      : `Manufacturer schedule — ${scheduleLabel}`
+    : locale === 'fr'
+      ? `Intervalle générique (${fuelLabel})`
+      : `Generic interval (${fuelLabel})`;
 
   if (obs.km !== null && obs.sampleSize >= 2 && spec.km !== null) {
     // Take the more conservative (shorter) of the two intervals — safety first
     effectiveKm = Math.min(obs.km, spec.km);
     source = 'digital-twin';
     confidence = Math.min(1, 0.5 + obs.sampleSize * 0.1);
-    const trend = obs.km < spec.km ? 'plus court' : 'aligné';
-    reasoning = `Jumeau numérique — ${obs.sampleSize} interventions historiques, intervalle moyen ${Math.round(
-      obs.km / 1000,
-    )}k km (${trend} que la reco ${Math.round(spec.km / 1000)}k km)`;
+    const obsK = Math.round(obs.km / 1000);
+    const specK = Math.round(spec.km / 1000);
+    reasoning =
+      locale === 'fr'
+        ? `D'après votre carnet — ${obs.sampleSize} interventions, intervalle moyen ${obsK}k km (${obs.km < spec.km ? 'plus court' : 'aligné'} vs reco ${specK}k km)`
+        : `From your service log — ${obs.sampleSize} services, average interval ${obsK}k km (${obs.km < spec.km ? 'shorter than' : 'in line with'} the ${specK}k km recommendation)`;
   } else if (obs.sampleSize === 1) {
     source = 'hybrid';
     confidence = 0.65;
-    reasoning = `1 intervention historique + reco constructeur (${Math.round(
-      (spec.km ?? 0) / 1000,
-    )}k km)`;
+    const specK = Math.round((spec.km ?? 0) / 1000);
+    reasoning =
+      locale === 'fr'
+        ? `1 intervention enregistrée + reco constructeur (${specK}k km)`
+        : `1 logged service + manufacturer interval (${specK}k km)`;
   }
 
   // Compute due-at km
@@ -189,17 +261,19 @@ function buildTask(
   // Compute due-at date
   let dueAtDate: Date;
   if (category === 'inspection') {
-    // Special handling: CT cycles are time-based regardless of mileage
-    const purchaseDate = new Date(vehicle.purchaseDate);
-    const ageMonths = Math.floor(
-      (today.getTime() - purchaseDate.getTime()) / (30 * 86400000),
-    );
-    // Use last inspection if present, otherwise based on age
-    if (obs.lastEntry) {
+    // Time-based regardless of mileage. Priority: an official expiry date
+    // (UK MOT from DVSA/DVLA) → the last logged test → the country's cadence
+    // applied to the vehicle's age (first registration year, or purchase date).
+    const cycle = inspectionCycleFor(vehicle.country);
+    if (opts.inspectionDueDate) {
+      dueAtDate = new Date(opts.inspectionDueDate);
+    } else if (obs.lastEntry) {
       dueAtDate = new Date(obs.lastEntry.occurredAt);
-      dueAtDate.setMonth(dueAtDate.getMonth() + (spec.months ?? 24));
+      dueAtDate.setMonth(dueAtDate.getMonth() + cycle.everyMonths);
     } else {
-      const monthsToNext = firstInspectionMonths(ageMonths);
+      const firstReg = vehicle.year ? new Date(vehicle.year, 6, 1) : new Date(vehicle.purchaseDate);
+      const ageMonths = Math.max(0, Math.floor((today.getTime() - firstReg.getTime()) / (30 * 86400000)));
+      const monthsToNext = firstInspectionMonths(ageMonths, cycle);
       dueAtDate = new Date(today);
       dueAtDate.setMonth(dueAtDate.getMonth() + monthsToNext);
     }
@@ -251,21 +325,30 @@ function buildTask(
     severity = 'warning';
   }
 
+  // A known safety weak point of this model, inside its mileage window,
+  // lifts an "info" task to "warning" — worth a look even if not yet due.
+  const weakPoints = activeWeakPoints(opts.schedule ?? null, vehicle.currentMileageKm).filter((w) => w.category === category);
+  if (severity === 'info' && weakPoints.some((w) => w.severity === 'safety')) severity = 'warning';
+
   const estimatedCost = obsCost ?? spec.estimatedCostEur;
 
   return {
     category,
-    title: CATEGORY_LABELS[category],
-    description: spec.description,
+    title: CATEGORY_LABELS[locale][category],
+    description: locale === 'fr' ? spec.description : spec.descriptionEn,
     dueAtKm,
     dueAtDate: dueAtDate.toISOString(),
     daysUntilDue,
     kmUntilDue,
+    intervalKm: effectiveKm ?? undefined,
     severity,
     estimatedCost,
     source,
     confidence,
     reasoning,
+    note: modelInterval?.note ? modelInterval.note[locale] : undefined,
+    weakPoints: weakPoints.length ? weakPoints : undefined,
+    scheduleVerified: modelInterval ? opts.schedule?.schedule.verified ?? false : undefined,
   };
 }
 
@@ -276,13 +359,27 @@ function buildTask(
  * - **With history** → digital-twin plan that learns from the driver's
  *   actual service intervals and costs
  */
+export interface PlanOptions {
+  /** Official next-test date (e.g. UK MOT expiry) — overrides the computed cadence. */
+  inspectionDueDate?: string | null;
+  /** Annual mileage from an official odometer trail — overrides the receipt-based estimate. */
+  annualMileageKm?: number | null;
+  /** Manufacturer schedule matched for this vehicle (lib/maintenance/schedules). */
+  schedule?: ResolvedSchedule | null;
+}
+
 export function generateMaintenancePlan(
   vehicle: Vehicle,
   history: MaintenanceEntry[],
   fuel: FuelEntry[],
   today: Date = new Date(),
+  locale: PlanLocale = 'en',
+  opts: PlanOptions = {},
 ): MaintenancePlan {
-  const annual = estimateAnnualMileage(vehicle, fuel);
+  const estimated = estimateAnnualMileage(vehicle, fuel);
+  const annual = opts.annualMileageKm && opts.annualMileageKm > 0
+    ? { km: opts.annualMileageKm, confidence: Math.max(estimated.confidence, 0.8) }
+    : estimated;
 
   const categories: Category[] = [
     'oil',
@@ -291,11 +388,14 @@ export function generateMaintenancePlan(
     'tires',
     'battery',
     'inspection',
+    'belt',
+    'fluid',
+    'gearbox',
     'other',
   ];
 
   const tasks = categories
-    .map((c) => buildTask(vehicle, c, history, annual.km, today))
+    .map((c) => buildTask(vehicle, c, history, annual.km, today, locale, opts))
     .filter((t): t is MaintenanceTask => t !== null)
     .sort((a, b) => a.daysUntilDue - b.daysUntilDue);
 
@@ -305,7 +405,9 @@ export function generateMaintenancePlan(
     ? sources.size === 1
       ? 'digital-twin'
       : 'hybrid'
-    : 'generic';
+    : sources.has('model')
+      ? 'model'
+      : 'generic';
 
   // Global confidence = average task confidence weighted by data availability
   const globalConfidence =
@@ -323,6 +425,8 @@ export function generateMaintenancePlan(
     vehicleId: vehicle.id,
     generatedAt: today.toISOString(),
     source,
+    scheduleLabel: opts.schedule ? `${opts.schedule.schedule.label}${opts.schedule.engine ? ` · ${opts.schedule.engine.label}` : ''}` : null,
+    scheduleVerified: opts.schedule?.schedule.verified ?? false,
     annualMileageKm: annual.km,
     globalConfidence,
     tasks,

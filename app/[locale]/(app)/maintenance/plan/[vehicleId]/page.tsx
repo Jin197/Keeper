@@ -29,8 +29,10 @@ import {
   type PlanSource,
 } from '@/lib/maintenance/plan';
 import { formatCurrency, formatDistance, formatDate } from '@/lib/utils';
+import { resolveSchedule } from '@/lib/maintenance/schedules';
 import { isSupabaseConfigured } from '@/lib/env';
 import { PlanTaskCard } from './plan-task-card';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +42,8 @@ export default async function MaintenancePlanPage({
   params: Promise<{ vehicleId: string; locale: string }>;
 }) {
   const { vehicleId } = await params;
+  const t = await getTranslations('plan');
+  const locale = await getLocale();
   if (!isSupabaseConfigured()) notFound();
 
   const vehicle = await getVehicle(vehicleId);
@@ -50,7 +54,8 @@ export default async function MaintenancePlanPage({
     getFuelEntries(vehicleId),
   ]);
 
-  const plan = generateMaintenancePlan(vehicle, history, fuel);
+  const schedule = resolveSchedule(vehicle);
+  const plan = generateMaintenancePlan(vehicle, history, fuel, new Date(), locale === 'fr' ? 'fr' : 'en', { schedule });
 
   const overdue = plan.tasks.filter((t) => t.severity === 'critical');
   const upcoming = plan.tasks.filter((t) => t.severity === 'warning');
@@ -59,50 +64,48 @@ export default async function MaintenancePlanPage({
   return (
     <div className="container py-6 lg:py-8 space-y-6">
       <PageHeader
-        title="Plan de maintenance"
-        description={`${vehicle.make} ${vehicle.model} · ${vehicle.year} · ${formatDistance(vehicle.currentMileageKm)}`}
+        title={t('title')}
+        description={`${vehicle.make} ${vehicle.model} · ${vehicle.year} · ${formatDistance(vehicle.currentMileageKm, locale)}`}
         action={
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/vehicles/${vehicleId}`}>Retour véhicule</Link>
+              <Link href={`/vehicles/${vehicleId}`}>{t('back')}</Link>
             </Button>
             <Button asChild>
               <Link href="/maintenance/new">
-                <Plus className="h-4 w-4" /> Saisir une intervention
+                <Plus className="h-4 w-4" /> {t('logService')}
               </Link>
             </Button>
           </div>
         }
       />
 
-      <SourceBanner
-        source={plan.source}
-        confidence={plan.globalConfidence}
-        historyCount={history.length}
-      />
+      <SourceBanner source={plan.source} confidence={plan.globalConfidence} historyCount={history.length} scheduleLabel={plan.scheduleLabel} scheduleVerified={plan.scheduleVerified} />
 
       <div className="grid sm:grid-cols-3 gap-4">
         <KpiCard
-          label="Kilométrage annuel estimé"
-          value={`${Math.round(plan.annualMileageKm / 1000)}k km/an`}
-          hint={fuel.length >= 2 ? 'Calculé sur 12 mois' : 'Estimation par défaut'}
+          label={t('annualMileage')}
+          value={t('perYear', { km: Math.round(plan.annualMileageKm / 1000) })}
+          hint={fuel.length >= 2 ? t('annualHintData') : t('annualHintDefault')}
           icon={<Gauge className="h-4 w-4" strokeWidth={1.5} />}
         />
         <KpiCard
-          label="Budget entretien 12 mois"
+          label={t('budget')}
           value={formatCurrency(plan.budget12mo, vehicle.currency)}
-          hint={`${plan.tasks.filter((t) => new Date(t.dueAtDate).getTime() < Date.now() + 365 * 86400000).length} interventions prévues`}
+          hint={t('budgetHint', { count: plan.tasks.filter((task) => new Date(task.dueAtDate).getTime() < Date.now() + 365 * 86400000).length })}
           icon={<TrendingUp className="h-4 w-4" strokeWidth={1.5} />}
         />
         <KpiCard
-          label="Confiance du modèle"
-          value={`${Math.round(plan.globalConfidence * 100)}%`}
+          label={t('basis')}
+          value={plan.source === 'digital-twin' ? t('sourceTwin') : plan.source === 'hybrid' ? t('sourceHybrid') : plan.source === 'model' ? t('sourceModel') : t('sourceOem')}
           hint={
             plan.source === 'digital-twin'
-              ? 'Adapté à votre conduite'
+              ? t('basisTwin')
               : plan.source === 'hybrid'
-                ? 'Mix historique + constructeur'
-                : 'Recommandations constructeur'
+                ? t('basisHybrid')
+                : plan.source === 'model'
+                  ? t('basisModel')
+                  : t('basisGeneric')
           }
           icon={
             plan.source === 'digital-twin' ? (
@@ -116,16 +119,18 @@ export default async function MaintenancePlanPage({
 
       {overdue.length > 0 && (
         <Section
-          title={`En retard (${overdue.length})`}
-          description="À traiter sans délai — risque sécurité"
+          title={t('overdue', { count: overdue.length })}
+          description={t('overdueHint')}
         >
           <div className="grid sm:grid-cols-2 gap-3">
-            {overdue.map((t) => (
+            {overdue.map((task) => (
               <PlanTaskCard
-                key={t.category}
-                task={t}
+                key={task.category}
+                task={task}
                 vehicleId={vehicle.id}
                 vehicleCurrency={vehicle.currency}
+                country={vehicle.country}
+                vehicle={vehicle}
               />
             ))}
           </div>
@@ -134,16 +139,18 @@ export default async function MaintenancePlanPage({
 
       {upcoming.length > 0 && (
         <Section
-          title={`À venir (${upcoming.length})`}
-          description="Dans les 90 prochains jours ou 3 000 km"
+          title={t('upcoming', { count: upcoming.length })}
+          description={t('upcomingHint')}
         >
           <div className="grid sm:grid-cols-2 gap-3">
-            {upcoming.map((t) => (
+            {upcoming.map((task) => (
               <PlanTaskCard
-                key={t.category}
-                task={t}
+                key={task.category}
+                task={task}
                 vehicleId={vehicle.id}
                 vehicleCurrency={vehicle.currency}
+                country={vehicle.country}
+                vehicle={vehicle}
               />
             ))}
           </div>
@@ -152,16 +159,18 @@ export default async function MaintenancePlanPage({
 
       {planned.length > 0 && (
         <Section
-          title={`Planifié (${planned.length})`}
-          description="Intervalle long — surveillance"
+          title={t('planned', { count: planned.length })}
+          description={t('plannedHint')}
         >
           <div className="grid sm:grid-cols-2 gap-3">
-            {planned.map((t) => (
+            {planned.map((task) => (
               <PlanTaskCard
-                key={t.category}
-                task={t}
+                key={task.category}
+                task={task}
                 vehicleId={vehicle.id}
                 vehicleCurrency={vehicle.currency}
+                country={vehicle.country}
+                vehicle={vehicle}
               />
             ))}
           </div>
@@ -172,10 +181,10 @@ export default async function MaintenancePlanPage({
         <Card className="p-8 text-center">
           <CheckCircle2 className="h-10 w-10 text-eco mx-auto" strokeWidth={1.5} />
           <h2 className="font-display text-lg font-semibold mt-3">
-            Rien à signaler
+            {t('nothingTitle')}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Aucune intervention recommandée pour ce profil.
+            {t('nothingHint')}
           </p>
         </Card>
       )}
@@ -183,15 +192,38 @@ export default async function MaintenancePlanPage({
   );
 }
 
-function SourceBanner({
+async function SourceBanner({
   source,
   confidence,
   historyCount,
+  scheduleLabel,
+  scheduleVerified,
 }: {
   source: PlanSource;
   confidence: number;
   historyCount: number;
+  scheduleLabel: string | null;
+  scheduleVerified: boolean;
 }) {
+  const t = await getTranslations('plan');
+  if (source === 'model') {
+    return (
+      <Card className="p-5 border-veloce/30">
+        <div className="flex items-start gap-4">
+          <div className="rounded-btn bg-veloce/10 text-veloce p-2.5 shrink-0">
+            <BookOpen className="h-5 w-5" strokeWidth={2} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-display font-semibold">{t('modelTitle')}</h2>
+              {!scheduleVerified && <Badge variant="warning" className="text-[10px]">{t('unverified')}</Badge>}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{t('modelBody', { label: scheduleLabel ?? '' })}</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
   if (source === 'digital-twin') {
     return (
       <Card variant="premium" className="p-5">
@@ -201,16 +233,13 @@ function SourceBanner({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="font-display font-semibold">Jumeau numérique actif</h2>
+              <h2 className="font-display font-semibold">{t('twinTitle')}</h2>
               <Badge variant="premium" className="text-[10px]">
-                <Sparkles className="h-2.5 w-2.5" /> Adaptatif
+                <Sparkles className="h-2.5 w-2.5" /> {t('twinBadge')}
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Plan personnalisé d'après {historyCount} intervention
-              {historyCount > 1 ? 's' : ''} de votre carnet. Les intervalles
-              s'adaptent à votre conduite réelle (kilométrage, usure observée,
-              coûts moyens).
+              {t('twinBody', { count: historyCount })}
             </p>
             <div className="mt-3 flex items-center gap-3">
               <Progress value={confidence * 100} className="flex-1 h-1.5" />
@@ -232,12 +261,9 @@ function SourceBanner({
             <Brain className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-display font-semibold">Modèle hybride</h2>
+            <h2 className="font-display font-semibold">{t('hybridTitle')}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Mix de votre historique partiel ({historyCount} intervention
-              {historyCount > 1 ? 's' : ''}) et des recommandations
-              constructeur. Plus vous saisissez d'entretiens, plus le jumeau
-              numérique devient précis.
+              {t('hybridBody', { count: historyCount })}
             </p>
           </div>
         </div>
@@ -252,17 +278,11 @@ function SourceBanner({
           <BookOpen className="h-5 w-5" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="font-display font-semibold">Plan générique</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Aucun historique pour ce véhicule — le plan est basé sur les
-            intervalles constructeur et les standards FFA. Saisissez vos
-            premières interventions pour activer le{' '}
-            <span className="text-veloce font-medium">jumeau numérique</span> qui
-            ajustera les prévisions à votre conduite.
-          </p>
+          <h2 className="font-display font-semibold">{t('genericTitle')}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t('genericBody')}</p>
           <Button asChild size="sm" className="mt-3">
             <Link href="/maintenance/new">
-              <Plus className="h-3.5 w-3.5" /> Saisir un entretien passé
+              <Plus className="h-3.5 w-3.5" /> {t('genericCta')}
             </Link>
           </Button>
         </div>

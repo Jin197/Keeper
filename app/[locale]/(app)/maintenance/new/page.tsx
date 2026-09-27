@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { getVehicles, getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { NewMaintenanceForm } from './new-form';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default async function NewMaintenancePage({
 }: {
   searchParams: { vehicle?: string };
 }) {
+  const t = await getTranslations('maintenanceForm');
   const [vehicles, profile] = await Promise.all([
     isSupabaseConfigured() ? getVehicles() : Promise.resolve([]),
     isSupabaseConfigured() ? getProfile() : Promise.resolve(null),
@@ -26,10 +28,10 @@ export default async function NewMaintenancePage({
             <Car className="h-7 w-7" strokeWidth={1.5} />
           </div>
           <h1 className="font-display text-xl font-bold mt-5">
-            Ajoutez un véhicule d'abord
+            {t('addVehicleFirst')}
           </h1>
           <Button asChild className="mt-5">
-            <Link href="/vehicles/new">Ajouter un véhicule</Link>
+            <Link href="/vehicles/new">{t('addVehicle')}</Link>
           </Button>
         </Card>
       </div>

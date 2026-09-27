@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   AlertTriangle,
   BookOpen,
@@ -17,14 +18,20 @@ import { formatCurrency, formatDistance, formatDate } from '@/lib/utils';
 import type { MaintenanceTask } from '@/lib/maintenance/plan';
 import { ScheduleTaskModal } from '@/components/domain/schedule-task-modal';
 import type { MaintenanceCategory } from '@/lib/types';
+import { PartsLinkButton } from '@/components/domain/parts-link-button';
 
 interface Props {
   task: MaintenanceTask;
   vehicleId: string;
   vehicleCurrency: string;
+  /** Registration country — routes the "find the part" link to the right retailer. */
+  country?: string | null;
+  vehicle?: { make?: string; model?: string; year?: number };
 }
 
-export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
+export function PlanTaskCard({ task, vehicleId, vehicleCurrency, country, vehicle }: Props) {
+  const t = useTranslations('plan');
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const isOverdue = task.severity === 'critical';
   const Icon =
@@ -35,10 +42,12 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
         : BookOpen;
   const sourceLabel =
     task.source === 'digital-twin'
-      ? 'Jumeau numérique'
+      ? t('sourceTwin')
       : task.source === 'hybrid'
-        ? 'Mixte'
-        : 'Constructeur';
+        ? t('sourceHybrid')
+        : task.source === 'model'
+          ? t('sourceModel')
+          : t('sourceOem');
 
   return (
     <>
@@ -77,7 +86,7 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
           </div>
           <div className="text-right shrink-0">
             <div className="font-mono font-semibold tabular-nums text-sm">
-              {formatCurrency(task.estimatedCost, vehicleCurrency as 'EUR')}
+              {formatCurrency(task.estimatedCost, vehicleCurrency)}
             </div>
           </div>
         </div>
@@ -87,13 +96,11 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
             <Calendar className="h-3 w-3" />
             {isOverdue ? (
               <span className="text-destructive font-medium">
-                En retard de {Math.abs(task.daysUntilDue)}j
+                {t('overdueBy', { days: Math.abs(task.daysUntilDue) })}
               </span>
             ) : (
               <span>
-                {task.daysUntilDue < 90
-                  ? `Dans ${task.daysUntilDue}j`
-                  : formatDate(task.dueAtDate)}
+                {task.daysUntilDue < 90 ? t('inDays', { days: task.daysUntilDue }) : formatDate(task.dueAtDate, locale)}
               </span>
             )}
           </div>
@@ -102,14 +109,22 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
               <Gauge className="h-3 w-3" />
               {task.kmUntilDue !== undefined && task.kmUntilDue < 0 ? (
                 <span className="text-destructive font-medium">
-                  {formatDistance(Math.abs(task.kmUntilDue))} dépassé
+                  {t('exceeded', { distance: formatDistance(Math.abs(task.kmUntilDue), locale) })}
                 </span>
               ) : (
-                <span>{formatDistance(task.dueAtKm)}</span>
+                <span>{formatDistance(task.dueAtKm, locale)}</span>
               )}
             </div>
           )}
         </div>
+
+        {task.note && <p className="mt-2 text-[11px] text-muted-foreground">{task.note}</p>}
+        {task.weakPoints?.map((w, i) => (
+          <p key={i} className={`mt-2 text-[11px] ${w.severity === 'safety' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'}`}>
+            <span className="font-medium">{w.severity === 'safety' ? t('weakSafety') : w.severity === 'watch' ? t('weakWatch') : t('weakInfo')} · </span>
+            {locale === 'fr' ? w.fr : w.en}
+          </p>
+        ))}
 
         <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground min-w-0">
@@ -121,7 +136,8 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
           </Badge>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-border flex justify-end">
+        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-2">
+          <PartsLinkButton country={country} category={task.category} vehicle={vehicle} />
           <Button
             size="sm"
             variant="outline"
@@ -129,7 +145,7 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency }: Props) {
             className="h-7 text-xs gap-1.5"
           >
             <CalendarPlus className="h-3 w-3" />
-            Planifier
+            {t('schedule')}
           </Button>
         </div>
       </Card>
