@@ -55,9 +55,32 @@ The last migration drops PostGIS entirely (nothing uses it any more); after
 "must be owner of table spatial_ref_sys" while pushing, run that one
 migration's SQL in the dashboard SQL editor (it runs as the owner there).
 
-If `db push` complains about the enum `ALTER TYPE … ADD VALUE` inside a
-transaction, run that migration's four `alter type` lines by hand in the SQL
-editor — Postgres < 12 quirk; Supabase's Postgres 15 is fine.
+### If `db push` fails — the likely reason
+
+`db push` applies whatever the **remote** migration-history table says is
+missing. This project's tables exist, but if that history is empty or partial
+(nothing was ever pushed from this checkout), the push replays the original
+schema and dies on `relation "profiles" already exists` — having applied
+nothing. Two ways out:
+
+**A. Tell the CLI what is already there,** then push:
+
+```bash
+npx supabase@latest migration list        # compare local vs remote
+# for each migration the remote is missing but the database already has:
+npx supabase@latest migration repair --status applied 20260509120000
+npm run db:push
+```
+
+**B. Skip the history and run the SQL once** (safer for a one-time catch-up):
+
+```bash
+npm run db:sql > catchup.sql     # the 6 pending migrations, in order, with guards
+```
+
+Paste `catchup.sql` into the Supabase SQL editor and run it. Every statement is
+guarded, so a re-run is harmless. The file's own header lists the
+`migration repair` commands to run afterwards so a future push stays in sync.
 
 ## 2. Vercel environment (≈ 5 min)
 

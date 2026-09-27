@@ -14,5 +14,8 @@ drop function if exists public.get_nearby_stations(double precision, double prec
 drop index if exists public.stations_geog_idx;
 alter table public.stations drop column if exists geog;
 
--- CASCADE clears anything else that still references PostGIS types.
-drop extension if exists postgis cascade;
+-- Deliberately without CASCADE. The column and the function above are the only
+-- things in this schema that use PostGIS (checked across every migration), so a
+-- plain drop succeeds. If it ever fails, something unexpected depends on the
+-- extension and that should stop the migration — not be silently destroyed.
+drop extension if exists postgis;

@@ -20,7 +20,8 @@
     "dvsa:build": "node scripts/dvsa/build-failure-rates.mjs --dir data/dvsa/2024 --db data/dvsa/work.sqlite --out data/model-failure-rates.json",
     "dvsa:upload": "node scripts/dvsa/build-failure-rates.mjs --skip-load --db data/dvsa/work.sqlite --out data/model-failure-rates.json --upload",
     "stripe:prices": "node scripts/stripe/sync-prices.mjs",
-    "stripe:prices:apply": "node scripts/stripe/sync-prices.mjs --apply"
+    "stripe:prices:apply": "node scripts/stripe/sync-prices.mjs --apply",
+    "db:sql": "node scripts/db/pending-sql.mjs"
   },
   "dependencies": {
     "@google-cloud/vision": "^5.3.6",
