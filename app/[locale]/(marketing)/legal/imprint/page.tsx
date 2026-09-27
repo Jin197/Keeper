@@ -1,78 +1,93 @@
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
+import { AlertTriangle } from 'lucide-react';
+import { Link } from '@/lib/i18n/routing';
+import { versionLine } from '@/components/legal/legal-doc';
+import { IMPRINT } from '@/lib/legal/content';
+import { legalEntity, isComplete } from '@/lib/legal/entity';
 
-export const metadata: Metadata = {
-  title: 'Mentions légales',
-  description: 'Mentions légales de Velocewealth — éditeur, hébergeur, contact.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = IMPRINT[(await getLocale()) === 'fr' ? 'fr' : 'en'];
+  return { title: t.title, description: t.intro };
+}
 
-export default function ImprintPage() {
+export default async function ImprintPage() {
+  const locale = await getLocale();
+  const t = IMPRINT[locale === 'fr' ? 'fr' : 'en'];
+  const e = legalEntity();
+
+  // Only the fields that are actually configured. Nothing is invented: an
+  // unset registration or VAT number simply does not appear.
+  const fields: [string, string | null][] = [
+    [t.labels.name, e.name],
+    [t.labels.form, e.form],
+    [t.labels.capital, e.capital],
+    [t.labels.registry, e.registry],
+    [t.labels.vat, e.vat],
+    [t.labels.address, e.address],
+    [t.labels.publisher, e.publisher],
+    [t.labels.email, e.email],
+  ];
+
   return (
     <main className="container py-16 max-w-3xl">
-      <h1 className="font-display text-3xl font-bold tracking-tight">
-        Mentions légales
-      </h1>
-      <p className="text-sm text-muted-foreground mt-2">
-        Conformément à l&apos;article 6 de la loi pour la confiance dans
-        l&apos;économie numérique (LCEN).
-      </p>
+      <h1 className="font-display text-3xl font-bold tracking-tight">{t.title}</h1>
+      <p className="text-sm text-muted-foreground mt-2">{versionLine(locale)}</p>
+      <p className="mt-4 text-sm leading-relaxed">{t.intro}</p>
 
-      <section className="mt-10 space-y-6 text-sm leading-relaxed text-muted-foreground">
-        <Block title="Éditeur du site">
-          <Field label="Raison sociale" value="Velocewealth SAS" />
-          <Field label="Forme juridique" value="Société par actions simplifiée (SAS)" />
-          <Field label="Capital social" value="50 000,00 €" />
-          <Field label="RCS" value="Paris B 922 834 105" />
-          <Field label="N° TVA intracommunautaire" value="FR92922834105" />
-          <Field label="Siège social" value="12 Rue de la Paix, 75002 Paris, France" />
-          <Field label="Directeur de la publication" value="Jinola Amavi" />
-          <Field label="Email" value="legal@velocewealth.app" link />
+      {!isComplete(e) && (
+        <div className="mt-8 rounded-card border border-amber-500/30 bg-amber-500/10 p-4 flex items-start gap-3 text-sm">
+          <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+          <p className="text-amber-700 dark:text-amber-300">{t.incomplete}</p>
+        </div>
+      )}
+
+      <section className="mt-10 space-y-8 text-sm leading-relaxed text-muted-foreground">
+        <Block title={t.publisherTitle}>
+          <dl className="grid sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-2">
+            {fields
+              .filter(([, value]) => Boolean(value))
+              .map(([label, value]) => (
+                <div key={label} className="sm:contents">
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground/70">{label}</dt>
+                  <dd className="text-foreground">
+                    {label === t.labels.email ? (
+                      <a href={`mailto:${value}`} className="text-veloce hover:underline">
+                        {value}
+                      </a>
+                    ) : (
+                      value
+                    )}
+                  </dd>
+                </div>
+              ))}
+          </dl>
         </Block>
 
-        <Block title="Hébergement">
-          <Field label="Application web" value="Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA — données hébergées en région UE." />
-          <Field label="Base de données &amp; stockage" value="Supabase Inc., 970 Toa Payoh North #07-04, Singapore 318992 — instance hébergée à Frankfurt (Allemagne)." />
-          <Field label="Paiements" value="Stripe Payments Europe Ltd, 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Ireland." />
+        <Block title={t.hostingTitle}>
+          <ul className="list-disc ps-5 space-y-1">
+            {t.hosting.map((h) => (
+              <li key={h}>{h}</li>
+            ))}
+          </ul>
         </Block>
 
-        <Block title="Propriété intellectuelle">
+        <Block title={t.ipTitle}>
+          <p>{t.ipBody}</p>
+        </Block>
+
+        <Block title={t.dataTitle}>
           <p>
-            L&apos;ensemble des éléments accessibles sur le site (textes, images,
-            graphismes, logo, icônes, sons, logiciels) est la propriété exclusive
-            de Velocewealth ou de ses partenaires. Toute reproduction,
-            représentation, modification, publication, adaptation totale ou
-            partielle, par quelque procédé que ce soit, est interdite sans
-            autorisation préalable écrite.
-          </p>
-        </Block>
-
-        <Block title="Données personnelles">
-          <p>
-            Les modalités de traitement des données personnelles sont décrites
-            dans notre{' '}
-            <a href="/legal/privacy" className="text-veloce hover:underline">
-              politique de confidentialité
-            </a>
+            {t.dataBody}{' '}
+            <Link href="/legal/privacy" className="text-veloce hover:underline">
+              {locale === 'fr' ? 'Politique de confidentialité' : 'Privacy policy'}
+            </Link>
             .
           </p>
         </Block>
 
-        <Block title="Médiation">
-          <p>
-            Conformément à l&apos;article L.612-1 du Code de la consommation,
-            tout consommateur a le droit de recourir gratuitement à un médiateur
-            de la consommation en vue de la résolution amiable d&apos;un litige
-            l&apos;opposant à un professionnel.
-          </p>
-        </Block>
-
-        <Block title="Contact">
-          <p>
-            Pour toute question relative à ces mentions ou au site, écrivez à{' '}
-            <a href="mailto:legal@velocewealth.app" className="text-veloce hover:underline">
-              legal@velocewealth.app
-            </a>
-            .
-          </p>
+        <Block title={t.disputeTitle}>
+          <p>{t.disputeBody}</p>
         </Block>
       </section>
     </main>
@@ -81,38 +96,9 @@ export default function ImprintPage() {
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-card border border-border bg-card p-5">
-      <h2 className="font-display text-base font-semibold text-foreground mb-3">
-        {title}
-      </h2>
-      <div className="space-y-2 text-sm">{children}</div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  link,
-}: {
-  label: string;
-  value: string;
-  link?: boolean;
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:gap-4">
-      <span className="text-xs text-muted-foreground sm:w-44 sm:shrink-0 uppercase tracking-wider">
-        {label}
-      </span>
-      <span>
-        {link ? (
-          <a href={`mailto:${value}`} className="text-veloce hover:underline">
-            {value}
-          </a>
-        ) : (
-          value
-        )}
-      </span>
+    <div className="space-y-3">
+      <h2 className="font-display text-lg font-semibold text-foreground">{title}</h2>
+      {children}
     </div>
   );
 }
