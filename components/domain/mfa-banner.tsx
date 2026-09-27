@@ -83,7 +83,7 @@ const LABELS: Record<
  */
 export function MfaBanner({ daysRemaining, mustEnable }: Props) {
   const rawLocale = useLocale();
-  const t = LABELS[rawLocale as Locale] ?? LABELS.fr;
+  const t = LABELS[rawLocale as Locale] ?? LABELS.en;
 
   const message = mustEnable
     ? t.mandatory

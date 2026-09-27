@@ -12,12 +12,20 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DeleteVehicleButton } from './delete-vehicle-button';
+import { KnownIssuesPanel } from '@/components/domain/known-issues-panel';
+import { SaleDossierButton } from '@/components/domain/sale-dossier-button';
 import {
   getVehicle,
+  getProfile,
   getFuelEntries,
   getMaintenanceEntries,
   getActiveAlerts,
 } from '@/lib/data';
+import { getKnownIssues } from '@/lib/vehicle-data/known-issues';
+import { canExportCertificate } from '@/lib/entitlements';
+import { resolvePricing, formatPrice } from '@/lib/pricing';
+import { isSaleDossierConfigured } from '@/lib/env';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { computeCostPerKm, tireWearPercent } from '@/lib/computations';
 import { getVehicleFines } from '@/server/actions/fines';
 import { getInsuranceRecords } from '@/server/actions/insurance';
@@ -29,14 +37,17 @@ export const dynamic = 'force-dynamic';
 
 export default async function VehicleDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { purchase?: string };
 }) {
   if (!isSupabaseConfigured()) return notFound();
 
-  const [vehicle, fuel, maintenance, alerts, fines, insuranceRecords] =
+  const [vehicle, profile, fuel, maintenance, alerts, fines, insuranceRecords] =
     await Promise.all([
       getVehicle(params.id),
+      getProfile(),
       getFuelEntries(params.id),
       getMaintenanceEntries(params.id),
       getActiveAlerts(),
@@ -44,6 +55,18 @@ export default async function VehicleDetailPage({
       getInsuranceRecords(params.id),
     ]);
   if (!vehicle) return notFound();
+
+  // Official records + one-off dossier entitlement, fetched in parallel with
+  // nothing else to wait on — both are cached upstream.
+  const [knownIssues, entitlement, locale, tDossier] = await Promise.all([
+    getKnownIssues(vehicle, profile?.country),
+    canExportCertificate(profile, vehicle.id),
+    getLocale(),
+    getTranslations('saleDossier'),
+  ]);
+  const t = await getTranslations('vehicle');
+  const pricing = resolvePricing(profile?.country ?? knownIssues.country, profile?.currency);
+  const dossierPrice = isSaleDossierConfigured() ? formatPrice(pricing.saleDossier, pricing.currency, locale) : null;
 
   const cost = computeCostPerKm(vehicle, fuel, maintenance, 6, insuranceRecords);
   const lastTireService = maintenance.find((m) => m.category === 'tires');
@@ -68,7 +91,7 @@ export default async function VehicleDetailPage({
     <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6 max-w-7xl mx-auto w-full">
       <Button variant="ghost" size="sm" asChild className="-ml-3">
         <Link href="/vehicles">
-          <ChevronLeft className="h-4 w-4" /> Tous les véhicules
+          <ChevronLeft className="h-4 w-4" /> {t('allVehicles')}
         </Link>
       </Button>
 
@@ -88,11 +111,7 @@ export default async function VehicleDetailPage({
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                 <Badge variant="outline">{vehicle.year}</Badge>
                 <Badge variant="outline">
-                  {vehicle.fuelType === 'electric'
-                    ? 'Électrique'
-                    : vehicle.fuelType === 'hybrid'
-                      ? 'Hybride'
-                      : 'Thermique'}
+                  {t(vehicle.fuelType)}
                 </Badge>
               </div>
               <h1 className="font-display text-2xl lg:text-3xl font-bold tracking-tight">
@@ -107,7 +126,7 @@ export default async function VehicleDetailPage({
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/vehicles/${vehicle.id}/edit`}>
-                    <Pencil className="h-4 w-4" /> Compléter les infos
+                    <Pencil className="h-4 w-4" /> {t('edit')}
                   </Link>
                 </Button>
                 <DeleteVehicleButton
@@ -120,13 +139,13 @@ export default async function VehicleDetailPage({
             <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <dt className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Hash className="h-3 w-3" /> Immatriculation
+                  <Hash className="h-3 w-3" /> {t('plate')}
                 </dt>
                 <dd className="font-mono font-medium mt-1">{vehicle.plate}</dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Gauge className="h-3 w-3" /> Kilométrage
+                  <Gauge className="h-3 w-3" /> {t('mileage')}
                 </dt>
                 <dd className="font-mono font-medium mt-1 tabular-nums">
                   {formatDistance(vehicle.currentMileageKm)}
@@ -134,15 +153,15 @@ export default async function VehicleDetailPage({
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Calendar className="h-3 w-3" /> Acquis le
+                  <Calendar className="h-3 w-3" /> {t('acquired')}
                 </dt>
                 <dd className="font-medium mt-1">
-                  {formatDate(vehicle.purchaseDate)}
+                  {formatDate(vehicle.purchaseDate, locale)}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <TrendingUp className="h-3 w-3" /> Valeur estimée
+                  <TrendingUp className="h-3 w-3" /> {t('estimatedValue')}
                 </dt>
                 <dd className="font-mono font-medium mt-1 tabular-nums">
                   {formatCurrency(
@@ -155,6 +174,16 @@ export default async function VehicleDetailPage({
           </div>
         </div>
       </Card>
+
+      {searchParams?.purchase === 'success' && (
+        <div className="rounded-card border border-eco/30 bg-eco/10 p-3 text-sm text-eco">{tDossier('purchaseSuccess')}</div>
+      )}
+      {searchParams?.purchase === 'cancelled' && (
+        <div className="rounded-card border border-border bg-muted/40 p-3 text-sm text-muted-foreground">{tDossier('purchaseCancelled')}</div>
+      )}
+
+      {/* ── What official records say (recalls, MOT…) — the "why should I care" block ── */}
+      <KnownIssuesPanel report={knownIssues} variant="compact" />
 
       {/* ── 5 onglets : Aperçu / Énergie / Maintenance / Coûts / Conformité ── */}
       <VehicleTabs
@@ -169,7 +198,10 @@ export default async function VehicleDetailPage({
         brakeWear={brakeWear}
         lastTireServiceAt={lastTireService?.occurredAt ?? null}
         lastBrakeServiceAt={lastBrakeService?.occurredAt ?? null}
+        showCompliance={knownIssues.country === 'FR' || fines.length > 0}
       />
+
+      <SaleDossierButton vehicleId={vehicle.id} allowed={entitlement.allowed} via={entitlement.via} priceLabel={dossierPrice} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Confirm } from '@/components/ui/confirm';
 import { deleteVehicleAction } from '@/server/actions/vehicles';
@@ -15,6 +16,7 @@ export function DeleteVehicleButton({
   id: string;
   label: string;
 }) {
+  const t = useTranslations('vehicleEdit');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -27,9 +29,7 @@ export function DeleteVehicleButton({
         setOpen(false);
         return;
       }
-      toast.success('Véhicule supprimé', {
-        description: `${label} et son historique ont été retirés.`,
-      });
+      toast.success(t('deleted'), { description: t('deletedHint', { label }) });
       router.push('/vehicles');
     });
   };
@@ -40,7 +40,7 @@ export function DeleteVehicleButton({
         variant="ghost"
         size="icon"
         onClick={() => setOpen(true)}
-        aria-label="Supprimer le véhicule"
+        aria-label={t('deleteAria')}
         className="text-muted-foreground hover:text-destructive"
         disabled={pending}
       >
@@ -48,9 +48,9 @@ export function DeleteVehicleButton({
       </Button>
       <Confirm
         open={open}
-        title="Supprimer ce véhicule ?"
-        description="Toutes les dépenses énergie, entretiens et alertes liés seront également supprimés. Cette action est irréversible."
-        confirmLabel={pending ? 'Suppression…' : 'Supprimer'}
+        title={t('deleteTitle')}
+        description={t('deleteBody')}
+        confirmLabel={pending ? t('deleting') : t('deleteConfirm')}
         destructive
         onConfirm={handleDelete}
         onCancel={() => setOpen(false)}

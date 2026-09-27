@@ -25,6 +25,7 @@ import type {
   MaintenanceTaskInstructions,
 } from '@/lib/types';
 import { getInstructions } from '@/lib/maintenance/instructions';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface IncomingTask {
   /** ID of the persisted task. If null, the task is still in-memory only
@@ -57,7 +58,9 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
   const [garageName, setGarageName] = useState('');
   const [notes, setNotes] = useState('');
 
-  const instructions: MaintenanceTaskInstructions = getInstructions(task.category);
+  const t = useTranslations('scheduleModal');
+  const locale = useLocale();
+  const instructions: MaintenanceTaskInstructions = getInstructions(task.category, locale === 'fr' ? 'fr' : 'en');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +89,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
         taskId = up.id ?? null;
       }
       if (!taskId) {
-        toast.error('Impossible de créer la tâche.');
+        toast.error(t('createError'));
         return;
       }
 
@@ -101,7 +104,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
         toast.error(sched.error);
         return;
       }
-      toast.success('Tâche planifiée. Un rappel vous sera envoyé.');
+      toast.success(t('scheduled'));
       onScheduled?.();
       onClose();
     });
@@ -155,7 +158,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
             <div className="space-y-1 sm:col-span-2">
               <Label htmlFor="sched-date" className="text-xs flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
-                Date prévue
+                {t('date')}
               </Label>
               <Input
                 id="sched-date"
@@ -170,7 +173,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
             <div className="space-y-1">
               <Label htmlFor="sched-reminder" className="text-xs flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
-                Rappel
+                {t('reminder')}
               </Label>
               <select
                 id="sched-reminder"
@@ -178,11 +181,12 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
                 onChange={(e) => setReminderDays(e.target.value)}
                 className="w-full rounded-btn border border-border bg-card px-3 py-1.5 text-sm h-10"
               >
-                <option value="14">14 jours avant</option>
-                <option value="7">7 jours avant</option>
-                <option value="3">3 jours avant</option>
-                <option value="1">1 jour avant</option>
-                <option value="0">Aucun</option>
+                {[14, 7, 3, 1].map((d) => (
+                  <option key={d} value={String(d)}>
+                    {t('daysBefore', { days: d })}
+                  </option>
+                ))}
+                <option value="0">{t('none')}</option>
               </select>
             </div>
           </div>
@@ -190,13 +194,13 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
           <div className="space-y-1">
             <Label htmlFor="sched-garage" className="text-xs flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
-              Garage / lieu (optionnel)
+              {t('garage')}
             </Label>
             <Input
               id="sched-garage"
               value={garageName}
               onChange={(e) => setGarageName(e.target.value)}
-              placeholder="Ex: Speedy Bercy"
+              placeholder={t('garagePlaceholder')}
               maxLength={120}
             />
           </div>
@@ -204,7 +208,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
           <div className="space-y-1">
             <Label htmlFor="sched-notes" className="text-xs flex items-center gap-1.5">
               <StickyNote className="h-3.5 w-3.5" />
-              Notes
+              {t('notes')}
             </Label>
             <textarea
               id="sched-notes"
@@ -212,7 +216,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               maxLength={2000}
-              placeholder="Précisions, références à apporter, devis…"
+              placeholder={t('notesPlaceholder')}
               className="w-full rounded-card border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
@@ -222,11 +226,10 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
                 <ListChecks className="h-3.5 w-3.5 text-veloce" />
-                Checklist d'intervention
+                {t('checklist')}
               </h3>
               <div className="text-[11px] text-muted-foreground font-mono">
-                ~{instructions.durationMinutes} min · difficulté{' '}
-                {instructions.diyDifficulty}/5
+                {t('duration', { minutes: instructions.durationMinutes, level: instructions.diyDifficulty })}
               </div>
             </div>
             <ul className="space-y-1.5 text-xs">
@@ -245,7 +248,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
             {instructions.tools.length > 0 && (
               <div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                  Outils
+                  {t('tools')}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {instructions.tools.map((tool) => (
@@ -267,7 +270,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
                 className="text-xs text-veloce hover:underline flex items-center gap-1 mt-1"
               >
                 <Youtube className="h-3 w-3" />
-                Voir le tutoriel détaillé
+                {t('tutorial')}
               </a>
             )}
           </div>
@@ -285,14 +288,14 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
               onClick={onClose}
               disabled={pending}
             >
-              Annuler
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
               disabled={pending}
               className="bg-veloce hover:bg-veloce/90 text-white"
             >
-              {pending ? 'Planification…' : 'Planifier et activer le rappel'}
+              {pending ? t('submitting') : t('submit')}
             </Button>
           </div>
         </form>

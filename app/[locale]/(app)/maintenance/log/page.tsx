@@ -9,10 +9,13 @@ import { isSupabaseConfigured } from '@/lib/env';
 import { formatCurrency, formatDate, formatDistance } from '@/lib/utils';
 import { shortHash } from '@/lib/hash';
 import { ExportLogButton } from './export-button';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CertifiedLogPage() {
+  const t = await getTranslations('log');
+  const locale = await getLocale();
   if (!isSupabaseConfigured()) return <NotConfigured />;
 
   const [entries, vehicles, profile] = await Promise.all([
@@ -27,13 +30,13 @@ export default async function CertifiedLogPage() {
         <Card className="p-10 text-center">
           <ShieldCheck className="h-10 w-10 mx-auto text-veloce" strokeWidth={1.5} />
           <h1 className="font-display text-xl font-bold mt-4">
-            Carnet vide pour l'instant
+            {t('emptyTitle')}
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Chaque intervention enregistrée sera signée et chaînée à la précédente.
+            {t('emptyHint')}
           </p>
           <Button asChild className="mt-5">
-            <Link href="/maintenance/new">Ajouter une intervention</Link>
+            <Link href="/maintenance/new">{t('addService')}</Link>
           </Button>
         </Card>
       </div>
@@ -45,14 +48,14 @@ export default async function CertifiedLogPage() {
   return (
     <div className="container py-6 lg:py-8 max-w-4xl space-y-6">
       <Button variant="ghost" size="sm" asChild className="-ml-3">
-        <Link href="/maintenance">
-          <ChevronLeft className="h-4 w-4" /> Retour
+        <Link href="/agenda">
+          <ChevronLeft className="h-4 w-4" /> {t('back')}
         </Link>
       </Button>
 
       <PageHeader
-        title="Carnet d'entretien certifié"
-        description="Historique inaltérable, signé cryptographiquement"
+        title={t('title')}
+        description={t('subtitle')}
         action={<ExportLogButton premium={isPremium} />}
       />
 
@@ -63,22 +66,20 @@ export default async function CertifiedLogPage() {
           </div>
           <div className="flex-1 text-sm">
             <div className="font-display font-semibold">
-              Certification d'intégrité technique
+              {t('integrityTitle')}
             </div>
             <p className="text-muted-foreground mt-1 leading-relaxed">
-              Chaque ligne est signée par un hash chaîné (SHA-256) calculé à
-              partir de la précédente. Toute modification est bloquée au niveau
-              base de données par un trigger PostgreSQL et briserait la chaîne.
+              {t('integrityBody')}
             </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {entries[0] && (
                 <Badge variant="success">
-                  <Hash className="h-3 w-3" /> Tête : {shortHash(entries[0].hash)}
+                  <Hash className="h-3 w-3" /> {t('head', { hash: shortHash(entries[0].hash) })}
                 </Badge>
               )}
-              <Badge variant="muted">{entries.length} interventions</Badge>
+              <Badge variant="muted">{t('entries', { count: entries.length })}</Badge>
               <Badge variant="muted">
-                Dernière mise à jour : {formatDate(new Date())}
+                {t('updated', { date: formatDate(new Date(), locale) })}
               </Badge>
             </div>
           </div>
@@ -95,7 +96,7 @@ export default async function CertifiedLogPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="text-xs text-muted-foreground">
-                      {formatDate(m.occurredAt)} · {formatDistance(m.mileageKm)}
+                      {formatDate(m.occurredAt, locale)} · {formatDistance(m.mileageKm, locale)}
                     </div>
                     <div className="font-display font-semibold mt-1">
                       {m.description}
@@ -111,7 +112,7 @@ export default async function CertifiedLogPage() {
                     </div>
                     {m.nextDueMileage && (
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        Prochain : {formatDistance(m.nextDueMileage)}
+                        {t('next', { distance: formatDistance(m.nextDueMileage, locale) })}
                       </div>
                     )}
                   </div>
@@ -122,7 +123,7 @@ export default async function CertifiedLogPage() {
                     <span className="font-mono">{shortHash(m.hash)}</span>
                   </span>
                   <Badge variant="success" className="text-[10px]">
-                    <ShieldCheck className="h-2.5 w-2.5" /> Vérifié
+                    <ShieldCheck className="h-2.5 w-2.5" /> {t('verified')}
                   </Badge>
                 </div>
               </Card>
@@ -134,16 +135,13 @@ export default async function CertifiedLogPage() {
   );
 }
 
-function NotConfigured() {
+async function NotConfigured() {
+  const t = await getTranslations('log');
   return (
     <div className="container py-12">
       <Card className="p-10 max-w-2xl mx-auto text-center">
-        <h1 className="font-display text-xl font-bold">
-          Backend non configuré
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Renseignez vos clés Supabase dans <code className="font-mono">.env.local</code>.
-        </p>
+        <h1 className="font-display text-xl font-bold">{t('notConfigured')}</h1>
+        <p className="text-muted-foreground mt-2">{t('notConfiguredHint')}</p>
       </Card>
     </div>
   );

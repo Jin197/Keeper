@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface EnergyMixProps {
@@ -10,9 +11,10 @@ interface EnergyMixProps {
 }
 
 export function EnergyMix({ thermal, electric, thermalVolume = 0, electricVolume = 0 }: EnergyMixProps) {
+  const t = useTranslations('components');
   const data = [
-    { name: 'Thermique', value: Math.round(thermal * 100), color: '#F59E0B' },
-    { name: 'Électrique', value: Math.round(electric * 100), color: '#2ECC71' },
+    { key: 'thermal', name: t('thermal'), value: Math.round(thermal * 100), color: '#F59E0B' },
+    { key: 'electric', name: t('electric'), value: Math.round(electric * 100), color: '#2ECC71' },
   ];
 
   return (
@@ -47,7 +49,7 @@ export function EnergyMix({ thermal, electric, thermalVolume = 0, electricVolume
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Mix</div>
           <div className="font-mono text-sm font-semibold">{data[1].value}%</div>
-          <div className="text-[10px] text-eco">élec.</div>
+          <div className="text-[10px] text-eco">{t('electricShort')}</div>
         </div>
       </div>
       <ul className="space-y-1.5 text-sm flex-1">
@@ -59,10 +61,10 @@ export function EnergyMix({ thermal, electric, thermalVolume = 0, electricVolume
             </div>
             <div className="font-mono tabular-nums text-right flex items-center gap-1.5">
               <span className="font-semibold">{d.value}%</span>
-              {d.name === 'Thermique' && thermalVolume > 0 && (
+              {d.key === 'thermal' && thermalVolume > 0 && (
                 <span className="text-[10px] text-muted-foreground">({thermalVolume.toFixed(0)} L)</span>
               )}
-              {d.name === 'Électrique' && electricVolume > 0 && (
+              {d.key === 'electric' && electricVolume > 0 && (
                 <span className="text-[10px] text-muted-foreground">({electricVolume.toFixed(0)} kWh)</span>
               )}
             </div>

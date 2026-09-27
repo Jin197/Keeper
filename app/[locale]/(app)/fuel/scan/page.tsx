@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { getVehicles, getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { ScanForm } from './scan-form';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export default async function ScanPage({
 }: {
   searchParams: { vehicle?: string; manual?: string };
 }) {
+  const t = await getTranslations('scan');
   const [vehicles, profile] = await Promise.all([
     isSupabaseConfigured() ? getVehicles() : Promise.resolve([]),
     isSupabaseConfigured() ? getProfile() : Promise.resolve(null),
@@ -26,13 +28,13 @@ export default async function ScanPage({
             <Car className="h-7 w-7" strokeWidth={1.5} />
           </div>
           <h1 className="font-display text-xl font-bold mt-5">
-            Ajoutez un véhicule d'abord
+            {t('addVehicleFirst')}
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Une dépense énergie doit être rattachée à un véhicule.
+            {t('addVehicleFirstHint')}
           </p>
           <Button asChild className="mt-5">
-            <Link href="/vehicles/new">Ajouter un véhicule</Link>
+            <Link href="/vehicles/new">{t('addVehicle')}</Link>
           </Button>
         </Card>
       </div>

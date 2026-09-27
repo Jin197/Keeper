@@ -13,10 +13,7 @@ import type {
   FineStatus,
 } from '@/lib/types';
 import type { ActionResult } from './profile';
-
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
+import { err, errResult } from '@/lib/errors';
 
 const CATEGORY_VALUES = [
   'speeding',
@@ -41,7 +38,7 @@ const STATUS_VALUES = [
 ] as const satisfies readonly FineStatus[];
 
 const addFineSchema = z.object({
-  vehicleId: z.string().uuid('Véhicule invalide'),
+  vehicleId: z.string().uuid('Invalid vehicle'),
   category: z.enum(CATEGORY_VALUES),
   infractionDate: z.string().min(8),
   notificationDate: z.string().min(8),
@@ -60,16 +57,16 @@ export type AddFineInput = z.input<typeof addFineSchema>;
 export async function addFineManuallyAction(
   input: AddFineInput,
 ): Promise<ActionResult & { id?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = addFineSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   // Ownership check on the vehicle: RLS would block the insert anyway, but
@@ -81,7 +78,7 @@ export async function addFineManuallyAction(
     .eq('user_id', user.id)
     .maybeSingle();
   if (!vehicle) {
-    return { error: 'Véhicule introuvable ou hors de votre flotte.' };
+    return errResult('vehicleNotYours');
   }
 
   const { data, error } = await supabase
@@ -106,10 +103,7 @@ export async function addFineManuallyAction(
 
   if (error) {
     if (error.code === '23505') {
-      return {
-        error:
-          'Une amende avec ce numéro d\'avis existe déjà sur votre compte.',
-      };
+      return errResult('duplicateFineNumber');
     }
     return { error: error.message };
   }
@@ -130,16 +124,16 @@ const markPaidSchema = z.object({
 export async function markFineAsPaidAction(
   input: z.input<typeof markPaidSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = markPaidSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const { data: row, error: fetchErr } = await supabase
@@ -156,7 +150,7 @@ export async function markFineAsPaidAction(
   if (fetchErr) return { error: fetchErr.message };
   if (!row) return { error: 'Amende introuvable.' };
   if (row.status === 'cancelled') {
-    return { error: 'Cette amende est annulée, elle ne peut pas être payée.' };
+    return errResult('fineCancelled');
   }
 
   const paidAt = parsed.data.paidAt
@@ -192,20 +186,16 @@ const contestSchema = z.object({
 export async function contestFineAction(
   input: z.input<typeof contestSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = contestSchema.safeParse(input);
   if (!parsed.success) {
-    return {
-      error:
-        parsed.error.errors[0]?.message ??
-        'Une raison de contestation est requise (10 caractères min).',
-    };
+    return errResult('contestReasonRequired');
   }
 
   const { data: row, error: fetchErr } = await supabase
@@ -252,15 +242,15 @@ export async function setRegistrationFormulaNumberAction(
   vehicleId: string,
   formulaNumber: string,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   const cleaned = formulaNumber.trim();
   if (cleaned.length < 6 || cleaned.length > 32) {
-    return { error: 'Numéro de formule invalide.' };
+    return errResult('invalidFormulaNumber');
   }
   const { error } = await supabase
     .from('vehicles')

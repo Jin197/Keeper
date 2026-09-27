@@ -1,19 +1,21 @@
 import { Link } from '@/lib/i18n/routing';
-import Image from 'next/image';
 import { Battery, Fuel, Zap, ArrowUpRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Vehicle } from '@/lib/types';
 import { formatCurrency, formatDistance } from '@/lib/utils';
+import { getTranslations, getLocale } from 'next-intl/server';
 
-const fuelLabel = {
-  thermal: { label: 'Thermique', icon: Fuel, color: 'text-amber-500' },
-  electric: { label: 'Électrique', icon: Zap, color: 'text-eco' },
-  hybrid: { label: 'Hybride', icon: Battery, color: 'text-veloce' },
+const fuelIcon = {
+  thermal: { icon: Fuel, color: 'text-amber-500' },
+  electric: { icon: Zap, color: 'text-eco' },
+  hybrid: { icon: Battery, color: 'text-veloce' },
 };
 
-export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
-  const F = fuelLabel[vehicle.fuelType];
+export async function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
+  const t = await getTranslations('components');
+  const locale = await getLocale();
+  const F = fuelIcon[vehicle.fuelType];
   const Icon = F.icon;
   return (
     <Link href={`/vehicles/${vehicle.id}`} className="group">
@@ -28,7 +30,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           <div className="absolute top-3 left-3 flex gap-2">
             <Badge variant="muted" className={F.color}>
               <Icon className="h-3 w-3" strokeWidth={2} />
-              {F.label}
+              {t(vehicle.fuelType)}
             </Badge>
           </div>
           <ArrowUpRight className="absolute top-3 right-3 h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -40,18 +42,18 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
                 {vehicle.make} {vehicle.model}
               </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                {vehicle.year} · {vehicle.trim} · {vehicle.plate}
+                {[vehicle.year, vehicle.trim, vehicle.plate].filter(Boolean).join(' · ')}
               </div>
             </div>
             <div className="text-right">
               <div className="font-mono text-sm tabular-nums">
-                {formatDistance(vehicle.currentMileageKm)}
+                {formatDistance(vehicle.currentMileageKm, locale)}
               </div>
             </div>
           </div>
           <div className="mt-4 flex items-end justify-between">
             <div>
-              <div className="text-xs text-muted-foreground">Valeur estimée</div>
+              <div className="text-xs text-muted-foreground">{t('estimatedValue')}</div>
               <div className="font-mono font-semibold tabular-nums">
                 {formatCurrency(vehicle.estimatedResaleValue, vehicle.currency)}
               </div>
@@ -65,11 +67,7 @@ export function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
                     : 'muted'
               }
             >
-              {vehicle.resaleTrend === 'up'
-                ? '↗ en hausse'
-                : vehicle.resaleTrend === 'down'
-                  ? '↘ en baisse'
-                  : '→ stable'}
+              {vehicle.resaleTrend === 'up' ? t('trendUp') : vehicle.resaleTrend === 'down' ? t('trendDown') : t('trendStable')}
             </Badge>
           </div>
         </div>

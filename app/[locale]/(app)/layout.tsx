@@ -75,7 +75,7 @@ export default async function AppLayout({
 
   const locale = await getLocale();
   setRequestLocale(locale);
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   // ── MFA mandatory enforcement (post-grace-period) ─────────────────────
   // The user has 14 days from signup to enable TOTP. Past that, any visit

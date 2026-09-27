@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { err } from '@/lib/errors';
 
 const ALLOWED_IMAGE = ['image/jpeg', 'image/png', 'image/webp'];
 const ALLOWED_RECEIPT = [...ALLOWED_IMAGE, 'application/pdf'];
@@ -28,7 +29,7 @@ async function uploadToBucket(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return { error: await err('unauthenticated') };
 
   const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
   const path = `${user.id}/${crypto.randomUUID()}.${ext}`;

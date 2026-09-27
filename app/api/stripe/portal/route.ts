@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createClient } from '@/lib/supabase/server';
 import { env } from '@/lib/env';
+import { err } from '@/lib/errors';
 
 export async function POST() {
   try {
@@ -10,7 +11,7 @@ export async function POST() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
     }
     const { data: profile } = await supabase
       .from('profiles')
@@ -19,7 +20,7 @@ export async function POST() {
       .single();
     if (!profile?.stripe_customer_id) {
       return NextResponse.json(
-        { error: 'Aucun client Stripe associé' },
+        { error: await err('noStripeCustomer') },
         { status: 400 },
       );
     }

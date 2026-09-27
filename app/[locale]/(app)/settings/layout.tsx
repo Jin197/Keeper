@@ -57,7 +57,7 @@ export default function SettingsLayout({
 }) {
   const pathname = usePathname();
   const locale = useLocale();
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const sections = [
     { href: '/settings/profile', label: t.profile, icon: User },

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { auditAuthEvent } from '@/lib/security/audit';
 import { getClientIp, getUserAgent } from '@/lib/security/request-context';
+import { err, errResult } from '@/lib/errors';
 
 export type MfaResult =
   | { ok: true }
@@ -25,7 +26,7 @@ export type MfaEnrollResult =
 const codeSchema = z
   .string()
   .trim()
-  .regex(/^[0-9]{6}$/, 'Code à 6 chiffres requis');
+  .regex(/^[0-9]{6}$/, 'Six-digit code required');
 
 /**
  * Step 1 — start TOTP enrollment. Returns the otpauth URI for QR rendering.
@@ -33,12 +34,12 @@ const codeSchema = z
  * authenticator app to finalize the enrollment.
  */
 export async function enrollMfaAction(): Promise<MfaEnrollResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   // Clean up any half-enrolled (unverified) factors from previous attempts.
   const { data: existing } = await supabase.auth.mfa.listFactors();
@@ -72,7 +73,7 @@ export async function verifyMfaEnrollmentAction(
   factorId: string,
   code: string,
 ): Promise<MfaResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const parsed = codeSchema.safeParse(code);
   if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? 'Code invalide' };
 
@@ -80,7 +81,7 @@ export async function verifyMfaEnrollmentAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   // Supabase requires a challenge before verify even during enrollment.
   const { data: challenge, error: challengeErr } =
@@ -120,7 +121,7 @@ export async function challengeMfaAction(
   factorId: string,
   code: string,
 ): Promise<MfaResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const parsed = codeSchema.safeParse(code);
   if (!parsed.success) return { error: parsed.error.errors[0]?.message ?? 'Code invalide' };
 
@@ -128,7 +129,7 @@ export async function challengeMfaAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const ip = getClientIp();
   const userAgent = getUserAgent();
@@ -168,12 +169,12 @@ export async function challengeMfaAction(
  * is set up). Audit the action so the user can review it in their security log.
  */
 export async function disableMfaAction(factorId: string): Promise<MfaResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const { error } = await supabase.auth.mfa.unenroll({ factorId });
   if (error) return { error: error.message };

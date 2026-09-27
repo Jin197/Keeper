@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isSupabaseConfigured } from '@/lib/env';
+import { err, errResult } from '@/lib/errors';
 
 export interface TrustedDeviceRow {
   id: string;
@@ -66,12 +67,12 @@ export async function listTrustedDevicesAction(): Promise<TrustedDeviceRow[]> {
 export async function revokeTrustedDeviceAction(
   deviceId: string,
 ): Promise<{ ok?: boolean; error?: string }> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   // Use admin client for the UPDATE to keep RLS semantics simple — we check
   // ownership explicitly here.

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { createClient } from '@/lib/supabase/server';
 import { getMaintenanceEntries, getVehicles, getProfile } from '@/lib/data';
+import { err } from '@/lib/errors';
+import { translatorFor, intlTagFor } from '@/lib/i18n/messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,17 +19,17 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
   }
 
   // Premium gate
   const profile = await getProfile();
   if (!profile) {
-    return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 });
+    return NextResponse.json({ error: await err('profileNotFound') }, { status: 404 });
   }
   if (profile.planTier !== 'premium' && profile.planTier !== 'family' && !profile.isTrial) {
     return NextResponse.json(
-      { error: 'Export PDF réservé aux abonnés Premium et Family/Pro' },
+      { error: await err('exportProOnly') },
       { status: 402 },
     );
   }
@@ -37,10 +39,14 @@ export async function GET() {
     getVehicles(),
   ]);
 
+  // The document follows the account's language, like the per-vehicle dossier.
+  const t = translatorFor(profile.locale, 'logPdf');
+  const intl = intlTagFor(profile.locale);
+
   const pdf = await PDFDocument.create();
-  pdf.setTitle(`Carnet d'entretien certifié — ${profile.fullName}`);
+  pdf.setTitle(t('docTitle', { name: profile.fullName }));
   pdf.setAuthor('Velocewealth');
-  pdf.setSubject('Historique inaltérable, signé SHA-256');
+  pdf.setSubject(t('subject'));
   pdf.setProducer('Velocewealth');
   pdf.setCreator('Velocewealth');
   pdf.setCreationDate(new Date());
@@ -62,7 +68,7 @@ export async function GET() {
       font: fontBold,
       color: VELOCE,
     });
-    page.drawText('Carnet d\'entretien certifié', {
+    page.drawText(t('title'), {
       x: margin,
       y: y - 18,
       size: 18,
@@ -70,7 +76,10 @@ export async function GET() {
       color: ANTHRA,
     });
     page.drawText(
-      `Généré le ${new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })} pour ${profile.fullName}`,
+      t('generated', {
+        date: new Date().toLocaleDateString(intl, { day: '2-digit', month: 'long', year: 'numeric' }),
+        name: profile.fullName,
+      }),
       {
         x: margin,
         y: y - 36,
@@ -94,7 +103,7 @@ export async function GET() {
       borderColor: ECO,
       borderWidth: 0.5,
     });
-    page.drawText('Certification d\'intégrité technique', {
+    page.drawText(t('integrity'), {
       x: margin + 12,
       y: y - 18,
       size: 11,
@@ -102,7 +111,7 @@ export async function GET() {
       color: ANTHRA,
     });
     page.drawText(
-      `Hash de tête : ${head?.hash.slice(0, 32) ?? 'aucun'}…`,
+      t('headHash', { hash: head?.hash.slice(0, 32) ?? t('noHash') }),
       {
         x: margin + 12,
         y: y - 34,
@@ -112,7 +121,7 @@ export async function GET() {
       },
     );
     page.drawText(
-      `${entries.length} interventions chaînées par SHA-256.`,
+      t('chained', { count: entries.length }),
       {
         x: margin + 12,
         y: y - 48,
@@ -122,7 +131,7 @@ export async function GET() {
       },
     );
     page.drawText(
-      `Toute modification de l'historique est bloquée au niveau base de données par trigger PostgreSQL.`,
+      t('locked'),
       {
         x: margin + 12,
         y: y - 60,
@@ -141,14 +150,14 @@ export async function GET() {
       y = A4.h - margin;
     }
     const v = vehicles.find((veh) => veh.id === e.vehicleId);
-    const date = new Date(e.occurredAt).toLocaleDateString('fr-FR', {
+    const date = new Date(e.occurredAt).toLocaleDateString(intl, {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     });
 
     page.drawText(date, { x: margin, y, size: 9, font: fontBold, color: VELOCE });
-    page.drawText(`${e.mileageKm.toLocaleString('fr-FR')} km`, {
+    page.drawText(`${e.mileageKm.toLocaleString(intl)} km`, {
       x: margin + 90,
       y,
       size: 9,
@@ -200,7 +209,7 @@ export async function GET() {
   drawIntegrityBox();
 
   if (entries.length === 0) {
-    page.drawText('Aucune intervention enregistrée.', {
+    page.drawText(t('empty'), {
       x: margin,
       y,
       size: 11,
@@ -216,7 +225,7 @@ export async function GET() {
   // Footer on each page
   const pages = pdf.getPages();
   pages.forEach((p, i) => {
-    p.drawText(`Velocewealth — ${i + 1} / ${pages.length}`, {
+    p.drawText(t('page', { current: i + 1, total: pages.length }), {
       x: margin,
       y: 30,
       size: 8,
@@ -236,7 +245,7 @@ export async function GET() {
   return new NextResponse(new Uint8Array(bytes) as unknown as BodyInit, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="carnet-velocewealth-${new Date().toISOString().slice(0, 10)}.pdf"`,
+      'Content-Disposition': `attachment; filename="${t('filename')}-${new Date().toISOString().slice(0, 10)}.pdf"`,
     },
   });
 }

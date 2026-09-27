@@ -17,18 +17,16 @@ import { getStripe, isStripeConfigured } from '@/lib/stripe';
 import { auditAuthEvent } from '@/lib/security/audit';
 import { getClientIp, getUserAgent } from '@/lib/security/request-context';
 import type { ActionResult } from './profile';
-
-const NOT_CONFIGURED_EXPORT = { ok: false, error: 'Backend non configuré. Voir ONBOARDING.md.' };
-const NOT_CONFIGURED_ACTION: ActionResult = { error: 'Backend non configuré. Voir ONBOARDING.md.' };
+import { err, errResult } from '@/lib/errors';
 
 export async function exportUserDataAction(): Promise<{ ok: boolean; data?: any; error?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED_EXPORT;
+  if (!isSupabaseConfigured()) return { ok: false, error: await err('notConfigured') };
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { ok: false, error: 'Non authentifié' };
+  if (!user) return { ok: false, error: await err('unauthenticated') };
 
   try {
     // 1. Get Profile
@@ -88,10 +86,10 @@ export async function exportUserDataAction(): Promise<{ ok: boolean; data?: any;
     };
 
     return { ok: true, data: exportData };
-  } catch (err) {
+  } catch {
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Erreur lors de la récupération des données',
+      error: await err('fetchFailed'),
     };
   }
 }
@@ -166,12 +164,12 @@ export async function getAccountDeletionPreviewAction(): Promise<{
  * developer can still test the flow locally.
  */
 export async function requestAccountDeletionAction(): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED_ACTION;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   // 1 request / 1 minute per user
   const bucket = await rateLimit(
@@ -181,8 +179,7 @@ export async function requestAccountDeletionAction(): Promise<ActionResult> {
   );
   if (!bucket.ok) {
     return {
-      error:
-        'Une demande a déjà été envoyée récemment. Patientez une minute avant de réessayer.',
+      error: await err('tooSoon'),
     };
   }
 
@@ -205,7 +202,7 @@ export async function requestAccountDeletionAction(): Promise<ActionResult> {
     } as never);
 
   if (insertErr) {
-    return { error: 'Impossible de générer la demande. Réessayez.' };
+    return errResult('requestFailed');
   }
 
   // Fetch profile for email personalization. Fall back to user.email if
@@ -301,14 +298,14 @@ export async function deleteAccountAction(
   otp: string,
   confirmationPhrase: string,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED_ACTION;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
 
   // ── 1. Auth context
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   if (!user.email) return { error: 'Compte sans email — contactez le support' };
 
   // ── 2. Confirmation phrase (cheap)

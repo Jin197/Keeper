@@ -4,6 +4,7 @@ import { Link } from '@/lib/i18n/routing';
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   ChevronLeft,
   Sparkles,
@@ -52,6 +53,8 @@ export function ScanForm({
   isManual: boolean;
   isPremium: boolean;
 }) {
+  const t = useTranslations('scan');
+  const locale = useLocale();
   const router = useRouter();
   const [stage, setStage] = useState<Stage>(isManual ? 'review' : 'capture');
   const [pending, startTransition] = useTransition();
@@ -94,9 +97,7 @@ export function ScanForm({
       const res = await fetch('/api/ocr', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(
-          data.error ?? "OCR indisponible — vérifie tes infos ci-dessous.",
-        );
+        toast.error(data.error ?? t('ocrUnavailable'));
         setStage('review');
         return;
       }
@@ -112,13 +113,11 @@ export function ScanForm({
         typeof data.confidence === 'number' ? data.confidence : undefined,
       );
       if (data.confidence != null && data.confidence < 50) {
-        toast.warning(
-          'Ticket peu lisible — vérifie les champs avant d’enregistrer.',
-        );
+        toast.warning(t('lowConfidence'));
       }
       setStage('review');
     } catch {
-      toast.error("Connexion OCR indisponible — saisie manuelle possible.");
+      toast.error(t('ocrOffline'));
       setStage('review');
     }
   };
@@ -139,7 +138,7 @@ export function ScanForm({
         setError(res.error);
         return;
       }
-      toast.success('Dépense enregistrée');
+      toast.success(t('saved'));
       router.push('/fuel');
     });
   };
@@ -148,31 +147,23 @@ export function ScanForm({
     <div className="container py-6 lg:py-8 max-w-2xl space-y-6">
       <Button variant="ghost" size="sm" asChild className="-ml-3">
         <Link href="/fuel">
-          <ChevronLeft className="h-4 w-4" /> Retour
+          <ChevronLeft className="h-4 w-4" /> {t('back')}
         </Link>
       </Button>
 
       <div>
         {!isManual && (
           <Badge variant="premium" className="mb-3">
-            <Sparkles className="h-3 w-3" /> Scan OCR · {isPremium ? 'Premium illimité' : '5/mois en gratuit'}
+            <Sparkles className="h-3 w-3" /> {t('badge', { plan: isPremium ? t('planUnlimited') : t('planFree') })}
           </Badge>
         )}
         <h1 className="font-display text-2xl font-bold tracking-tight">
-          {stage === 'review'
-            ? isManual
-              ? 'Saisie manuelle'
-              : 'Vérifier les données extraites'
-            : 'Scanner un ticket'}
+          {stage === 'review' ? (isManual ? t('titleManual') : t('titleReview')) : t('titleCapture')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {stage === 'capture' &&
-            'Cadrez le ticket dans le viseur. Le moteur OCR pré-remplira le formulaire.'}
-          {stage === 'scanning' && 'Analyse en cours, ne bougez pas…'}
-          {stage === 'review' &&
-            (isManual
-              ? 'Renseignez les informations de votre dépense.'
-              : 'Quelques champs sont pré-remplis. Validez ou ajustez avant d\'enregistrer.')}
+          {stage === 'capture' && t('hintCapture')}
+          {stage === 'scanning' && t('hintScanning')}
+          {stage === 'review' && (isManual ? t('hintManual') : t('hintReview'))}
         </p>
       </div>
 
@@ -203,7 +194,7 @@ export function ScanForm({
               />
               <div className="text-xs">
                 <div className="font-medium text-eco">
-                  Ticket reconnu avec {confidence} % de confiance
+                  {t('recognised', { confidence })}
                 </div>
                 <div className="text-muted-foreground mt-0.5">
                   {prefill.stationName}
@@ -226,7 +217,7 @@ export function ScanForm({
             />
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="vehicleId">Véhicule</Label>
+                <Label htmlFor="vehicleId">{t('vehicle')}</Label>
                 <Select
                   id="vehicleId"
                   name="vehicleId"
@@ -241,21 +232,21 @@ export function ScanForm({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="energyType">Énergie</Label>
+                <Label htmlFor="energyType">{t('energyType')}</Label>
                 <Select
                   id="energyType"
                   name="energyType"
                   defaultValue={prefill?.energyType ?? 'gasoline'}
                 >
-                  <option value="gasoline">Essence</option>
-                  <option value="diesel">Gazole</option>
-                  <option value="electric">Électrique</option>
-                  <option value="e85">E85</option>
-                  <option value="gpl">GPL</option>
+                  <option value="gasoline">{t('gasoline')}</option>
+                  <option value="diesel">{t('diesel')}</option>
+                  <option value="electric">{t('electric')}</option>
+                  <option value="e85">{t('e85')}</option>
+                  <option value="gpl">{t('lpg')}</option>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="quantity">Quantité</Label>
+                <Label htmlFor="quantity">{t('quantity')}</Label>
                 <Input
                   id="quantity"
                   name="quantity"
@@ -268,7 +259,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="unitPrice">Prix unitaire</Label>
+                <Label htmlFor="unitPrice">{t('unitPrice')}</Label>
                 <Input
                   id="unitPrice"
                   name="unitPrice"
@@ -281,7 +272,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="totalPrice">Total</Label>
+                <Label htmlFor="totalPrice">{t('total')}</Label>
                 <Input
                   id="totalPrice"
                   name="totalPrice"
@@ -294,7 +285,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="occurredAt">Date</Label>
+                <Label htmlFor="occurredAt">{t('date')}</Label>
                 <Input
                   id="occurredAt"
                   name="occurredAt"
@@ -304,7 +295,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="stationName">Station</Label>
+                <Label htmlFor="stationName">{t('station')}</Label>
                 <Input
                   id="stationName"
                   name="stationName"
@@ -313,7 +304,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="stationCity">Ville</Label>
+                <Label htmlFor="stationCity">{t('city')}</Label>
                 <Input
                   id="stationCity"
                   name="stationCity"
@@ -321,7 +312,7 @@ export function ScanForm({
                 />
               </div>
               <div className="space-y-1.5 sm:col-span-2">
-                <Label htmlFor="mileageKm">Kilométrage au compteur</Label>
+                <Label htmlFor="mileageKm">{t('odometer')}</Label>
                 <Input
                   id="mileageKm"
                   name="mileageKm"
@@ -335,8 +326,7 @@ export function ScanForm({
                 />
                 {initialVehicle && mileageKm < initialVehicle.currentMileageKm && (
                   <p className="text-[11px] text-amber-500">
-                    Inférieur au dernier kilométrage connu (
-                    {initialVehicle.currentMileageKm.toLocaleString('fr-FR')} km).
+                    {t('belowLast', { km: initialVehicle.currentMileageKm.toLocaleString(locale) })}
                   </p>
                 )}
               </div>
@@ -354,12 +344,12 @@ export function ScanForm({
                 onClick={() => setStage('capture')}
                 disabled={pending}
               >
-                <Hand className="h-4 w-4" /> Recommencer
+                <Hand className="h-4 w-4" /> {t('restart')}
               </Button>
             )}
             <Button type="submit" className="flex-1" disabled={pending}>
               {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {pending ? 'Enregistrement…' : 'Enregistrer'}
+              {pending ? t('saving') : t('save')}
             </Button>
           </div>
         </form>

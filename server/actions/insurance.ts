@@ -6,10 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import type { InsuranceRecord } from '@/lib/types';
 import type { ActionResult } from './profile';
-
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
+import { err, errResult } from '@/lib/errors';
 
 const modeSchema = z.object({
   vehicleId: z.string().uuid(),
@@ -26,16 +23,16 @@ const modeSchema = z.object({
 export async function setInsuranceModeAction(
   input: z.input<typeof modeSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = modeSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const update: { insurance_mode: 'fixed' | 'variable'; insurance_monthly?: number } = {
@@ -69,16 +66,16 @@ const recordSchema = z.object({
 export async function upsertInsuranceRecordAction(
   input: z.input<typeof recordSchema>,
 ): Promise<ActionResult & { id?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = recordSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   // Normalise to first day of the month.
@@ -90,7 +87,7 @@ export async function upsertInsuranceRecordAction(
     .eq('id', parsed.data.vehicleId)
     .eq('user_id', user.id)
     .maybeSingle<{ id: string; currency: string }>();
-  if (!vehicle) return { error: 'Véhicule introuvable' };
+  if (!vehicle) return errResult('vehicleNotFound');
 
   // Look up an existing row for this (vehicle, month) — fall back to insert.
   const { data: existing } = await supabase
@@ -136,12 +133,12 @@ export async function upsertInsuranceRecordAction(
 export async function deleteInsuranceRecordAction(
   recordId: string,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const { error } = await supabase
     .from('insurance_records')

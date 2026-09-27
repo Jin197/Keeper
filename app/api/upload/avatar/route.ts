@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { err } from '@/lib/errors';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB — matches the bucket's `file_size_limit`
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
   }
 
   try {
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     }
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Format non supporté. Utilisez JPEG, PNG ou WebP.' },
+        { error: await err('unsupportedFormat') },
         { status: 400 },
       );
     }

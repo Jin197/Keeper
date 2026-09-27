@@ -293,7 +293,7 @@ type Stage = 'idle' | 'danger' | 'verify' | 'done';
 
 export function DeleteAccountFlow() {
   const rawLocale = useLocale();
-  const t = LABELS[rawLocale as Locale] ?? LABELS.fr;
+  const t = LABELS[rawLocale as Locale] ?? LABELS.en;
   const localeKey = (rawLocale as Locale in LABELS ? rawLocale : 'fr') as Locale;
   const expectedPhrase = CONFIRMATION_PHRASES[localeKey];
 

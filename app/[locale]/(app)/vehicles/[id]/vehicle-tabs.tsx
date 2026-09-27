@@ -1,11 +1,13 @@
 'use client';
 
 import { Link } from '@/lib/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Activity,
   Brain,
   Eye,
   Fuel,
+  MapPin,
   Receipt,
   ShieldAlert,
   Wallet,
@@ -43,6 +45,8 @@ interface Props {
   brakeWear: number;
   lastTireServiceAt: string | null;
   lastBrakeServiceAt: string | null;
+  /** The fines tracker models the French ANTAI system; only offer it where it applies. */
+  showCompliance?: boolean;
 }
 
 export function VehicleTabs({
@@ -57,7 +61,10 @@ export function VehicleTabs({
   brakeWear,
   lastTireServiceAt,
   lastBrakeServiceAt,
+  showCompliance = true,
 }: Props) {
+  const t = useTranslations('vehicle');
+  const locale = useLocale();
   const openFinesCount = fines.filter(
     (f) => f.status === 'unpaid' || f.status === 'contested',
   ).length;
@@ -73,14 +80,14 @@ export function VehicleTabs({
     <Tabs defaultValue="overview">
       <TabsList>
         <TabsTrigger value="overview" icon={<Eye className="h-4 w-4" />}>
-          Aperçu
+          {t('tabOverview')}
         </TabsTrigger>
         <TabsTrigger
           value="energy"
           icon={<Fuel className="h-4 w-4" />}
           accent="eco"
         >
-          Énergie
+          {t('tabEnergy')}
         </TabsTrigger>
         <TabsTrigger
           value="maintenance"
@@ -94,15 +101,16 @@ export function VehicleTabs({
             ) : undefined
           }
         >
-          Maintenance
+          {t('tabMaintenance')}
         </TabsTrigger>
         <TabsTrigger
           value="costs"
           icon={<Wallet className="h-4 w-4" />}
           accent="gold"
         >
-          Coûts
+          {t('tabCosts')}
         </TabsTrigger>
+        {showCompliance && (
         <TabsTrigger
           value="compliance"
           icon={<ShieldAlert className="h-4 w-4" />}
@@ -115,30 +123,31 @@ export function VehicleTabs({
             ) : undefined
           }
         >
-          Conformité
+          {t('tabCompliance')}
         </TabsTrigger>
+        )}
       </TabsList>
 
       {/* ── Aperçu ─────────────────────────────────────────────────── */}
       <TabsContent value="overview">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <KpiCard
-            label="Coût au km"
+            label={t('costPerKm')}
             value={cost.costPerKm.toFixed(3)}
             unit={`${vehicle.currency}/km`}
           />
           <KpiCard
-            label="Énergie 6 mois"
+            label={t('energy6')}
             value={cost.energy.toFixed(0)}
             unit={vehicle.currency}
           />
           <KpiCard
-            label="Entretien 6 mois"
+            label={t('maintenance6')}
             value={cost.maintenance.toFixed(0)}
             unit={vehicle.currency}
           />
           <KpiCard
-            label="Distance 6 mois"
+            label={t('distance6')}
             value={formatDistance(cost.distance).replace(' km', '')}
             unit="km"
           />
@@ -147,7 +156,7 @@ export function VehicleTabs({
         <Card className="p-6 grid sm:grid-cols-2 gap-6">
           <div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Pneumatiques</span>
+              <span className="font-medium">{t('tyres')}</span>
               <span className="font-mono tabular-nums">{tireWear}%</span>
             </div>
             <Progress
@@ -158,13 +167,12 @@ export function VehicleTabs({
               className="mt-2 h-2"
             />
             <div className="text-xs text-muted-foreground mt-1.5">
-              Dernière intervention :{' '}
-              {lastTireServiceAt ? formatDate(lastTireServiceAt) : 'aucune'}
+              {t('lastService', { when: lastTireServiceAt ? formatDate(lastTireServiceAt, locale) : t('never') })}
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Freinage</span>
+              <span className="font-medium">{t('brakes')}</span>
               <span className="font-mono tabular-nums">{brakeWear}%</span>
             </div>
             <Progress
@@ -175,8 +183,7 @@ export function VehicleTabs({
               className="mt-2 h-2"
             />
             <div className="text-xs text-muted-foreground mt-1.5">
-              Dernière intervention :{' '}
-              {lastBrakeServiceAt ? formatDate(lastBrakeServiceAt) : 'aucune'}
+              {t('lastService', { when: lastBrakeServiceAt ? formatDate(lastBrakeServiceAt, locale) : t('never') })}
             </div>
           </div>
         </Card>
@@ -184,7 +191,7 @@ export function VehicleTabs({
         {alerts.length > 0 && (
           <Card className="p-5 border-amber-500/30 bg-amber-500/5 space-y-2">
             <h3 className="text-sm font-semibold text-amber-500">
-              {alerts.length} alerte{alerts.length > 1 ? 's' : ''} en cours
+              {t('alerts', { count: alerts.length })}
             </h3>
             <div className="space-y-2">
               {alerts.map((a) => (
@@ -199,19 +206,25 @@ export function VehicleTabs({
       <TabsContent value="energy">
         <Card className="p-5 flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h3 className="font-semibold text-sm">Dernières dépenses énergie</h3>
+            <h3 className="font-semibold text-sm">{t('recentEnergy')}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {fuel.length === 0
-                ? 'Aucun relevé pour ce véhicule.'
-                : `${fuel.length} relevés au total`}
+              {fuel.length === 0 ? t('noEntries') : t('entriesCount', { count: fuel.length })}
             </p>
           </div>
-          <Button asChild size="sm" className="bg-eco hover:bg-eco/90 text-white">
-            <Link href={`/fuel/scan?vehicle=${vehicle.id}`}>
-              <Fuel className="h-4 w-4" />
-              Ajouter
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link href="/fuel/nearby">
+                <MapPin className="h-4 w-4" />
+                {t('cheapestStation')}
+              </Link>
+            </Button>
+            <Button asChild size="sm" className="bg-eco hover:bg-eco/90 text-white">
+              <Link href={`/fuel/scan?vehicle=${vehicle.id}`}>
+                <Fuel className="h-4 w-4" />
+                {t('add')}
+              </Link>
+            </Button>
+          </div>
         </Card>
         <Card className="divide-y divide-border">
           {fuel.slice(0, 10).map((e) => (
@@ -219,8 +232,7 @@ export function VehicleTabs({
           ))}
           {fuel.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Scannez un ticket pour démarrer le suivi énergétique de ce
-              véhicule.
+              {t('scanToStart')}
             </div>
           )}
         </Card>
@@ -237,10 +249,10 @@ export function VehicleTabs({
             <Link href={`/maintenance/plan/${vehicle.id}`}>
               <div className="flex items-center gap-2 text-amber-500">
                 <Brain className="h-4 w-4" />
-                <span className="font-semibold">Plan IA</span>
+                <span className="font-semibold">{t('planTitle')}</span>
               </div>
               <span className="text-xs text-muted-foreground text-left">
-                Recommandations basées sur l'historique
+                {t('planHint')}
               </span>
             </Link>
           </Button>
@@ -251,10 +263,10 @@ export function VehicleTabs({
             <Link href={`/maintenance/prognostics/${vehicle.id}`}>
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
-                <span className="font-semibold">Diagnostic IA</span>
+                <span className="font-semibold">{t('healthTitle')}</span>
               </div>
               <span className="text-xs text-white/70 text-left">
-                Prognostics OBD-II + durée de vie composants
+                {t('healthHint')}
               </span>
             </Link>
           </Button>
@@ -262,15 +274,14 @@ export function VehicleTabs({
 
         <Card className="p-5 flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h3 className="font-semibold text-sm">Historique d'entretien</h3>
+            <h3 className="font-semibold text-sm">{t('serviceHistory')}</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {maintenance.length} intervention{maintenance.length > 1 ? 's' : ''}{' '}
-              enregistrée{maintenance.length > 1 ? 's' : ''}
+              {t('servicesCount', { count: maintenance.length })}
             </p>
           </div>
           <Button asChild size="sm" variant="outline">
             <Link href={`/maintenance/new?vehicle=${vehicle.id}`}>
-              + Nouvelle intervention
+              {t('newService')}
             </Link>
           </Button>
         </Card>
@@ -289,7 +300,7 @@ export function VehicleTabs({
                   {m.description}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  {m.garageName} · {formatDate(m.occurredAt)} ·{' '}
+                  {m.garageName} · {formatDate(m.occurredAt, locale)} ·{' '}
                   {formatDistance(m.mileageKm)}
                 </div>
               </div>
@@ -300,7 +311,7 @@ export function VehicleTabs({
           ))}
           {maintenance.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Aucun entretien enregistré.
+              {t('noServices')}
             </div>
           )}
         </Card>
@@ -310,22 +321,22 @@ export function VehicleTabs({
       <TabsContent value="costs">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <KpiCard
-            label="Coût total 6 mois"
+            label={t('total6')}
             value={cost.total.toFixed(0)}
             unit={vehicle.currency}
           />
           <KpiCard
-            label="Énergie"
+            label={t('energy')}
             value={cost.energy.toFixed(0)}
             unit={vehicle.currency}
           />
           <KpiCard
-            label="Entretien"
+            label={t('maintenance')}
             value={cost.maintenance.toFixed(0)}
             unit={vehicle.currency}
           />
           <KpiCard
-            label="Assurance"
+            label={t('insurance')}
             value={cost.insurance.toFixed(0)}
             unit={vehicle.currency}
           />
@@ -333,28 +344,26 @@ export function VehicleTabs({
 
         <Card className="p-5 space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="font-semibold text-sm">Assurance</h3>
+            <h3 className="font-semibold text-sm">{t('insurance')}</h3>
             <Badge
               variant={
                 vehicle.insuranceMode === 'variable' ? 'warning' : 'outline'
               }
             >
-              {vehicle.insuranceMode === 'variable' ? 'Variable' : 'Fixe'}
+              {vehicle.insuranceMode === 'variable' ? t('variable') : t('fixed')}
             </Badge>
           </div>
           <dl className="grid grid-cols-2 gap-3 text-sm">
             {vehicle.insuranceProvider && (
               <div>
-                <dt className="text-xs text-muted-foreground">Assureur</dt>
+                <dt className="text-xs text-muted-foreground">{t('insurer')}</dt>
                 <dd className="font-medium">{vehicle.insuranceProvider}</dd>
               </div>
             )}
             {insuranceMonthlyAvg != null && (
               <div>
                 <dt className="text-xs text-muted-foreground">
-                  {vehicle.insuranceMode === 'variable'
-                    ? 'Moyenne mensuelle'
-                    : 'Cotisation mensuelle'}
+                  {vehicle.insuranceMode === 'variable' ? t('monthlyAverage') : t('monthlyPremium')}
                 </dt>
                 <dd className="font-mono tabular-nums">
                   {formatCurrency(insuranceMonthlyAvg, vehicle.currency)}
@@ -364,33 +373,32 @@ export function VehicleTabs({
             {vehicle.insuranceMode === 'variable' && (
               <div className="col-span-2">
                 <dt className="text-xs text-muted-foreground">
-                  Mois renseignés
+                  {t('monthsLogged')}
                 </dt>
                 <dd className="font-medium">
-                  {insuranceRecords.length}{' '}
-                  {insuranceRecords.length > 1 ? 'cotisations' : 'cotisation'}
+                  {t('premiums', { count: insuranceRecords.length })}
                 </dd>
               </div>
             )}
           </dl>
           <Button asChild size="sm" variant="outline" className="w-fit">
             <Link href={`/vehicles/${vehicle.id}/edit`}>
-              Gérer les cotisations
+              {t('manageInsurance')}
             </Link>
           </Button>
         </Card>
 
         <Card className="p-5 space-y-3">
-          <h3 className="font-semibold text-sm">Valeur du véhicule</h3>
+          <h3 className="font-semibold text-sm">{t('vehicleValue')}</h3>
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-xs text-muted-foreground">Prix d'achat</dt>
+              <dt className="text-xs text-muted-foreground">{t('purchasePrice')}</dt>
               <dd className="font-mono tabular-nums">
                 {formatCurrency(vehicle.purchasePrice, vehicle.currency)}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Valeur estimée</dt>
+              <dt className="text-xs text-muted-foreground">{t('estimatedValue')}</dt>
               <dd className="font-mono tabular-nums">
                 {formatCurrency(
                   vehicle.estimatedResaleValue,
@@ -400,7 +408,7 @@ export function VehicleTabs({
             </div>
             {vehicle.purchasePrice > 0 && (
               <div className="col-span-2">
-                <dt className="text-xs text-muted-foreground">Décote</dt>
+                <dt className="text-xs text-muted-foreground">{t('depreciation')}</dt>
                 <dd className="font-mono tabular-nums text-destructive">
                   −
                   {formatCurrency(
@@ -422,6 +430,7 @@ export function VehicleTabs({
       </TabsContent>
 
       {/* ── Conformité ─────────────────────────────────────────────── */}
+      {showCompliance && (
       <TabsContent value="compliance">
         <FineTrackerPanel
           vehicleId={vehicle.id}
@@ -430,6 +439,7 @@ export function VehicleTabs({
           currency={vehicle.currency}
         />
       </TabsContent>
+      )}
     </Tabs>
   );
 }

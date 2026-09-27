@@ -5,26 +5,23 @@ import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { fuelEntryInputSchema } from '@/lib/validators/fuel';
 import type { ActionResult } from './profile';
-
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
+import { err, errResult } from '@/lib/errors';
 
 export async function addFuelEntryAction(
   formData: FormData,
 ): Promise<ActionResult & { id?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = fuelEntryInputSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
   const f = parsed.data;
 
@@ -35,7 +32,7 @@ export async function addFuelEntryAction(
     .eq('id', f.vehicleId)
     .eq('user_id', user.id)
     .single();
-  if (!vehicle) return { error: 'Véhicule introuvable' };
+  if (!vehicle) return errResult('vehicleNotFound');
 
   const { data, error } = await supabase
     .from('fuel_entries')
@@ -65,12 +62,12 @@ export async function addFuelEntryAction(
 }
 
 export async function deleteFuelEntryAction(id: string): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   const { error } = await supabase
     .from('fuel_entries')
     .delete()

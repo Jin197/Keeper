@@ -172,7 +172,7 @@ const TRANSLATIONS = {
 
 export default function SecurityPage() {
   const locale = useLocale();
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const [isExporting, startExport] = useTransition();
 

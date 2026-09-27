@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Camera,
   Upload,
@@ -32,6 +33,7 @@ interface OcrScannerProps {
  * placeholder data.
  */
 export function OcrScanner({ onCapture, onUpload, scanning }: OcrScannerProps) {
+  const t = useTranslations('scan');
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [cameraStatus, setCameraStatus] = useState<
@@ -154,28 +156,27 @@ export function OcrScanner({ onCapture, onUpload, scanning }: OcrScannerProps) {
           {cameraStatus === 'requesting' ? (
             <div className="flex flex-col items-center gap-2">
               <Camera className="h-12 w-12 animate-pulse" strokeWidth={0.75} />
-              <span className="text-xs">Démarrage de la caméra…</span>
+              <span className="text-xs">{t('cameraStarting')}</span>
             </div>
           ) : cameraStatus === 'denied' ? (
             <div className="flex flex-col items-center gap-3 px-6 text-center">
               <CameraOff className="h-12 w-12 text-amber-400" strokeWidth={1} />
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  Caméra indisponible
+                  {t('cameraUnavailable')}
                 </div>
                 <p className="text-xs mt-1 max-w-[16rem]">
-                  Autorisez l'accès dans votre navigateur ou importez une
-                  photo du ticket depuis votre galerie.
+                  {t('cameraHint')}
                 </p>
               </div>
               <Button variant="outline" size="sm" onClick={handleRetry}>
-                <RotateCcw className="h-3.5 w-3.5" /> Réessayer
+                <RotateCcw className="h-3.5 w-3.5" /> {t('retry')}
               </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
               <Camera className="h-16 w-16" strokeWidth={0.75} />
-              <span className="text-xs">Caméra non supportée</span>
+              <span className="text-xs">{t('cameraUnsupported')}</span>
             </div>
           )}
         </div>
@@ -205,7 +206,7 @@ export function OcrScanner({ onCapture, onUpload, scanning }: OcrScannerProps) {
       {scanning && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-pill bg-eco/20 border border-eco/30 px-3 py-1.5 text-eco text-xs font-medium backdrop-blur">
           <ScanLine className="h-3.5 w-3.5 animate-pulse" />
-          Analyse OCR…
+          {t('analysing')}
         </div>
       )}
 
@@ -218,7 +219,7 @@ export function OcrScanner({ onCapture, onUpload, scanning }: OcrScannerProps) {
           onClick={handleCapture}
           disabled={scanning || cameraStatus !== 'live'}
         >
-          <Camera className="h-4 w-4" /> Capturer
+          <Camera className="h-4 w-4" /> {t('capture')}
         </Button>
         <Button
           variant="ghost"
@@ -226,7 +227,7 @@ export function OcrScanner({ onCapture, onUpload, scanning }: OcrScannerProps) {
           onClick={onUpload}
           disabled={scanning}
           className="bg-white/10 backdrop-blur"
-          title="Importer depuis la galerie"
+          title={t('importGallery')}
         >
           <Upload className="h-4 w-4" />
         </Button>

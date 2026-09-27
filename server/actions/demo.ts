@@ -5,24 +5,25 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import type { ActionResult } from './profile';
+import { err, errResult } from '@/lib/errors';
+import { getLocale } from 'next-intl/server';
+import { translatorFor } from '@/lib/i18n/messages';
 
 function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
-
 export async function generateDemoDataAction(): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
 
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
+
+  const tDemo = translatorFor(await getLocale().catch(() => 'en'), 'demoData');
 
   try {
     // 1. Get user currency
@@ -41,7 +42,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       .limit(1);
 
     if (existingVehicles && existingVehicles.length > 0) {
-      return { error: 'Vous avez déjà des véhicules actifs.' };
+      return errResult('alreadyHasVehicles');
     }
 
     const now = new Date();
@@ -213,7 +214,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       vehicleId: v2.id,
       occurredAt: pM1Date,
       category: 'tires',
-      description: 'Changement des pneus arrière (Michelin Pilot Sport)',
+      description: tDemo('tyresRear'),
       cost: 580,
       currency,
       garageName: 'Station Service Porsche Lyon',
@@ -228,7 +229,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       user_id: user.id,
       occurred_at: pM1Date,
       category: 'tires',
-      description: 'Changement des pneus arrière (Michelin Pilot Sport)',
+      description: tDemo('tyresRear'),
       cost: 580,
       currency,
       garage_name: 'Station Service Porsche Lyon',
@@ -245,7 +246,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       vehicleId: v2.id,
       occurredAt: pM2Date,
       category: 'oil',
-      description: 'Vidange moteur & filtre à huile synthétique',
+      description: tDemo('oilChange'),
       cost: 220,
       currency,
       garageName: 'Station Service Porsche Lyon',
@@ -260,7 +261,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       user_id: user.id,
       occurred_at: pM2Date,
       category: 'oil',
-      description: 'Vidange moteur & filtre à huile synthétique',
+      description: tDemo('oilChange'),
       cost: 220,
       currency,
       garage_name: 'Station Service Porsche Lyon',
@@ -278,7 +279,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       severity: 'info',
       predicted_mileage: 60000,
       predicted_at: subtractMonthsDateTime(-6), // 6 months from now
-      message: 'Renouvellement du filtre à charbon actif recommandé dans 18 000 km.',
+      message: tDemo('alertFilter'),
     });
 
     // Porsche brakes check due soon
@@ -289,7 +290,7 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
       severity: 'warning',
       predicted_mileage: 190000,
       predicted_at: subtractMonthsDateTime(-3), // 3 months from now
-      message: 'Usure prononcée des plaquettes avant estimée sous 5 000 km.',
+      message: tDemo('alertBrakes'),
     });
 
     revalidatePath('/dashboard');
@@ -300,6 +301,6 @@ export async function generateDemoDataAction(): Promise<ActionResult> {
     return { ok: true };
   } catch (error: any) {
     console.error('Demo generation error:', error);
-    return { error: error.message || 'Une erreur est survenue lors de la génération du mode démo.' };
+    return errResult('demoFailed');
   }
 }

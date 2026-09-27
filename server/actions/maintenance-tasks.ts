@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isSupabaseConfigured } from '@/lib/env';
 import { getInstructions } from '@/lib/maintenance/instructions';
+import { getLocale } from 'next-intl/server';
 import type {
   MaintenanceTaskRecord,
   MaintenanceCategory,
@@ -14,10 +15,7 @@ import type {
   MaintenanceTaskInstructions,
 } from '@/lib/types';
 import type { ActionResult } from './profile';
-
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
+import { err, errResult } from '@/lib/errors';
 
 const CATEGORY_VALUES = [
   'oil',
@@ -26,6 +24,9 @@ const CATEGORY_VALUES = [
   'filter',
   'battery',
   'inspection',
+  'belt',
+  'fluid',
+  'gearbox',
   'other',
 ] as const satisfies readonly MaintenanceCategory[];
 
@@ -54,16 +55,16 @@ export type UpsertTaskInput = z.input<typeof upsertFromPlanSchema>;
 export async function upsertTaskFromPlanAction(
   input: UpsertTaskInput,
 ): Promise<ActionResult & { id?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = upsertFromPlanSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
   const data = parsed.data;
 
@@ -74,9 +75,10 @@ export async function upsertTaskFromPlanAction(
     .eq('id', data.vehicleId)
     .eq('user_id', user.id)
     .maybeSingle();
-  if (!vehicle) return { error: 'Véhicule introuvable' };
+  if (!vehicle) return errResult('vehicleNotFound');
 
-  const instructions = getInstructions(data.category);
+  const locale = await getLocale().catch(() => 'en');
+  const instructions = getInstructions(data.category, locale === 'fr' ? 'fr' : 'en');
 
   // Look for an open task on this (vehicle, category) — RLS will enforce ownership
   const { data: existing } = await supabase
@@ -149,16 +151,16 @@ const scheduleSchema = z.object({
 export async function scheduleTaskAction(
   input: z.input<typeof scheduleSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = scheduleSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const { data: row, error: fetchErr } = await supabase
@@ -198,12 +200,12 @@ const simpleIdSchema = z.object({ taskId: z.string().uuid() });
 export async function dismissTaskAction(
   input: z.input<typeof simpleIdSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = simpleIdSchema.safeParse(input);
   if (!parsed.success) return { error: 'ID invalide' };
@@ -228,16 +230,16 @@ const snoozeSchema = z.object({
 export async function snoozeTaskAction(
   input: z.input<typeof snoozeSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = snoozeSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
   const { error } = await supabase
     .from('maintenance_tasks')
@@ -270,16 +272,16 @@ const completeSchema = z.object({
 export async function completeTaskAction(
   input: z.input<typeof completeSchema>,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = completeSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const { data: task, error: fetchErr } = await supabase

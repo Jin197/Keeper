@@ -53,7 +53,7 @@ export function Sidebar() {
   const currentUser = useUser();
   const t = useTranslations('nav');
   const locale = useLocale();
-  const tSidebar = SIDEBAR_TRANSLATIONS[locale as keyof typeof SIDEBAR_TRANSLATIONS] || SIDEBAR_TRANSLATIONS.fr;
+  const tSidebar = SIDEBAR_TRANSLATIONS[locale as keyof typeof SIDEBAR_TRANSLATIONS] || SIDEBAR_TRANSLATIONS.en;
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loggingOut, startLogout] = useTransition();
   // Hidden form whose POST submit lets the browser follow the 303 redirect

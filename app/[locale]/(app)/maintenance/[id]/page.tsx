@@ -14,18 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { getMaintenanceEntries, getVehicles } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { formatCurrency, formatDate, formatDistance } from '@/lib/utils';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
-
-const categoryLabels: Record<string, string> = {
-  oil: 'Vidange',
-  tires: 'Pneumatiques',
-  brakes: 'Freinage',
-  filter: 'Filtres',
-  battery: 'Batterie',
-  inspection: 'Contrôle',
-  other: 'Autre',
-};
 
 export default async function MaintenanceDetailPage({
   params,
@@ -33,6 +24,7 @@ export default async function MaintenanceDetailPage({
   params: { id: string };
 }) {
   if (!isSupabaseConfigured()) return notFound();
+  const [t, tCat, locale] = await Promise.all([getTranslations('maintenanceDetail'), getTranslations('categories'), getLocale()]);
   const [entries, vehicles] = await Promise.all([
     getMaintenanceEntries(),
     getVehicles(),
@@ -44,16 +36,16 @@ export default async function MaintenanceDetailPage({
   return (
     <div className="container py-6 lg:py-8 max-w-2xl space-y-6">
       <Button variant="ghost" size="sm" asChild className="-ml-3">
-        <Link href="/maintenance">
-          <ChevronLeft className="h-4 w-4" /> Retour
+        <Link href={vehicle ? `/vehicles/${vehicle.id}` : '/agenda'}>
+          <ChevronLeft className="h-4 w-4" /> {t('back')}
         </Link>
       </Button>
 
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Badge variant="default">{categoryLabels[entry.category]}</Badge>
+          <Badge variant="default">{tCat(entry.category)}</Badge>
           <Badge variant="success">
-            <ShieldCheck className="h-3 w-3" /> Carnet certifié
+            <ShieldCheck className="h-3 w-3" /> {t('certified')}
           </Badge>
         </div>
         <h1 className="font-display text-2xl font-bold tracking-tight">
@@ -66,7 +58,7 @@ export default async function MaintenanceDetailPage({
 
       <Card className="p-6">
         <div className="text-xs uppercase tracking-wider text-muted-foreground">
-          Coût total
+          {t('totalCost')}
         </div>
         <div className="font-mono text-3xl font-bold tabular-nums mt-1">
           {formatCurrency(entry.cost, entry.currency)}
@@ -77,43 +69,43 @@ export default async function MaintenanceDetailPage({
         <div className="grid sm:grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Calendar className="h-3 w-3" /> Date
+              <Calendar className="h-3 w-3" /> {t('date')}
             </div>
             <div className="font-medium mt-1">
-              {formatDate(entry.occurredAt)}
+              {formatDate(entry.occurredAt, locale)}
             </div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Gauge className="h-3 w-3" /> Kilométrage
+              <Gauge className="h-3 w-3" /> {t('mileage')}
             </div>
             <div className="font-mono font-medium mt-1 tabular-nums">
-              {formatDistance(entry.mileageKm)}
+              {formatDistance(entry.mileageKm, locale)}
             </div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <MapPin className="h-3 w-3" /> Garage
+              <MapPin className="h-3 w-3" /> {t('garage')}
             </div>
             <div className="font-medium mt-1">{entry.garageName}</div>
           </div>
           {entry.nextDueDate && (
             <div>
               <div className="text-xs text-muted-foreground">
-                Prochaine échéance
+                {t('nextDue')}
               </div>
               <div className="font-medium mt-1">
-                {formatDate(entry.nextDueDate)}
+                {formatDate(entry.nextDueDate, locale)}
               </div>
             </div>
           )}
           {entry.nextDueMileage && (
             <div>
               <div className="text-xs text-muted-foreground">
-                Prochain kilométrage
+                {t('nextMileage')}
               </div>
               <div className="font-mono font-medium mt-1 tabular-nums">
-                {formatDistance(entry.nextDueMileage)}
+                {formatDistance(entry.nextDueMileage, locale)}
               </div>
             </div>
           )}
@@ -124,11 +116,11 @@ export default async function MaintenanceDetailPage({
         <Hash className="h-4 w-4 text-eco shrink-0" strokeWidth={1.5} />
         <div className="min-w-0 flex-1">
           <div className="text-muted-foreground">
-            Hash d'intégrité (SHA-256)
+            {t('hash')}
           </div>
           <div className="font-mono truncate">{entry.hash}</div>
         </div>
-        <Badge variant="success">Vérifié</Badge>
+        <Badge variant="success">{t('verified')}</Badge>
       </Card>
     </div>
   );

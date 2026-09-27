@@ -22,6 +22,7 @@ import { BackLink } from '@/components/layout/back-link';
 import { getAllUserInsuranceRecords } from '@/server/actions/insurance';
 import { isSupabaseConfigured } from '@/lib/env';
 import { formatCurrency, formatDistance } from '@/lib/utils';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,9 @@ export const dynamic = 'force-dynamic';
  * "charts" half of the previous Dashboard.
  */
 export default async function InsightsPage() {
+  const t = await getTranslations('insights');
+  const tTip = await getTranslations('infoTip');
+  const locale = await getLocale();
   if (!isSupabaseConfigured()) notFound();
   const [{ profile, vehicles, fuel, maintenance }, insuranceRecords] =
     await Promise.all([getDashboardData(), getAllUserInsuranceRecords()]);
@@ -39,11 +43,9 @@ export default async function InsightsPage() {
         <Card className="p-10 max-w-2xl mx-auto text-center">
           <Activity className="h-10 w-10 text-muted-foreground/40 mx-auto" />
           <h1 className="font-display text-xl font-semibold mt-4">
-            Pas encore de données
+            {t('emptyTitle')}
           </h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Ajoutez un véhicule et quelques relevés pour voir vos analyses ici.
-          </p>
+          <p className="text-sm text-muted-foreground mt-2">{t('emptyHint')}</p>
         </Card>
       </div>
     );
@@ -56,54 +58,51 @@ export default async function InsightsPage() {
   const totalDistance = breakdowns.reduce((s, b) => s + b.distance, 0);
   const fleetCostPerKm = totalDistance > 0 ? totalSpend / totalDistance : 0;
   const mix = energyMix(fuel);
-  const monthly = monthlySpend(fuel, maintenance, 6, vehicles);
+  const monthly = monthlySpend(fuel, maintenance, 6, vehicles, locale);
   const eco = computeEcoScore(fuel);
 
   return (
     <div className="container py-6 lg:py-8 space-y-8">
-      <BackLink href="/dashboard" label="Tableau de bord" />
-      <PageHeader
-        title="Insights"
-        description="Comprenez votre coût et votre impact, agrégés sur toute la flotte."
-      />
+      <BackLink href="/dashboard" label={t('back')} />
+      <PageHeader title={t('title')} description={t('subtitle')} />
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
-          label="Coût au km"
+          label={t('costPerKm')}
           value={fleetCostPerKm.toFixed(3)}
           unit={`${profile.currency}/km`}
           icon={<Gauge className="h-4 w-4" strokeWidth={1.5} />}
+          explain={tTip('costPerKm')}
         />
         <KpiCard
-          label="Dépenses 6 mois"
+          label={t('spend6')}
           value={totalSpend.toFixed(0)}
           unit={profile.currency}
           icon={<Wallet className="h-4 w-4" strokeWidth={1.5} />}
         />
         <KpiCard
-          label="Distance"
-          value={formatDistance(totalDistance).replace(' km', '')}
+          label={t('distance')}
+          value={formatDistance(totalDistance, locale).replace(' km', '')}
           unit="km"
           icon={<Activity className="h-4 w-4" strokeWidth={1.5} />}
         />
         <KpiCard
-          label="Score éco"
+          label={t('ecoScore')}
           value={eco ? String(eco.score) : '—'}
           unit="/100"
           variant={eco && eco.tier === 'excellent' ? 'premium' : 'default'}
           icon={<Leaf className="h-4 w-4" strokeWidth={1.5} />}
           hint={
-            eco
-              ? `${eco.electricSharePct} % d'énergie électrique · ${eco.sampleSize} relevés`
-              : "Aucun relevé d'énergie — score indisponible."
+            eco ? t('ecoHint', { pct: eco.electricSharePct, count: eco.sampleSize }) : t('ecoNone')
           }
+          explain={tTip('ecoScore')}
         />
       </div>
 
       <Section
-        title="Dépenses mensuelles"
-        description="Énergie + entretien + assurance sur les 6 derniers mois"
+        title={t('monthlyTitle')}
+        description={t('monthlyHint')}
       >
         <Card className="p-5">
           <SpendChart data={monthly} currency={profile.currency} />
@@ -111,8 +110,8 @@ export default async function InsightsPage() {
       </Section>
 
       <Section
-        title="Mix énergétique"
-        description="Part électrique vs thermique sur votre flotte"
+        title={t('mixTitle')}
+        description={t('mixHint')}
       >
         <Card className="p-5">
           <EnergyMix
@@ -125,8 +124,8 @@ export default async function InsightsPage() {
       </Section>
 
       <Section
-        title="Comparaison véhicule par véhicule"
-        description="Qui vous coûte le plus au km ?"
+        title={t('compareTitle')}
+        description={t('compareHint')}
       >
         <Card className="p-5">
           <ul className="space-y-2">
@@ -143,7 +142,7 @@ export default async function InsightsPage() {
                       {row.vehicle.make} {row.vehicle.model}
                     </div>
                     <div className="text-[11px] text-muted-foreground">
-                      {row.vehicle.plate} · {formatDistance(row.distance)} parcourus
+                      {row.vehicle.plate} · {t('driven', { distance: formatDistance(row.distance, locale) })}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
@@ -151,7 +150,7 @@ export default async function InsightsPage() {
                       {row.costPerKm.toFixed(3)} {profile.currency}/km
                     </div>
                     <div className="text-[10px] text-muted-foreground">
-                      {formatCurrency(row.total, profile.currency)} cumulés
+                      {t('cumulative', { amount: formatCurrency(row.total, profile.currency) })}
                     </div>
                   </div>
                 </li>
@@ -162,8 +161,7 @@ export default async function InsightsPage() {
 
       <p className="text-[11px] text-muted-foreground italic flex items-center gap-1.5">
         <TrendingUp className="h-3 w-3" />
-        Les calculs prennent en compte les cotisations d'assurance réelles
-        (mode fixe ou variable selon le réglage de chaque véhicule).
+        {t('footnote')}
       </p>
     </div>
   );

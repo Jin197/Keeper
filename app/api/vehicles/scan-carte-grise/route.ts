@@ -8,6 +8,7 @@ import {
   type CarteGriseExtract,
 } from '@/lib/vehicle-lookup/carte-grise-parser';
 import { setCachedLookup } from '@/lib/vehicle-lookup/cache';
+import { err } from '@/lib/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,13 +43,13 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
     }
 
     const rl = await rateLimit(`cg-scan:${user.id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW);
     if (!rl.ok) {
       return NextResponse.json(
-        { error: 'Trop de scans. Réessayez dans une minute.' },
+        { error: await err('tooManyScans') },
         { status: 429 },
       );
     }
@@ -77,7 +78,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Texte illisible. Réessayez avec une photo plus nette ou saisissez les informations manuellement.",
+            await err('unreadableText'),
         },
         { status: 422 },
       );
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Carte grise non reconnue avec certitude. Vérifiez le cadrage ou saisissez manuellement.",
+            await err('docNotRecognised'),
           extract,
           fallback: 'manual-entry',
         },

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -16,6 +17,7 @@ interface SpendChartProps {
 }
 
 export function SpendChart({ data, currency = 'EUR' }: SpendChartProps) {
+  const t = useTranslations('insights');
   const hasInsurance = data.some((d) => d.insurance !== undefined && d.insurance > 0);
 
   return (
@@ -70,7 +72,7 @@ export function SpendChart({ data, currency = 'EUR' }: SpendChartProps) {
               stroke="#C5A059"
               fill="url(#insurance)"
               strokeWidth={2}
-              name="Assurance"
+              name={t('chartInsurance')}
             />
           )}
           <Area
@@ -80,7 +82,7 @@ export function SpendChart({ data, currency = 'EUR' }: SpendChartProps) {
             stroke="#007AFF"
             fill="url(#energy)"
             strokeWidth={2}
-            name="Énergie"
+            name={t('chartEnergy')}
           />
           <Area
             type="monotone"
@@ -89,7 +91,7 @@ export function SpendChart({ data, currency = 'EUR' }: SpendChartProps) {
             stroke="#2ECC71"
             fill="url(#maint)"
             strokeWidth={2}
-            name="Entretien"
+            name={t('chartMaintenance')}
           />
         </AreaChart>
       </ResponsiveContainer>

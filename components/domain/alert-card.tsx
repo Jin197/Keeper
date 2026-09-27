@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations, useLocale } from 'next-intl';
 import { AlertTriangle, Info, AlertCircle, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { MaintenanceAlert } from '@/lib/types';
@@ -24,16 +27,22 @@ const severityMap = {
   },
 };
 
-const labels: Record<string, string> = {
-  tires: 'Pneumatiques',
-  brakes: 'Freinage',
-  oil: 'Vidange',
-  filter: 'Filtres',
-  battery: 'Batterie',
-  inspection: 'Contrôle',
-};
+const labelKey = {
+  tires: 'alertTires',
+  brakes: 'alertBrakes',
+  oil: 'alertOil',
+  filter: 'alertFilter',
+  battery: 'alertBattery',
+  inspection: 'alertInspection',
+  belt: 'alertBelt',
+  fluid: 'alertFluid',
+  gearbox: 'alertGearbox',
+  other: 'alertOther',
+} as const;
 
 export function AlertCard({ alert }: { alert: MaintenanceAlert }) {
+  const t = useTranslations('components');
+  const locale = useLocale();
   const { Icon, color, bg, border } = severityMap[alert.severity];
   return (
     <Card className={cn('p-4 border', border)}>
@@ -44,15 +53,15 @@ export function AlertCard({ alert }: { alert: MaintenanceAlert }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-xs">
             <span className={cn('font-medium uppercase tracking-wider', color)}>
-              {labels[alert.category]}
+              {t(labelKey[alert.category])}
             </span>
             {alert.remainingKm !== undefined && alert.remainingKm > 0 && (
               <span className="text-muted-foreground">
-                · dans {formatDistance(alert.remainingKm)}
+                {t('alertIn', { distance: formatDistance(alert.remainingKm, locale) })}
               </span>
             )}
             {alert.remainingKm === 0 && (
-              <span className="text-destructive font-medium">· dépassé</span>
+              <span className="text-destructive font-medium">{t('alertOverdue')}</span>
             )}
           </div>
           <div className="text-sm mt-1">{alert.message}</div>

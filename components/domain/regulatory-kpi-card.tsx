@@ -7,6 +7,7 @@ import {
   DEFAULT_LICENCE_POINTS,
 } from '@/lib/computations/fines';
 import type { TrafficFine } from '@/lib/types';
+import { getTranslations } from 'next-intl/server';
 
 interface Props {
   fines: TrafficFine[];
@@ -19,12 +20,13 @@ interface Props {
  * Compact fleet-level summary of the regulatory impact on the user's TCO.
  * Designed to slot into the dashboard as a single-row card.
  */
-export function RegulatoryKpiCard({
+export async function RegulatoryKpiCard({
   fines,
   totalFleetSpend,
   currency = 'EUR',
   hrefFirstVehicle,
 }: Props) {
+  const t = await getTranslations('components');
   const metrics = calculateFineMetrics(fines, totalFleetSpend);
   const nextUrgent = metrics.urgent[0];
   const pointsLow = metrics.pointsLeft <= 4;
@@ -37,12 +39,9 @@ export function RegulatoryKpiCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Indice réglementaire
+            {t('regTitle')}
           </div>
-          <div className="text-sm font-medium mt-1">
-            Aucune amende enregistrée — votre solde de points est intact (
-            {DEFAULT_LICENCE_POINTS}/12).
-          </div>
+          <div className="text-sm font-medium mt-1">{t('regNoFines', { points: DEFAULT_LICENCE_POINTS })}</div>
         </div>
       </Card>
     );
@@ -53,14 +52,14 @@ export function RegulatoryKpiCard({
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <Scale className="h-3.5 w-3.5 text-veloce" />
-          Indice réglementaire
+          {t('regTitle')}
         </div>
         {hrefFirstVehicle && (
           <Link
             href={hrefFirstVehicle}
             className="text-xs text-veloce hover:underline flex items-center gap-1"
           >
-            Voir l'historique
+            {t('regHistory')}
             <ChevronRight className="h-3 w-3" />
           </Link>
         )}
@@ -68,23 +67,19 @@ export function RegulatoryKpiCard({
 
       <div className="grid grid-cols-3 gap-4">
         <Metric
-          label="Solde points"
+          label={t('regPoints')}
           value={`${metrics.pointsLeft}`}
           suffix="/ 12"
           tone={pointsLow ? 'danger' : 'default'}
         />
         <Metric
-          label="Impayé"
+          label={t('regUnpaid')}
           value={formatCurrency(metrics.outstanding.total, currency)}
-          suffix={
-            metrics.outstanding.count > 0
-              ? `· ${metrics.outstanding.count} amende${metrics.outstanding.count > 1 ? 's' : ''}`
-              : undefined
-          }
+          suffix={metrics.outstanding.count > 0 ? t('regFines', { count: metrics.outstanding.count }) : undefined}
           tone={metrics.outstanding.total > 0 ? 'warning' : 'default'}
         />
         <Metric
-          label="Impact TCO"
+          label={t('regImpact')}
           value={`${metrics.impactRatioPct}`}
           suffix="%"
           tone={metrics.impactRatioPct > 5 ? 'warning' : 'default'}
@@ -95,12 +90,7 @@ export function RegulatoryKpiCard({
         <div className="mt-4 flex items-center gap-2 rounded-card bg-destructive/10 border border-destructive/20 px-3 py-2 text-xs text-destructive">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           <span>
-            <strong className="font-semibold">Urgent :</strong> une amende
-            passe au palier supérieur dans{' '}
-            <span className="font-mono font-semibold">
-              {nextUrgent.daysLeft}j
-            </span>
-            .
+            <strong className="font-semibold">{t('regUrgent')}</strong> {t('regUrgentBody', { days: nextUrgent.daysLeft })}
           </span>
         </div>
       )}

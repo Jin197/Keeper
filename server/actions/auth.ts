@@ -29,6 +29,7 @@ import {
   strongPasswordSchema,
   loginPasswordSchema,
 } from '@/lib/validators/password';
+import { err, errResult } from '@/lib/errors';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 const LOCALE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
@@ -47,9 +48,9 @@ const MAX_LOGIN_FAILURES_PER_IP = 10;
 // branches so the side-channel disappears.
 const FAILED_LOGIN_DELAY_MS = 800;
 
-const GENERIC_LOGIN_ERROR = 'Email ou mot de passe incorrect';
-const RATE_LIMITED_ERROR =
-  'Trop de tentatives. Réessayez dans quelques minutes.';
+/** Deliberately vague: never reveal whether the address exists. */
+const genericLoginError = () => err('badCredentials');
+const rateLimitedError = () => err('tooManyAttempts');
 
 function setLocaleCookie(locale: string) {
   cookies().set(LOCALE_COOKIE_NAME, locale, {
@@ -77,9 +78,9 @@ const signupSchema = z.object({
   // upgrade their password at next reset.
   password: strongPasswordSchema,
   fullName: z.string().trim().min(1, 'Nom requis').max(80),
-  country: z.string().trim().min(2).max(3).default('FR'),
-  currency: z.string().trim().min(3).max(3).default('EUR'),
-  locale: z.enum(['fr', 'en', 'es', 'ar', 'pt']).default('fr'),
+  country: z.string().trim().toUpperCase().regex(/^[A-Z]{2}$/).default('GB'),
+  currency: z.string().trim().toUpperCase().length(3).default('GBP'),
+  locale: z.enum(['fr', 'en', 'es', 'ar', 'pt']).default('en'),
 });
 
 export type AuthResult = {
@@ -89,13 +90,8 @@ export type AuthResult = {
   mfaRequired?: { factorId: string };
 };
 
-const NOT_CONFIGURED = {
-  error:
-    'Backend non configuré. Renseigne tes clés Supabase dans .env.local — voir ONBOARDING.md.',
-} as const;
-
 export async function loginAction(formData: FormData): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
 
   // Capture request context up-front (headers() can only be read in the
   // server action body, not inside helpers called later from redirect).
@@ -109,7 +105,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
   });
   if (!parsed.success) {
     await constantTimeDelay(startedAt);
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: await genericLoginError() };
   }
 
   const emailHash = hashEmail(parsed.data.email);
@@ -139,7 +135,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
           metadata: { reason: 'captcha_failed' },
         });
         await constantTimeDelay(startedAt);
-        return { error: GENERIC_LOGIN_ERROR };
+        return { error: await genericLoginError() };
       }
     }
   }
@@ -166,7 +162,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
       },
     });
     await constantTimeDelay(startedAt);
-    return { error: RATE_LIMITED_ERROR };
+    return { error: await rateLimitedError() };
   }
 
   const supabase = createClient();
@@ -182,7 +178,7 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
       metadata: { reason: error.message, status: error.status ?? null },
     });
     await constantTimeDelay(startedAt);
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: await genericLoginError() };
   }
 
   // ── Password verified. Before redirecting, check whether this account
@@ -245,21 +241,20 @@ export async function loginAction(formData: FormData): Promise<AuthResult> {
   redirect('/dashboard');
 }
 
-const BREACHED_PASSWORD_ERROR =
-  'Ce mot de passe est connu dans des fuites de données publiques. Choisissez-en un autre.';
+const breachedPasswordError = () => err('breachedPassword');
 
 export async function signupAction(formData: FormData): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const parsed = signupSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
     fullName: formData.get('fullName'),
-    country: formData.get('country') ?? 'FR',
-    currency: formData.get('currency') ?? 'EUR',
-    locale: formData.get('locale') ?? 'fr',
+    country: formData.get('country') ?? 'GB',
+    currency: formData.get('currency') ?? 'GBP',
+    locale: formData.get('locale') ?? 'en',
   });
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   // ── HaveIBeenPwned check (k-anonymous, raw password never leaves server).
@@ -275,7 +270,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
       emailHash: hashEmail(parsed.data.email),
       metadata: { breach_count: breachCount },
     });
-    return { error: BREACHED_PASSWORD_ERROR };
+    return { error: await breachedPasswordError() };
   }
 
   const supabase = createClient();
@@ -304,7 +299,7 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
 export async function forgotPasswordAction(
   formData: FormData,
 ): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const email = z.string().email().safeParse(formData.get('email'));
   if (!email.success) return { error: 'Email invalide' };
   const supabase = createClient();
@@ -318,10 +313,10 @@ export async function forgotPasswordAction(
 export async function resetPasswordAction(
   formData: FormData,
 ): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const password = strongPasswordSchema.safeParse(formData.get('password'));
   if (!password.success) {
-    return { error: password.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
   const supabase = createClient();
   const { error } = await supabase.auth.updateUser({
@@ -355,7 +350,7 @@ export async function mfaLoginChallengeAction(
   factorId: string,
   code: string,
 ): Promise<AuthResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
 
   const ip = getClientIp();
   const userAgent = getUserAgent();
@@ -364,7 +359,7 @@ export async function mfaLoginChallengeAction(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: GENERIC_LOGIN_ERROR };
+  if (!user) return { error: await genericLoginError() };
 
   // Rate-limit MFA attempts per user (5 / 15 min) to make brute-forcing
   // the 6-digit code economically infeasible (1e6 codes / 5 attempts ≈ 200k windows).
@@ -381,7 +376,7 @@ export async function mfaLoginChallengeAction(
       userAgent,
       metadata: { stage: 'mfa' },
     });
-    return { error: RATE_LIMITED_ERROR };
+    return { error: await rateLimitedError() };
   }
 
   const startedAt = Date.now();
@@ -389,7 +384,7 @@ export async function mfaLoginChallengeAction(
     await supabase.auth.mfa.challenge({ factorId });
   if (challengeErr) {
     await constantTimeDelay(startedAt);
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: await genericLoginError() };
   }
 
   const { error } = await supabase.auth.mfa.verify({
@@ -406,7 +401,7 @@ export async function mfaLoginChallengeAction(
       metadata: { phase: 'login' },
     });
     await constantTimeDelay(startedAt);
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: await genericLoginError() };
   }
 
   // Success — sync locale, audit, notify, redirect.
@@ -461,7 +456,7 @@ export async function logoutAction(): Promise<void> {
 export async function signInWithProvider(
   provider: 'google' | 'apple',
 ): Promise<{ url?: string; error?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,

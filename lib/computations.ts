@@ -179,13 +179,14 @@ export function monthlySpend(
   maintenance: MaintenanceEntry[],
   monthsBack: number = 6,
   vehicles?: Vehicle[],
+  locale: string = 'en',
 ) {
   const months: { label: string; total: number; energy: number; maint: number; insurance: number }[] = [];
   const now = new Date();
   for (let i = monthsBack - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    const label = d.toLocaleDateString('fr-FR', { month: 'short' });
+    const label = d.toLocaleDateString(locale, { month: 'short' });
     const energy = fuel
       .filter(
         (f) =>

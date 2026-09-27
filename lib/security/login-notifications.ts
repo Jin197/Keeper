@@ -2,6 +2,7 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isSupabaseConfigured } from '@/lib/env';
 import { resolveGeoLocation, formatLocation } from './geoip';
+import { translatorFor, intlTagFor } from '@/lib/i18n/messages';
 
 interface NotifyOpts {
   userId: string;
@@ -75,7 +76,7 @@ async function sendNewDeviceEmail(
   // GeoIP resolution is best-effort (timeout 1s, fail-open). If it fails the
   // email still goes out with only the IP — better than skipping the alert.
   const geo = await resolveGeoLocation(opts.ip);
-  const subject = subjectFor(opts.locale);
+  const subject = translatorFor(opts.locale, 'securityEmail')('newDeviceSubject');
   const html = htmlBody(opts, formatLocation(geo));
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -92,46 +93,29 @@ async function sendNewDeviceEmail(
   });
 }
 
-function subjectFor(locale: string): string {
-  switch (locale) {
-    case 'en':
-      return 'New login detected on your Velocewealth account';
-    case 'es':
-      return 'Nuevo inicio de sesión detectado en tu cuenta Velocewealth';
-    case 'ar':
-      return 'تم اكتشاف تسجيل دخول جديد إلى حسابك في Velocewealth';
-    case 'pt':
-      return 'Novo início de sessão detetado na sua conta Velocewealth';
-    default:
-      return 'Nouvelle connexion détectée sur votre compte Velocewealth';
-  }
-}
-
 function htmlBody(opts: NotifyOpts, location: string | null): string {
-  const name = opts.fullName ?? opts.email.split('@')[0] ?? 'utilisateur';
-  const when = new Date().toLocaleString(opts.locale, {
+  const t = translatorFor(opts.locale, 'securityEmail');
+  const name = opts.fullName ?? opts.email.split('@')[0] ?? '';
+  const when = new Date().toLocaleString(intlTagFor(opts.locale), {
     dateStyle: 'long',
     timeStyle: 'short',
   });
-  const ua = escapeHtml(opts.userAgent);
-  const ip = escapeHtml(opts.ip);
-  const locationRow = location
-    ? `<tr><td style="padding:4px 12px 4px 0;color:#666">Lieu approximatif</td><td>${escapeHtml(location)}</td></tr>`
-    : '';
+  const row = (label: string, value: string) =>
+    `<tr><td style="padding:4px 12px 4px 0;color:#666">${escapeHtml(label)}</td><td>${value}</td></tr>`;
   return `
     <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;color:#111">
-      <h2 style="font-size:18px">Bonjour ${escapeHtml(name)},</h2>
-      <p>Une nouvelle connexion a été détectée sur votre compte Velocewealth.</p>
+      <h2 style="font-size:18px">${escapeHtml(t('hello', { name }))}</h2>
+      <p>${escapeHtml(t('newDeviceBody'))}</p>
       <table style="border-collapse:collapse;margin:16px 0">
-        <tr><td style="padding:4px 12px 4px 0;color:#666">Date</td><td>${escapeHtml(when)}</td></tr>
-        ${locationRow}
-        <tr><td style="padding:4px 12px 4px 0;color:#666">IP</td><td>${ip}</td></tr>
-        <tr><td style="padding:4px 12px 4px 0;color:#666">Appareil</td><td>${ua}</td></tr>
+        ${row(t('when'), escapeHtml(when))}
+        ${location ? row(t('location'), escapeHtml(location)) : ''}
+        ${row(t('ip'), escapeHtml(opts.ip))}
+        ${row(t('device'), escapeHtml(opts.userAgent))}
       </table>
-      <p>Si c'est bien vous, vous pouvez ignorer ce message.</p>
-      <p>Sinon, <strong>changez votre mot de passe immédiatement</strong> depuis Velocewealth → Paramètres → Sécurité.</p>
+      <p>${escapeHtml(t('wasYou'))}</p>
+      <p><strong>${escapeHtml(t('wasNotYou'))}</strong></p>
       <hr style="border:none;border-top:1px solid #eee;margin:24px 0" />
-      <p style="font-size:12px;color:#888">Cet email a été envoyé automatiquement, ne pas répondre.</p>
+      <p style="font-size:12px;color:#888">${escapeHtml(t('automated'))}</p>
     </div>
   `;
 }

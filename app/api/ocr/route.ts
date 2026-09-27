@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { parseFuelReceipt } from '@/lib/ocr';
 import { rateLimit } from '@/lib/rate-limit';
 import { isTrialActive } from '@/lib/trial';
+import { err } from '@/lib/errors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,14 +21,14 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+      return NextResponse.json({ error: await err('unauthenticated') }, { status: 401 });
     }
 
     // Rate limit per user
     const rl = await rateLimit(`ocr:${user.id}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW);
     if (!rl.ok) {
       return NextResponse.json(
-        { error: 'Trop de requêtes, réessayez dans quelques secondes' },
+        { error: await err('rateLimited') },
         { status: 429 },
       );
     }

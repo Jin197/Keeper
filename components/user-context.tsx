@@ -21,11 +21,11 @@ export function useUser(): UserProfile {
     // Fallback for dev without backend — keeps UI from crashing.
     return {
       id: 'demo',
-      fullName: 'Invité',
+      fullName: 'Guest',
       email: '',
-      locale: 'fr',
-      currency: 'EUR',
-      country: 'FR',
+      locale: 'en',
+      currency: 'GBP',
+      country: 'GB',
       planTier: 'free',
     };
   }

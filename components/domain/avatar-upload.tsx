@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from 'react';
 import { Camera, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { updateAvatarAction } from '@/server/actions/profile';
@@ -27,6 +28,7 @@ export function AvatarUpload({
   initialAvatarUrl,
   size = 'lg',
 }: Props) {
+  const t = useTranslations('photoUpload');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     initialAvatarUrl ?? null,
   );
@@ -42,11 +44,11 @@ export function AvatarUpload({
     if (!file) return;
 
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      toast.error('Format non supporté (JPEG, PNG ou WebP uniquement).');
+      toast.error(t('unsupportedFormat'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('Fichier trop lourd (max 2 Mo).');
+      toast.error(t('avatarTooHeavy'));
       return;
     }
 
@@ -72,7 +74,7 @@ export function AvatarUpload({
           toast.error(persist.error);
           return;
         }
-        toast.success('Photo de profil mise à jour.');
+        toast.success(t('avatarUpdated'));
       });
     } catch (err) {
       console.error('Avatar upload failed', err);
@@ -90,7 +92,7 @@ export function AvatarUpload({
         toast.error(res.error);
         return;
       }
-      toast.success('Photo de profil retirée.');
+      toast.success(t('avatarRemoved'));
     });
   };
 
@@ -127,7 +129,7 @@ export function AvatarUpload({
           onClick={handlePick}
           disabled={busy}
         >
-          {avatarUrl ? 'Changer la photo' : 'Ajouter une photo'}
+          {avatarUrl ? t('changePhoto') : t('addPhoto')}
         </Button>
         {avatarUrl && (
           <Button

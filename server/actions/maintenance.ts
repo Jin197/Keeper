@@ -6,30 +6,27 @@ import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { maintenanceInputSchema } from '@/lib/validators/maintenance';
 import type { ActionResult } from './profile';
+import { err, errResult } from '@/lib/errors';
 
 function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
-
 export async function addMaintenanceAction(
   formData: FormData,
 ): Promise<ActionResult & { id?: string; hash?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = maintenanceInputSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
   const m = parsed.data;
 
@@ -40,7 +37,7 @@ export async function addMaintenanceAction(
     .eq('id', m.vehicleId)
     .eq('user_id', user.id)
     .single();
-  if (!vehicle) return { error: 'Véhicule introuvable' };
+  if (!vehicle) return errResult('vehicleNotFound');
 
   // Get previous hash for this vehicle (for chain)
   const { data: prev } = await supabase
@@ -98,12 +95,12 @@ export async function addMaintenanceAction(
 }
 
 export async function dismissAlertAction(id: string): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   const { error } = await supabase
     .from('maintenance_alerts')
     .update({ dismissed_at: new Date().toISOString() })

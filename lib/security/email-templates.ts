@@ -129,8 +129,8 @@ export interface AccountDeletionEmail {
 export function renderAccountDeletionEmail(
   opts: DeletionOtpEmailOpts,
 ): AccountDeletionEmail {
-  const t = COPY[opts.locale] ?? COPY.fr;
-  const subject = SUBJECTS[opts.locale] ?? SUBJECTS.fr;
+  const t = COPY[opts.locale] ?? COPY.en;
+  const subject = SUBJECTS[opts.locale] ?? SUBJECTS.en;
   const name = opts.fullName ?? opts.email.split('@')[0] ?? 'utilisateur';
   const text = `${t.greeting(name)}\n\n${t.intro}\n\n${t.codeLabel}: ${opts.otp}\n${t.validity(opts.expiresInMinutes)}\n\n${t.warningTitle}\n${t.warningBody}\n\n${t.ignore}\n\n${t.footer}`;
 

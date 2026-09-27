@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Sun, Moon, CircleHelp } from 'lucide-react';
+import { Sun, Moon, CircleHelp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { Link } from '@/lib/i18n/routing';
 import { Logo } from './logo';
@@ -26,6 +27,7 @@ export function Topbar({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const currentUser = useUser();
+  const t = useTranslations('components');
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 backdrop-blur-xl px-4 lg:px-8">
       <div className="lg:hidden shrink-0">
@@ -37,18 +39,11 @@ export function Topbar({
         </h1>
       )}
       <div className="ml-auto flex items-center gap-1">
-        <div className="hidden md:block relative mr-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
-          <input
-            placeholder="Rechercher…"
-            className="h-9 w-56 rounded-btn border border-border bg-card pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
         <Button
           variant="ghost"
           size="icon"
           className="h-9 w-9"
-          aria-label="Basculer thème"
+          aria-label={t('toggleTheme')}
           onClick={() =>
             setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
           }

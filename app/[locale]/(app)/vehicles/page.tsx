@@ -53,7 +53,7 @@ interface PageProps {
 
 export default async function VehiclesPage({ params }: PageProps) {
   const { locale } = await params;
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const vehicles = isSupabaseConfigured() ? await getVehicles() : [];
 

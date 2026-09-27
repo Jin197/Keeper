@@ -116,7 +116,7 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   const rawLocale = useLocale();
   const mfaLabels =
-    MFA_LOGIN_LABELS[rawLocale as keyof typeof MFA_LOGIN_LABELS] ?? MFA_LOGIN_LABELS.fr;
+    MFA_LOGIN_LABELS[rawLocale as keyof typeof MFA_LOGIN_LABELS] ?? MFA_LOGIN_LABELS.en;
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
   const [showPassword, setShowPassword] = useState(false);

@@ -115,7 +115,7 @@ type Stage = 'idle' | 'qr' | 'verifying';
 export function MfaSection() {
   const rawLocale = useLocale();
   const labels =
-    MFA_LABELS[rawLocale as keyof typeof MFA_LABELS] ?? MFA_LABELS.fr;
+    MFA_LABELS[rawLocale as keyof typeof MFA_LABELS] ?? MFA_LABELS.en;
   const [factorId, setFactorId] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [stage, setStage] = useState<Stage>('idle');

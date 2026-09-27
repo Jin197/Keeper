@@ -99,7 +99,7 @@ const LABELS = {
 
 export function TrustedDevicesSection() {
   const rawLocale = useLocale();
-  const t = LABELS[rawLocale as keyof typeof LABELS] ?? LABELS.fr;
+  const t = LABELS[rawLocale as keyof typeof LABELS] ?? LABELS.en;
 
   const [devices, setDevices] = useState<TrustedDeviceRow[]>([]);
   const [loading, setLoading] = useState(true);
