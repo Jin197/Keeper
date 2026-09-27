@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { InfoTip } from '@/components/ui/info-tip';
 
 interface KpiCardProps {
   label: string;
@@ -11,6 +12,8 @@ interface KpiCardProps {
   icon?: React.ReactNode;
   variant?: 'default' | 'glass' | 'premium';
   hint?: string;
+  /** Plain-language explanation of how the number is computed (renders an info "?"). */
+  explain?: string;
 }
 
 export function KpiCard({
@@ -22,6 +25,7 @@ export function KpiCard({
   icon,
   variant = 'default',
   hint,
+  explain,
 }: KpiCardProps) {
   const TrendIcon =
     trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
@@ -35,8 +39,9 @@ export function KpiCard({
   return (
     <Card variant={variant} className="p-5">
       <div className="flex items-start justify-between gap-3">
-        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
           {label}
+          {explain && <InfoTip text={explain} />}
         </div>
         {icon && (
           <div className="rounded-btn bg-veloce/10 p-1.5 text-veloce">

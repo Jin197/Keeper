@@ -3,7 +3,6 @@ import {
   Gauge,
   Wallet,
   Activity,
-  Leaf,
   Plus,
   ArrowRight,
   Car,
@@ -17,6 +16,11 @@ import { SpendChart } from '@/components/domain/spend-chart';
 import { EnergyMix } from '@/components/domain/energy-mix';
 import { RegulatoryKpiCard } from '@/components/domain/regulatory-kpi-card';
 import { UpcomingTasksCard } from '@/components/domain/upcoming-tasks-card';
+import { InsuranceRenewalCard } from '@/components/domain/insurance-renewal-card';
+import { Next30DaysCard } from '@/components/domain/next-30-days-card';
+import { GettingStartedCard } from '@/components/domain/getting-started-card';
+import { getTranslations } from 'next-intl/server';
+import { MapPin, HeartPulse } from 'lucide-react';
 import { getAllUserFines } from '@/server/actions/fines';
 import { getAllUserTasks } from '@/server/actions/maintenance-tasks';
 import { getAllUserInsuranceRecords } from '@/server/actions/insurance';
@@ -191,7 +195,7 @@ interface PageProps {
 
 export default async function DashboardPage({ params }: PageProps) {
   const { locale } = await params;
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   if (!isSupabaseConfigured()) {
     return (
@@ -208,13 +212,16 @@ export default async function DashboardPage({ params }: PageProps) {
     );
   }
 
-  const [{ profile, vehicles, fuel, maintenance, alerts }, fines, tasks, insuranceRecords] =
+  const [{ profile, vehicles, fuel, maintenance, alerts }, fines, tasks, insuranceRecords, tHealth, tFuel] =
     await Promise.all([
       getDashboardData(),
       getAllUserFines(),
       getAllUserTasks(),
       getAllUserInsuranceRecords(),
+      getTranslations('health'),
+      getTranslations('fuelNearby'),
     ]);
+  const tTip = await getTranslations('infoTip');
 
   if (!profile || vehicles.length === 0) {
     return (
@@ -249,7 +256,6 @@ export default async function DashboardPage({ params }: PageProps) {
   const totalDistance = breakdowns.reduce((s, b) => s + b.distance, 0);
   const fleetCostPerKm = totalDistance > 0 ? totalSpend / totalDistance : 0;
   const mix = energyMix(fuel);
-  const monthly = monthlySpend(fuel, maintenance, 6, vehicles);
   const recentFuel = fuel.slice(0, 4);
   const criticalAlerts = alerts.filter(
     (a) => a.severity === 'critical' || a.severity === 'warning',
@@ -269,12 +275,17 @@ export default async function DashboardPage({ params }: PageProps) {
         }
       />
 
+      {/* The promise, first: what the next 30 days will cost, per vehicle. */}
+      <Next30DaysCard vehicle={vehicles[0]} fuel={fuel} maintenance={maintenance} />
+      <GettingStartedCard vehicle={vehicles[0]} fuel={fuel} maintenance={maintenance} />
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard
           label={t.costPerKm}
           value={fleetCostPerKm.toFixed(3)}
           unit={`${profile.currency}/km`}
           icon={<Gauge className="h-4 w-4" strokeWidth={1.5} />}
+          explain={tTip('costPerKm')}
         />
         <KpiCard
           label={t.spend6Months}
@@ -288,21 +299,29 @@ export default async function DashboardPage({ params }: PageProps) {
           unit="km"
           icon={<Activity className="h-4 w-4" strokeWidth={1.5} />}
         />
-        <KpiCard
-          label={t.ecoScore}
-          value="82"
-          unit="/100"
-          variant="premium"
-          icon={<Leaf className="h-4 w-4" strokeWidth={1.5} />}
-        />
+        <Link href={`/maintenance/prognostics/${vehicles[0].id}`} className="block">
+          <KpiCard
+            label={tHealth('title')}
+            value={vehicles.length > 1 ? String(vehicles.length) : `${vehicles[0].make}`}
+            unit={vehicles.length > 1 ? '' : vehicles[0].model}
+            variant="premium"
+            icon={<HeartPulse className="h-4 w-4" strokeWidth={1.5} />}
+            explain={tTip('health')}
+          />
+        </Link>
       </div>
 
-      <RegulatoryKpiCard
-        fines={fines}
-        totalFleetSpend={totalSpend}
-        currency={profile.currency}
-        hrefFirstVehicle={vehicles[0] ? `/vehicles/${vehicles[0].id}` : null}
-      />
+      <InsuranceRenewalCard vehicles={vehicles} country={profile.country} />
+
+      {/* French fines/points tracker — only where it applies. */}
+      {(profile.country?.toUpperCase() === 'FR' || fines.length > 0) && (
+        <RegulatoryKpiCard
+          fines={fines}
+          totalFleetSpend={totalSpend}
+          currency={profile.currency}
+          hrefFirstVehicle={vehicles[0] ? `/vehicles/${vehicles[0].id}` : null}
+        />
+      )}
 
       <UpcomingTasksCard
         tasks={tasks}
@@ -334,7 +353,20 @@ export default async function DashboardPage({ params }: PageProps) {
         </Section>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-3">
+      <div className="grid sm:grid-cols-3 gap-3">
+        <Link
+          href="/fuel/nearby"
+          className="rounded-card border border-eco/30 bg-eco/5 hover:bg-eco/10 transition-colors p-4 flex items-center gap-3"
+        >
+          <div className="rounded-btn bg-eco/15 text-eco p-2.5">
+            <MapPin className="h-4 w-4" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-sm">{tFuel('title')}</div>
+            <div className="text-[11px] text-muted-foreground">{tFuel('subtitle')}</div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
         <Link
           href="/insights"
           className="rounded-card border border-border bg-card hover:bg-muted/40 transition-colors p-4 flex items-center gap-3"

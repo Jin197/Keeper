@@ -11,9 +11,12 @@ import {
   Wrench,
   Receipt,
   ShieldCheck,
+  CalendarClock,
+  Sparkles,
 } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import {
   markAllNotificationsAsReadAction,
   markNotificationAsReadAction,
@@ -32,6 +35,8 @@ export function NotificationBell({
   initialNotifications,
   initialUnreadCount,
 }: Props) {
+  const t = useTranslations('notifications');
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState(initialNotifications);
   const [unread, setUnread] = useState(initialUnreadCount);
@@ -88,7 +93,7 @@ export function NotificationBell({
         variant="ghost"
         size="icon"
         className="h-9 w-9 relative"
-        aria-label="Notifications"
+        aria-label={t('title')}
         onClick={() => setOpen((o) => !o)}
       >
         <Bell className="h-4 w-4" strokeWidth={1.5} />
@@ -108,11 +113,9 @@ export function NotificationBell({
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <div>
-                <div className="text-sm font-semibold">Notifications</div>
+                <div className="text-sm font-semibold">{t('title')}</div>
                 <div className="text-[11px] text-muted-foreground">
-                  {unread > 0
-                    ? `${unread} non lue${unread > 1 ? 's' : ''}`
-                    : 'Tout est à jour'}
+                  {unread > 0 ? t('unread', { count: unread }) : t('allRead')}
                 </div>
               </div>
               {unread > 0 && (
@@ -123,7 +126,7 @@ export function NotificationBell({
                   className="text-[11px] text-veloce hover:underline disabled:opacity-50 flex items-center gap-1"
                 >
                   <CheckCheck className="h-3 w-3" />
-                  Tout marquer
+                  {t('markAll')}
                 </button>
               )}
             </div>
@@ -133,7 +136,7 @@ export function NotificationBell({
                 <div className="px-4 py-8 text-center">
                   <ShieldCheck className="h-6 w-6 text-muted-foreground/40 mx-auto" />
                   <p className="text-xs text-muted-foreground mt-2">
-                    Aucune notification pour le moment.
+                    {t('empty')}
                   </p>
                 </div>
               ) : (
@@ -154,7 +157,7 @@ export function NotificationBell({
                 onClick={() => setOpen(false)}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
-                Voir l'agenda maintenance →
+                {t('viewAgenda')}
               </Link>
             </div>
           </motion.div>
@@ -173,6 +176,7 @@ function NotificationRow({
   onClick: () => void;
   disabled?: boolean;
 }) {
+  const locale = useLocale();
   const Icon = iconFor(notification.kind);
   const accent = accentFor(notification.kind);
   return (
@@ -203,7 +207,7 @@ function NotificationRow({
           </div>
         )}
         <div className="text-[10px] text-muted-foreground/60 mt-1.5 font-mono">
-          {formatRelative(notification.createdAt)}
+          {formatRelativeTime(notification.createdAt, locale)}
         </div>
       </div>
       {!notification.readAt && (
@@ -217,7 +221,14 @@ function iconFor(kind: InAppNotificationKind) {
   switch (kind) {
     case 'maintenance_reminder':
     case 'maintenance_overdue':
+    case 'forecast_due':
       return Wrench;
+    case 'inspection_due':
+      return ShieldCheck;
+    case 'insurance_renewal':
+      return CalendarClock;
+    case 'welcome':
+      return Sparkles;
     case 'fine_majoration_soon':
     case 'fine_added':
       return Receipt;
@@ -234,7 +245,12 @@ function accentFor(kind: InAppNotificationKind): string {
     case 'mfa_required':
       return 'bg-destructive/15 text-destructive';
     case 'maintenance_reminder':
+    case 'welcome':
       return 'bg-veloce/15 text-veloce';
+    case 'forecast_due':
+    case 'inspection_due':
+    case 'insurance_renewal':
+      return 'bg-amber-500/15 text-amber-500';
     case 'fine_majoration_soon':
       return 'bg-amber-500/15 text-amber-500';
     case 'fine_added':
@@ -242,20 +258,4 @@ function accentFor(kind: InAppNotificationKind): string {
     default:
       return 'bg-muted text-muted-foreground';
   }
-}
-
-function formatRelative(iso: string): string {
-  const t = new Date(iso).getTime();
-  const diff = Date.now() - t;
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return 'À l\'instant';
-  if (minutes < 60) return `Il y a ${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `Il y a ${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `Il y a ${days}j`;
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-  });
 }

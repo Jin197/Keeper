@@ -9,6 +9,7 @@ import type {
   InAppNotificationKind,
 } from '@/lib/types';
 import type { ActionResult } from './profile';
+import { err, errResult } from '@/lib/errors';
 
 /** Fetch the user's most recent notifications (read or unread, capped at 30). */
 export async function getRecentNotifications(): Promise<InAppNotification[]> {
@@ -47,12 +48,12 @@ export async function getUnreadNotificationCount(): Promise<number> {
 export async function markNotificationAsReadAction(
   notificationId: string,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   const { error } = await supabase
     .from('in_app_notifications')
     .update({ read_at: new Date().toISOString() })
@@ -65,12 +66,12 @@ export async function markNotificationAsReadAction(
 }
 
 export async function markAllNotificationsAsReadAction(): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return { error: 'Backend non configuré' };
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
   const { error } = await supabase
     .from('in_app_notifications')
     .update({ read_at: new Date().toISOString() })
@@ -94,10 +95,15 @@ export async function pushInAppNotification(args: {
   link?: string;
   relatedVehicleId?: string;
   relatedTaskId?: string;
-}): Promise<void> {
-  if (!isSupabaseConfigured()) return;
+  /**
+   * Idempotency key (unique per user). A second push with the same key is a
+   * no-op, so daily crons can re-run safely. Returns false when deduplicated.
+   */
+  dedupeKey?: string;
+}): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
   const admin = createAdminClient();
-  await admin.from('in_app_notifications').insert({
+  const row = {
     user_id: args.userId,
     kind: args.kind,
     title: args.title,
@@ -105,7 +111,17 @@ export async function pushInAppNotification(args: {
     link: args.link ?? null,
     related_vehicle_id: args.relatedVehicleId ?? null,
     related_task_id: args.relatedTaskId ?? null,
-  });
+    dedupe_key: args.dedupeKey ?? null,
+  };
+  if (args.dedupeKey) {
+    const { data, error } = await admin
+      .from('in_app_notifications')
+      .upsert(row, { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true })
+      .select('id');
+    return !error && Array.isArray(data) && data.length > 0;
+  }
+  const { error } = await admin.from('in_app_notifications').insert(row);
+  return !error;
 }
 
 function rowToNotification(row: Record<string, unknown>): InAppNotification {

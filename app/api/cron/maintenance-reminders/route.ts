@@ -5,6 +5,7 @@ import {
 } from '@/server/actions/maintenance-tasks';
 import { pushInAppNotification } from '@/server/actions/notifications';
 import { renderMaintenanceReminderEmail } from '@/lib/maintenance/reminder-email';
+import { translatorFor } from '@/lib/i18n/messages';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -45,10 +46,11 @@ export async function GET(request: Request) {
             item.phase === 'overdue'
               ? 'maintenance_overdue'
               : 'maintenance_reminder',
-          title: titleFor(item.phase, item.task.title, item.vehicleLabel),
+          title: titleFor(item.phase, item.task.title, item.vehicleLabel, item.userLocale),
           body: item.task.scheduledFor
             ? bodyFor(item.phase, item.task.scheduledFor, item.userLocale)
             : undefined,
+          dedupeKey: `scheduled:${item.task.id}:${item.task.scheduledFor ?? ''}:${item.phase}`,
           link: '/maintenance/agenda',
           relatedVehicleId: item.task.vehicleId,
           relatedTaskId: item.task.id,
@@ -113,11 +115,11 @@ function titleFor(
   phase: 'warning' | 'urgent' | 'overdue',
   taskTitle: string,
   vehicleLabel: string,
+  locale: string,
 ): string {
-  if (phase === 'overdue')
-    return `En retard : ${taskTitle} sur ${vehicleLabel}`;
-  if (phase === 'urgent') return `Demain : ${taskTitle} sur ${vehicleLabel}`;
-  return `À planifier : ${taskTitle} sur ${vehicleLabel}`;
+  const t = translatorFor(locale, 'reminders');
+  const key = phase === 'overdue' ? 'scheduledOverdue' : phase === 'urgent' ? 'scheduledUrgent' : 'scheduledWarning';
+  return t(key, { task: taskTitle, vehicle: vehicleLabel });
 }
 
 function bodyFor(
@@ -125,10 +127,10 @@ function bodyFor(
   scheduledFor: string,
   locale: string,
 ): string {
-  const date = new Date(scheduledFor).toLocaleDateString(locale, {
+  const t = translatorFor(locale, 'reminders');
+  const date = new Date(scheduledFor).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-GB', {
     day: '2-digit',
     month: 'long',
   });
-  if (phase === 'overdue') return `Initialement prévue le ${date}.`;
-  return `Planifiée le ${date}.`;
+  return t(phase === 'overdue' ? 'scheduledBodyOverdue' : 'scheduledBodyPlanned', { date });
 }
