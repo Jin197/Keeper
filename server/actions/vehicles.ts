@@ -5,30 +5,28 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { vehicleInputSchema } from '@/lib/validators/vehicle';
+import { inferCountryFromPlate } from '@/lib/vehicle-data/country';
 import type { ActionResult } from './profile';
+import { err, errResult } from '@/lib/errors';
 
 const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&q=80';
 
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
-
 export async function createVehicleAction(
   formData: FormData,
 ): Promise<ActionResult & { id?: string }> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = vehicleInputSchema.safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const v = parsed.data;
@@ -59,7 +57,7 @@ export async function createVehicleAction(
   });
 
   if (isDuplicate) {
-    return { error: 'Ce véhicule (plaque ou VIN) est déjà enregistré dans votre flotte.' };
+    return errResult('duplicateVehicle');
   }
 
   const { data, error } = await supabase
@@ -83,6 +81,8 @@ export async function createVehicleAction(
       resale_trend: 'stable',
       insurance_provider: v.insuranceProvider || null,
       insurance_monthly: v.insuranceMonthly || null,
+      insurance_renewal_date: v.insuranceRenewalDate || null,
+      country: v.country || inferCountryFromPlate(v.plate) || null,
     })
     .select('id')
     .single();
@@ -97,18 +97,18 @@ export async function updateVehicleAction(
   id: string,
   formData: FormData,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = vehicleInputSchema.partial().safeParse(
     Object.fromEntries(formData.entries()),
   );
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const v = parsed.data;
@@ -132,6 +132,10 @@ export async function updateVehicleAction(
       ...(v.insuranceMonthly !== undefined && {
         insurance_monthly: v.insuranceMonthly || null,
       }),
+      ...(v.insuranceRenewalDate !== undefined && {
+        insurance_renewal_date: v.insuranceRenewalDate || null,
+      }),
+      ...(v.country !== undefined && { country: v.country || null }),
       ...(v.vin !== undefined && { vin: v.vin || null }),
       ...(v.purchaseDate !== undefined && { purchase_date: v.purchaseDate }),
       ...(v.purchasePrice !== undefined && {
@@ -149,12 +153,12 @@ export async function updateVehicleAction(
 }
 
 export async function deleteVehicleAction(id: string): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const { error } = await supabase
     .from('vehicles')

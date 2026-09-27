@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   Calendar,
   Hash,
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
+  const t = useTranslations('vehicleEdit');
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -47,6 +49,9 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
   );
   const [insuranceProvider, setInsuranceProvider] = useState(
     vehicle.insuranceProvider ?? '',
+  );
+  const [insuranceRenewalDate, setInsuranceRenewalDate] = useState(
+    vehicle.insuranceRenewalDate?.slice(0, 10) ?? '',
   );
   const [registrationFormula, setRegistrationFormula] = useState(
     vehicle.registrationFormulaNumber ?? '',
@@ -72,6 +77,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
       fd.set('purchaseDate', purchaseDate);
       fd.set('purchasePrice', purchasePrice);
       fd.set('insuranceProvider', insuranceProvider);
+      fd.set('insuranceRenewalDate', insuranceRenewalDate);
       if (imageUrl) fd.set('imageUrl', imageUrl);
 
       const res = await updateVehicleAction(vehicle.id, fd);
@@ -90,7 +96,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
           registrationFormula,
         );
       }
-      toast.success('Informations enregistrées.');
+      toast.success(t('saved'));
       router.refresh();
     });
   };
@@ -99,14 +105,13 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
     <form onSubmit={handleSave} className="space-y-6">
       {/* ── Photo du véhicule ── */}
       <Section
-        title="Photo"
-        description="JPEG, PNG ou WebP — affichée sur la fiche et le dashboard"
+        title={t('photoTitle')}
+        description={t('photoHint')}
       >
         <Card className="p-5">
           {vehicle.imageUrl && !imageUrl && (
             <p className="text-[11px] text-muted-foreground mb-2">
-              Une photo est déjà associée à ce véhicule. En téléverser une
-              nouvelle la remplacera après enregistrement.
+              {t('photoExisting')}
             </p>
           )}
           <VehiclePhotoUpload
@@ -118,12 +123,12 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
 
       {/* ── Identité véhicule ── */}
       <Section
-        title="Identité"
-        description="Marque, modèle, plaque — utilisés sur toutes les pages"
+        title={t('identityTitle')}
+        description={t('identityHint')}
       >
         <Card className="p-5 space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Marque" required>
+            <Field label={t('make')} required>
               <Input
                 value={make}
                 onChange={(e) => setMake(e.target.value)}
@@ -131,7 +136,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 maxLength={50}
               />
             </Field>
-            <Field label="Modèle" required>
+            <Field label={t('model')} required>
               <Input
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
@@ -139,21 +144,17 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 maxLength={80}
               />
             </Field>
-            <Field label="Finition / version">
+            <Field label={t('trim')}>
               <Input
                 value={trim}
                 onChange={(e) => setTrim(e.target.value)}
-                placeholder="Ex: GT Line, Sport, Allure…"
+                placeholder={t('trimPlaceholder')}
               />
             </Field>
-            <Field label="Couleur">
-              <Input
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="Ex: Gris Platinium"
-              />
+            <Field label={t('colour')}>
+              <Input value={color} onChange={(e) => setColor(e.target.value)} />
             </Field>
-            <Field label="Plaque d'immatriculation" required>
+            <Field label={t('plate')} required>
               <Input
                 value={plate}
                 onChange={(e) => setPlate(e.target.value.toUpperCase())}
@@ -161,7 +162,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 className="font-mono uppercase"
               />
             </Field>
-            <Field label="VIN (17 caractères)" hint="Optionnel — utile pour la revente">
+            <Field label={t('vin')} hint={t('vinHint')}>
               <Input
                 value={vin}
                 onChange={(e) => setVin(e.target.value.toUpperCase())}
@@ -170,10 +171,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 placeholder="WVWZZZ3CZWE…"
               />
             </Field>
-            <Field
-              label="Numéro de formule (carte grise)"
-              hint="Lettre suivie de 10 chiffres, en haut à droite de la carte grise"
-            >
+            <Field label={t('formula')} hint={t('formulaHint')}>
               <Input
                 value={registrationFormula}
                 onChange={(e) => setRegistrationFormula(e.target.value)}
@@ -181,7 +179,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 className="font-mono"
               />
             </Field>
-            <Field label="Année de mise en circulation" required>
+            <Field label={t('year')} required>
               <Input
                 type="number"
                 value={year}
@@ -192,7 +190,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
                 className="font-mono"
               />
             </Field>
-            <Field label="Kilométrage actuel" required>
+            <Field label={t('mileage')} required>
               <Input
                 type="number"
                 value={currentMileage}
@@ -208,11 +206,11 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
 
       {/* ── Achat / valeur ── */}
       <Section
-        title="Achat & valeur"
-        description="Sert au calcul du coût total et de la valeur de revente"
+        title={t('purchaseTitle')}
+        description={t('purchaseHint')}
       >
         <Card className="p-5 grid sm:grid-cols-2 gap-4">
-          <Field label="Date d'achat" required>
+          <Field label={t('purchaseDate')} required>
             <Input
               type="date"
               value={purchaseDate}
@@ -220,7 +218,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
               required
             />
           </Field>
-          <Field label={`Prix d'achat (${vehicle.currency})`}>
+          <Field label={t('purchasePrice', { currency: vehicle.currency })}>
             <Input
               type="number"
               step="0.01"
@@ -236,8 +234,8 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
 
       {/* ── Assurance — composant dédié, géré côté serveur ── */}
       <Section
-        title="Assurance"
-        description="Choisissez si votre cotisation est constante ou variable mois par mois"
+        title={t('insuranceTitle')}
+        description={t('insuranceHint')}
       >
         <InsuranceManager
           vehicleId={vehicle.id}
@@ -248,11 +246,21 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
           onProviderChange={setInsuranceProvider}
           initialRecords={initialInsuranceRecords}
         />
+        <Card className="p-5 mt-3">
+          <Field label={t('renewalLabel')} hint={t('renewalHint')}>
+            <Input
+              type="date"
+              value={insuranceRenewalDate}
+              onChange={(e) => setInsuranceRenewalDate(e.target.value)}
+              className="font-mono"
+            />
+          </Field>
+        </Card>
       </Section>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="ghost" disabled={pending} onClick={() => router.back()}>
-          Annuler
+          {t('cancel')}
         </Button>
         <Button
           type="submit"
@@ -260,7 +268,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
           className="bg-veloce hover:bg-veloce/90 text-white gap-1.5"
         >
           <Save className="h-4 w-4" />
-          {pending ? 'Enregistrement…' : 'Enregistrer les informations'}
+          {pending ? t('saving') : t('save')}
         </Button>
       </div>
     </form>

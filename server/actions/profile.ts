@@ -1,29 +1,30 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/env';
 import { profileInputSchema, localeSchema } from '@/lib/validators/profile';
+import { inferCountryFromPlate } from '@/lib/vehicle-data/country';
+import { pushInAppNotification } from './notifications';
+import { translatorFor } from '@/lib/i18n/messages';
+import { err, errResult } from '@/lib/errors';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 const LOCALE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 
 export type ActionResult = { ok?: boolean; error?: string; locale?: string };
 
-const NOT_CONFIGURED: ActionResult = {
-  error: 'Backend non configuré. Voir ONBOARDING.md.',
-};
-
 export async function updateProfileAction(
   formData: FormData,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const parsed = profileInputSchema.safeParse({
     fullName: formData.get('fullName'),
@@ -33,7 +34,7 @@ export async function updateProfileAction(
     country: formData.get('country'),
   });
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? 'Données invalides' };
+    return errResult('invalidData');
   }
 
   const { error } = await supabase
@@ -71,12 +72,12 @@ export async function updateProfileAction(
 export async function updateAvatarAction(
   avatarUrl: string | null,
 ): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const cleaned = avatarUrl?.trim() || null;
   const { error } = await supabase
@@ -126,7 +127,8 @@ export async function updateLocaleAction(
 }
 
 export async function saveOnboardingAnswersAction(answers: {
-  onboardingPersona: 'collector' | 'daily' | 'fleet';
+  /** Kept for the DB check constraint; the UI no longer asks — defaults to 'daily'. */
+  onboardingPersona?: 'collector' | 'daily' | 'fleet';
   onboardingObjective: 'tco' | 'phm' | 'resale';
   onboardingMotorization: 'hybrid' | 'electric' | 'thermal';
 }): Promise<ActionResult> {
@@ -135,12 +137,12 @@ export async function saveOnboardingAnswersAction(answers: {
   }
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
 
   const { error } = await supabase
     .from('profiles')
     .update({
-      onboarding_persona: answers.onboardingPersona,
+      onboarding_persona: answers.onboardingPersona ?? 'daily',
       onboarding_objective: answers.onboardingObjective,
       onboarding_motorization: answers.onboardingMotorization,
     })
@@ -162,13 +164,22 @@ export async function completeOnboardingAction(vehicleData: {
   purchaseDate?: string;
   insuranceProvider?: string;
   insuranceMonthly?: number;
+  insuranceRenewalDate?: string;
+  /** ISO-3166 alpha-2 from the lookup provider, when known. */
+  country?: string;
 }): Promise<ActionResult> {
   if (!isSupabaseConfigured()) {
     return { ok: true };
   }
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Non authentifié' };
+  if (!user) return errResult('unauthenticated');
+
+  const { data: ownerProfile } = await supabase
+    .from('profiles')
+    .select('country, currency, locale')
+    .eq('id', user.id)
+    .maybeSingle();
 
   // 1. Check for duplicates in active fleet (plate or VIN) in memory with normalized formatting
   const { data: activeVehicles, error: fetchError } = await supabase
@@ -213,7 +224,7 @@ export async function completeOnboardingAction(vehicleData: {
 
   const today = new Date().toISOString().split('T')[0];
   const purchasePrice = vehicleData.purchasePrice ?? 0;
-  const { error: vehicleError } = await supabase
+  const { data: insertedVehicle, error: vehicleError } = await supabase
     .from('vehicles')
     .insert({
       user_id: user.id,
@@ -225,16 +236,37 @@ export async function completeOnboardingAction(vehicleData: {
       fuel_type: vehicleData.fuelType,
       purchase_date: vehicleData.purchaseDate || today,
       purchase_price: purchasePrice,
-      currency: 'EUR',
+      currency: ownerProfile?.currency || 'EUR',
       current_mileage_km: vehicleData.currentMileageKm,
+      country:
+        vehicleData.country?.toUpperCase() ||
+        inferCountryFromPlate(vehicleData.plate) ||
+        ownerProfile?.country?.toUpperCase() ||
+        null,
       image_url: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1200&q=80',
       estimated_resale_value: purchasePrice > 0 ? Math.round(purchasePrice * 0.8) : undefined,
       resale_trend: 'stable',
       insurance_provider: vehicleData.insuranceProvider?.trim() || undefined,
       insurance_monthly: vehicleData.insuranceMonthly ?? undefined,
-    });
+      insurance_renewal_date: vehicleData.insuranceRenewalDate || undefined,
+    })
+    .select('id')
+    .single();
 
   if (vehicleError) return { error: vehicleError.message };
+
+  // First in-app notification: point straight at the forecast so the bell has
+  // something useful in it from minute one. Deduped per user.
+  const t = translatorFor(ownerProfile?.locale, 'reminders');
+  await pushInAppNotification({
+    userId: user.id,
+    kind: 'welcome',
+    title: t('welcomeTitle'),
+    body: t('welcomeBody'),
+    link: `/maintenance/prognostics/${insertedVehicle.id}`,
+    relatedVehicleId: insertedVehicle.id,
+    dedupeKey: `welcome:${user.id}`,
+  }).catch(() => undefined);
 
   const { error: profileError } = await supabase
     .from('profiles')
@@ -249,3 +281,27 @@ export async function completeOnboardingAction(vehicleData: {
   return { ok: true };
 }
 
+
+
+const notificationPrefsSchema = z.object({
+  email: z.boolean(),
+  forecast: z.boolean(),
+  inspection: z.boolean(),
+  insurance: z.boolean(),
+  fuel: z.boolean(),
+});
+
+export async function updateNotificationPrefsAction(prefs: unknown): Promise<ActionResult> {
+  if (!isSupabaseConfigured()) return errResult('notConfigured');
+  const parsed = notificationPrefsSchema.safeParse(prefs);
+  if (!parsed.success) return { error: 'Invalid preferences' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return errResult('unauthenticated');
+  const { error } = await supabase.from('profiles').update({ notification_prefs: parsed.data }).eq('id', user.id);
+  if (error) return { error: error.message };
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}

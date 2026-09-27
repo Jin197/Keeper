@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 import { Plus, Trash2, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,8 @@ export function InsuranceManager({
   onProviderChange,
   initialRecords,
 }: Props) {
+  const t = useTranslations('insuranceManager');
+  const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [mode, setMode] = useState<'fixed' | 'variable'>(initialMode);
   const [fixedAmount, setFixedAmount] = useState<string>(
@@ -56,11 +59,7 @@ export function InsuranceManager({
       });
       if (res.error) toast.error(res.error);
       else
-        toast.success(
-          next === 'fixed'
-            ? 'Mode fixe activé.'
-            : 'Mode variable activé — saisissez vos cotisations mensuelles.',
-        );
+        toast.success(next === 'fixed' ? t('fixedOn') : t('variableOn'));
     });
   };
 
@@ -81,12 +80,12 @@ export function InsuranceManager({
   const handleAddRecord = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMonth || !newAmount) {
-      toast.error('Sélectionnez un mois et un montant.');
+      toast.error(t('selectMonthAmount'));
       return;
     }
     const amount = Number(newAmount);
     if (!Number.isFinite(amount) || amount < 0) {
-      toast.error('Montant invalide.');
+      toast.error(t('invalidAmount'));
       return;
     }
     startTransition(async () => {
@@ -118,7 +117,7 @@ export function InsuranceManager({
         ].sort((a, b) => b.month.localeCompare(a.month));
       });
       setNewAmount('');
-      toast.success('Cotisation enregistrée.');
+      toast.success(t('saved'));
     });
   };
 
@@ -141,17 +140,17 @@ export function InsuranceManager({
     <Card className="p-5 space-y-5">
       {/* Provider */}
       <div className="space-y-1.5">
-        <Label className="text-xs">Assureur</Label>
+        <Label className="text-xs">{t('insurer')}</Label>
         <Input
           value={initialProvider}
           onChange={(e) => onProviderChange(e.target.value)}
-          placeholder="AXA, MAIF, Direct Assurance…"
+          placeholder={t('insurerPlaceholder')}
         />
       </div>
 
       {/* Mode toggle */}
       <div className="space-y-2">
-        <Label className="text-xs">Type de cotisation</Label>
+        <Label className="text-xs">{t('premiumType')}</Label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -166,11 +165,9 @@ export function InsuranceManager({
           >
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="h-4 w-4 text-veloce" />
-              <span className="font-semibold text-sm">Cotisation fixe</span>
+              <span className="font-semibold text-sm">{t('fixed')}</span>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-snug">
-              Même montant chaque mois (contrat classique).
-            </p>
+            <p className="text-[11px] text-muted-foreground leading-snug">{t('fixedHint')}</p>
           </button>
           <button
             type="button"
@@ -185,11 +182,9 @@ export function InsuranceManager({
           >
             <div className="flex items-center gap-2 mb-1">
               <ShieldAlert className="h-4 w-4 text-amber-500" />
-              <span className="font-semibold text-sm">Cotisation variable</span>
+              <span className="font-semibold text-sm">{t('variable')}</span>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-snug">
-              Pay-as-you-drive, saisonnier, ajustements — saisissez chaque mois.
-            </p>
+            <p className="text-[11px] text-muted-foreground leading-snug">{t('variableHint')}</p>
           </button>
         </div>
       </div>
@@ -197,7 +192,7 @@ export function InsuranceManager({
       {/* Fixed-mode amount */}
       {mode === 'fixed' && (
         <div className="space-y-1.5">
-          <Label className="text-xs">Cotisation mensuelle ({currency})</Label>
+          <Label className="text-xs">{t('monthly', { currency })}</Label>
           <Input
             type="number"
             min={0}
@@ -208,9 +203,7 @@ export function InsuranceManager({
             placeholder="80"
             className="font-mono"
           />
-          <p className="text-[11px] text-muted-foreground">
-            Sauvegardé automatiquement quand vous quittez le champ.
-          </p>
+          <p className="text-[11px] text-muted-foreground">{t('autoSaved')}</p>
         </div>
       )}
 
@@ -222,7 +215,7 @@ export function InsuranceManager({
             className="rounded-card border border-border bg-muted/20 p-3 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2"
           >
             <div className="space-y-1">
-              <Label className="text-[11px]">Mois</Label>
+              <Label className="text-[11px]">{t('month')}</Label>
               <Input
                 type="month"
                 value={newMonth}
@@ -231,7 +224,7 @@ export function InsuranceManager({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px]">Montant ({currency})</Label>
+              <Label className="text-[11px]">{t('amount', { currency })}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -249,45 +242,29 @@ export function InsuranceManager({
                 className="bg-veloce hover:bg-veloce/90 text-white gap-1 w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
-                Ajouter
+                {t('add')}
               </Button>
             </div>
           </form>
 
           {records.length === 0 ? (
             <p className="text-xs text-muted-foreground italic text-center py-4">
-              Aucune cotisation enregistrée. Ajoutez-en une pour démarrer.
+              {t('empty')}
             </p>
           ) : (
             <>
               <div className="flex items-center justify-between text-xs">
                 <div className="text-muted-foreground">
-                  <span className="font-semibold text-foreground">
-                    {records.length}
-                  </span>{' '}
-                  cotisation{records.length > 1 ? 's' : ''} enregistrée
-                  {records.length > 1 ? 's' : ''} · total{' '}
-                  <span className="font-mono font-semibold text-foreground">
-                    {formatCurrency(total, currency)}
-                  </span>
-                  {average != null && (
-                    <>
-                      {' · moyenne '}
-                      <span className="font-mono font-semibold text-foreground">
-                        {formatCurrency(average, currency)}/mois
-                      </span>
-                    </>
-                  )}
+                  {t('summary', { count: records.length, total: formatCurrency(total, currency) })}
+                  {average != null && t('average', { avg: formatCurrency(average, currency) })}
                 </div>
               </div>
               <div className="rounded-card border border-border overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/40">
                     <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <th className="px-3 py-2 font-medium">Mois</th>
-                      <th className="px-3 py-2 font-medium text-right">
-                        Montant
-                      </th>
+                      <th className="px-3 py-2 font-medium">{t('colMonth')}</th>
+                      <th className="px-3 py-2 font-medium text-right">{t('colAmount')}</th>
                       <th className="px-3 py-2"></th>
                     </tr>
                   </thead>
@@ -298,7 +275,7 @@ export function InsuranceManager({
                         className="border-t border-border/40 hover:bg-muted/20"
                       >
                         <td className="px-3 py-2 font-mono">
-                          {formatMonth(r.month)}
+                          {formatMonth(r.month, locale)}
                         </td>
                         <td className="px-3 py-2 font-mono text-right">
                           {formatCurrency(r.amount, r.currency)}
@@ -309,7 +286,7 @@ export function InsuranceManager({
                             onClick={() => handleDelete(r.id)}
                             disabled={pending}
                             className="text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
-                            aria-label="Supprimer"
+                            aria-label={t('delete')}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -320,8 +297,7 @@ export function InsuranceManager({
                 </table>
               </div>
               <Badge variant="muted" className="text-[10px]">
-                Le coût d'assurance dans vos calculs TCO utilise désormais ces
-                cotisations réelles.
+                {t('note')}
               </Badge>
             </>
           )}
@@ -331,9 +307,9 @@ export function InsuranceManager({
   );
 }
 
-function formatMonth(iso: string): string {
+function formatMonth(iso: string, locale: string): string {
   try {
-    return new Date(iso).toLocaleDateString('fr-FR', {
+    return new Date(iso).toLocaleDateString(locale, {
       month: 'long',
       year: 'numeric',
     });

@@ -7,6 +7,7 @@ import { getVehicle } from '@/lib/data';
 import { getInsuranceRecords } from '@/server/actions/insurance';
 import { isSupabaseConfigured } from '@/lib/env';
 import { VehicleEditForm } from './vehicle-edit-form';
+import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,7 @@ export default async function VehicleEditPage({
   params: { id: string };
 }) {
   if (!isSupabaseConfigured()) return notFound();
+  const t = await getTranslations('vehicleEdit');
   const [vehicle, insuranceRecords] = await Promise.all([
     getVehicle(params.id),
     getInsuranceRecords(params.id),
@@ -27,13 +29,13 @@ export default async function VehicleEditPage({
       <Button variant="ghost" size="sm" asChild className="-ml-3">
         <Link href={`/vehicles/${vehicle.id}`}>
           <ChevronLeft className="h-4 w-4" />
-          Retour à la fiche véhicule
+          {t('back')}
         </Link>
       </Button>
 
       <PageHeader
-        title="Compléter les informations"
-        description={`${vehicle.make} ${vehicle.model} · ${vehicle.plate} — modifiez ou ajoutez les détails manquants pour affiner vos calculs.`}
+        title={t('title')}
+        description={t('subtitle', { vehicle: `${vehicle.make} ${vehicle.model} · ${vehicle.plate}` })}
       />
 
       <VehicleEditForm
