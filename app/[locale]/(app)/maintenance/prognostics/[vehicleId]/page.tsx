@@ -1,187 +1,254 @@
 import { notFound } from 'next/navigation';
+import { getTranslations, getLocale } from 'next-intl/server';
+import { AlertTriangle, Activity, Gauge, Wallet, CalendarClock, BookOpen, Database, ScanSearch } from 'lucide-react';
 import { PageHeader, Section } from '@/components/domain/page-header';
 import { KpiCard } from '@/components/domain/kpi-card';
-import { PhmComponentCard } from '@/components/domain/phm-component-card';
+import { KnownIssuesPanel } from '@/components/domain/known-issues-panel';
+import { PartsLinkButton } from '@/components/domain/parts-link-button';
+import { SaleDossierButton } from '@/components/domain/sale-dossier-button';
 import { Card } from '@/components/ui/card';
-import { AlertTriangle, Activity, CheckCircle2, Gauge, BrainCircuit, FileDown, ScanSearch } from 'lucide-react';
-import { getVehicle } from '@/lib/data';
-import { createClient } from '@/lib/supabase/server';
-import { evaluateVehicleHealth, TelemetryData } from '@/lib/phm/engine';
-import { buildPhmComponents } from '@/lib/phm/components';
-import { formatDistance } from '@/lib/utils';
-import { Link } from '@/lib/i18n/routing';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Link } from '@/lib/i18n/routing';
+import { getVehicle, getProfile, getMaintenanceEntries, getFuelEntries } from '@/lib/data';
+import { createClient } from '@/lib/supabase/server';
+import { generateMaintenancePlan, type MaintenanceTask } from '@/lib/maintenance/plan';
+import { resolveSchedule } from '@/lib/maintenance/schedules';
+import { getKnownIssues, resolveVehicleCountry } from '@/lib/vehicle-data/known-issues';
+import { SYSTEM_TO_CATEGORY, SYSTEM_LABEL_KEY } from '@/lib/vehicle-data/failure-rates';
+import { detectAnomaly, type TelemetryData } from '@/lib/phm/engine';
+import { canExportCertificate } from '@/lib/entitlements';
+import { resolvePricing, formatPrice } from '@/lib/pricing';
+import { isSaleDossierConfigured } from '@/lib/env';
+import { formatCurrency, formatDistance } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PrognosticsPage({
-  params,
-}: {
-  params: Promise<{ vehicleId: string; locale: string }>;
-}) {
+/**
+ * Health & upcoming costs.
+ *
+ * Replaces the former "AI diagnostic" screen. Everything shown here comes
+ * from one of three places and says which: the owner's logged services, the
+ * manufacturer's service intervals, or an official public record (MOT /
+ * NHTSA). No simulated sensor data, no invented confidence percentages.
+ */
+export default async function HealthPage({ params }: { params: Promise<{ vehicleId: string }> }) {
   const { vehicleId } = await params;
-  
-  const vehicle = await getVehicle(vehicleId);
+  const t = await getTranslations('health');
+  const tKI = await getTranslations('knownIssues');
+  const tTip = await getTranslations('infoTip');
+  const locale = await getLocale();
+
+  const [vehicle, profile] = await Promise.all([getVehicle(vehicleId), getProfile()]);
   if (!vehicle) notFound();
 
   const supabase = createClient();
+  const [history, fuel, knownIssues, entitlement, telemetryRow] = await Promise.all([
+    getMaintenanceEntries(vehicleId),
+    getFuelEntries(vehicleId),
+    getKnownIssues(vehicle, profile?.country),
+    canExportCertificate(profile, vehicleId),
+    supabase
+      .from('telemetry_obd' as never)
+      .select('*')
+      .eq('vehicle_id', vehicleId)
+      .order('time', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then((r) => r.data as Record<string, number | string> | null),
+  ]);
 
-  // 1. Fetch Latest Telemetry (Cold Start data)
-  const { data: telemetryData } = await supabase
-    .from('telemetry_obd' as any)
-    .select('*')
-    .eq('vehicle_id', vehicleId)
-    .order('time', { ascending: false })
-    .limit(1)
-    .single();
+  const country = resolveVehicleCountry(vehicle, profile?.country);
 
-  let latestTelemetry: TelemetryData | null = null;
-  if (telemetryData) {
-    latestTelemetry = {
-      rpm: (telemetryData as any).rpm || 0,
-      engineLoad: (telemetryData as any).engine_load || 0,
-      speed: (telemetryData as any).speed || 0,
-      maf: (telemetryData as any).maf || 0,
-      iat: (telemetryData as any).iat || 0,
-      coolantTemp: (telemetryData as any).coolant_temp || 0,
-      batteryVoltage: (telemetryData as any).battery_voltage || 12.0
-    };
-  }
-
-  // 2. Fetch Maintenance History to get 'lastChangedKm'
-  const { data: maintenanceHistory } = await supabase
-    .from('maintenance_entries')
-    .select('category, mileage_km')
-    .eq('vehicle_id', vehicleId)
-    .order('occurred_at', { ascending: false });
-
-  // 3. Construct Components from REAL history + OEM knowledge base (plus de mock)
-  const phmComponents = buildPhmComponents(
-    vehicle.currentMileageKm,
-    vehicle.fuelType,
-    maintenanceHistory
+  // Official data wins over estimates: the MOT expiry sets the inspection
+  // date and the MOT odometer trail sets the annual mileage.
+  const schedule = resolveSchedule(vehicle);
+  const plan = generateMaintenancePlan(
+    { ...vehicle, country },
+    history,
+    fuel,
+    new Date(),
+    locale === 'fr' ? 'fr' : 'en',
+    { inspectionDueDate: knownIssues.mot?.motExpiryDate, annualMileageKm: knownIssues.mot?.annualMileageKm, schedule },
   );
-  const componentsData = phmComponents.map(c => ({
-    name: c.name,
-    lastChangedKm: c.lastChangedKm,
-    expectedLifetimeKm: c.expectedLifetimeKm,
-  }));
-  const missingHistoryCount = phmComponents.filter(c => !c.hasRealHistory).length;
+  const annualKm = plan.annualMileageKm;
+  const annualHint = knownIssues.mot?.annualMileageKm ? t('annualHintMot') : t('annualHint');
 
-  // 4. Run the Machine Learning / PHM Engine
-  const prognostics = evaluateVehicleHealth(
-    vehicle.currentMileageKm,
-    latestTelemetry,
-    componentsData
-  );
+  const next = plan.tasks[0];
+  const withHistory = new Set(history.map((h) => h.category));
+  const missing = plan.tasks.filter((task) => !withHistory.has(task.category)).length;
 
-  const hasGlobalAnomaly = prognostics.components.some(c => c.anomalyFlag);
+  // Real OBD telemetry, if a device ever posted any. Otherwise say nothing.
+  const anomaly = telemetryRow
+    ? detectAnomaly({
+        rpm: Number(telemetryRow.rpm ?? 0),
+        engineLoad: Number(telemetryRow.engine_load ?? 0),
+        speed: Number(telemetryRow.speed ?? 0),
+        maf: Number(telemetryRow.maf ?? 0),
+        iat: Number(telemetryRow.iat ?? 0),
+        coolantTemp: Number(telemetryRow.coolant_temp ?? 0),
+        batteryVoltage: Number(telemetryRow.battery_voltage ?? 12),
+      } satisfies TelemetryData)
+    : null;
+
+  const pricing = resolvePricing(profile?.country ?? country, profile?.currency);
+  const priceLabel = isSaleDossierConfigured() ? formatPrice(pricing.saleDossier, pricing.currency, locale) : null;
+
+  // Population stat per forecast category: the worst DVSA system that maps to it.
+  const statFor = (category: MaintenanceTask['category']) => {
+    const p = knownIssues.failureProfile;
+    if (!p || p.basis !== 'model') return null;
+    const s = p.systems.filter((x) => SYSTEM_TO_CATEGORY[x.system] === category && x.rate >= 0.03).sort((a, b) => b.rate - a.rate)[0];
+    return s ? { ...s, model: `${p.make} ${p.model}`, band: p.kmBand } : null;
+  };
+
+  const when = (task: MaintenanceTask) =>
+    task.daysUntilDue < 0
+      ? t('daysAgo', { days: -task.daysUntilDue })
+      : task.daysUntilDue === 0
+        ? t('today')
+        : t('inDays', { days: task.daysUntilDue });
 
   return (
     <div className="container py-6 lg:py-8 space-y-8">
       <PageHeader
-        title="Diagnostic IA & Télémétrie"
-        description={`Analyse prédictive de santé pour ${vehicle.make} ${vehicle.model} (${formatDistance(vehicle.currentMileageKm)})`}
+        title={t('title')}
+        description={t('subtitle', { make: vehicle.make, model: vehicle.model, mileage: formatDistance(vehicle.currentMileageKm) })}
         action={
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" asChild>
-              <a href={`/api/vehicles/${vehicleId}/certificate`} target="_blank" rel="noopener noreferrer">
-                <FileDown className="h-4 w-4" />
-                <span className="hidden sm:inline">Carnet Certifié (PDF)</span>
-              </a>
-            </Button>
-            <Button variant="primary" asChild>
-              <Link href={`/vehicles/${vehicleId}`}>Retour véhicule</Link>
+            <SaleDossierButton vehicleId={vehicleId} allowed={entitlement.allowed} via={entitlement.via} priceLabel={priceLabel} variant="button" />
+            <Button variant="outline" asChild>
+              <Link href={`/vehicles/${vehicleId}`}>{t('back')}</Link>
             </Button>
           </div>
         }
       />
 
-      {/* Alerte Globale Télémétrie */}
-      {hasGlobalAnomaly && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 sm:p-6 flex items-start gap-4 shadow-[0_0_30px_rgba(239,68,68,0.15)] animate-pulse-slow">
+      {anomaly?.flag && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-2xl p-4 sm:p-6 flex items-start gap-4">
           <div className="bg-destructive text-destructive-foreground p-3 rounded-xl shrink-0">
             <AlertTriangle className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="font-display font-semibold text-destructive text-lg">Anomalie Télémétrique Détectée</h2>
-            <p className="text-sm text-destructive/90 mt-1">
-              Le système a détecté un comportement anormal via le flux OBD-II. Vérifiez les composants critiques ci-dessous immédiatement.
-            </p>
+            <h2 className="font-display font-semibold text-destructive text-lg">OBD</h2>
+            <p className="text-sm text-destructive/90 mt-1">{anomaly.reason}</p>
           </div>
         </div>
       )}
 
-      {/* Alerte Historique Manquant */}
-      {missingHistoryCount > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 sm:p-6 flex items-start gap-4">
-          <div className="bg-amber-500 text-white p-3 rounded-xl shrink-0">
-            <ScanSearch className="h-6 w-6" />
+      <div className="grid sm:grid-cols-3 gap-4">
+        <KpiCard
+          label={t('budget12')}
+          value={formatCurrency(plan.budget12mo, vehicle.currency)}
+          hint={t('budgetHint')}
+          icon={<Wallet className="h-4 w-4 text-amber-500" />}
+          explain={tTip('budget12')}
+        />
+        <KpiCard
+          label={t('annualMileage')}
+          value={`${Math.round(annualKm / 1000)}k km`}
+          hint={annualHint}
+          icon={<Gauge className="h-4 w-4 text-veloce" />}
+          explain={tTip('annualMileage')}
+        />
+        <KpiCard
+          label={t('nextDue')}
+          value={next ? next.title : '—'}
+          hint={next ? when(next) : ''}
+          icon={<CalendarClock className={`h-4 w-4 ${next?.severity === 'critical' ? 'text-destructive' : 'text-eco'}`} />}
+        />
+      </div>
+
+      <KnownIssuesPanel report={knownIssues} variant="full" />
+
+      {missing > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 sm:p-5 flex items-start gap-4">
+          <div className="bg-amber-500 text-white p-2.5 rounded-xl shrink-0">
+            <ScanSearch className="h-5 w-5" />
           </div>
-          <div>
-            <h2 className="font-display font-semibold text-amber-500 text-lg">Historique incomplet ({missingHistoryCount}/{phmComponents.length} composants)</h2>
-            <p className="text-sm text-amber-500/90 mt-1">
-              {missingHistoryCount === phmComponents.length
-                ? "Aucun historique de maintenance trouvé. L'IA utilise les préconisations constructeur (pièces considérées d'origine). Scannez vos factures pour affiner le Jumeau Numérique."
-                : `${missingHistoryCount} composant(s) sans historique. Le modèle utilise les intervalles OEM comme référence pour ces pièces.`
-              }
-            </p>
-            <Button variant="outline" size="sm" className="mt-3 border-amber-500/30 text-amber-600 hover:bg-amber-500 hover:text-white" asChild>
-              <Link href={`/maintenance/new?vehicle=${vehicleId}`}>Scanner mon historique</Link>
+          <div className="flex-1">
+            <p className="text-sm text-amber-600 dark:text-amber-400">{t('missingHistory', { count: missing, total: plan.tasks.length })}</p>
+            <Button variant="outline" size="sm" className="mt-3 border-amber-500/30" asChild>
+              <Link href={`/maintenance/new?vehicle=${vehicleId}`}>{t('logService')}</Link>
             </Button>
           </div>
         </div>
       )}
 
-      {/* KPIs de Santé */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <div className={prognostics.overallScore < 50 ? 'border border-destructive rounded-xl' : ''}>
-          <KpiCard
-            label="Score de Santé Global"
-            value={`${prognostics.overallScore} / 100`}
-            hint={prognostics.overallScore > 80 ? "Excellente condition" : prognostics.overallScore > 50 ? "Nécessite attention" : "État critique"}
-            icon={<Activity className={`h-4 w-4 ${prognostics.overallScore > 80 ? 'text-emerald-500' : 'text-amber-500'}`} />}
-          />
-        </div>
-        <KpiCard
-          label="Statut Télémétrie"
-          value={telemetryData ? "En ligne" : "Hors ligne"}
-          hint={telemetryData ? `Dernière trame: ${new Date((telemetryData as any).time).toLocaleTimeString()}` : "Aucune donnée OBD-II récente"}
-          icon={<BrainCircuit className="h-4 w-4 text-veloce" />}
-        />
-        <KpiCard
-          label="Modèle RUL"
-          value="Weibull & RF"
-          hint="Survie dynamique active"
-          icon={<Gauge className="h-4 w-4" />}
-        />
-      </div>
-
-      {/* Grille des Composants */}
       <Section
-        title="État des Composants (Prognostics)"
-        description="Durée de vie utile restante (RUL) estimée par le modèle d'IA."
+        title={t('components')}
+        description={
+          plan.scheduleLabel
+            ? `${t('scheduleFound', { label: plan.scheduleLabel })}${plan.scheduleVerified ? '' : ` (${t('unverified')})`} · ${t('componentsHint')}`
+            : `${t('scheduleGeneric', { fuel: vehicle.fuelType })} · ${t('componentsHint')}`
+        }
       >
         <div className="grid md:grid-cols-2 gap-4">
-          {prognostics.components.map((comp) => {
-            const phmComp = phmComponents.find(c => c.name === comp.name);
+          {plan.tasks.map((task) => {
+            // Life remaining: km-based when the task has an interval, else time-based over a year.
+            const pct =
+              task.kmUntilDue !== undefined && task.intervalKm
+                ? Math.min(100, Math.max(0, Math.round((Math.max(0, task.kmUntilDue) / task.intervalKm) * 100)))
+                : Math.min(100, Math.max(0, Math.round((task.daysUntilDue / 365) * 100)));
+            const tone = task.severity === 'critical' ? 'bg-destructive' : task.severity === 'warning' ? 'bg-amber-500' : 'bg-eco';
             return (
-              <PhmComponentCard
-                key={comp.name}
-                name={comp.name}
-                status={comp.status}
-                confidence={comp.confidence}
-                rulKm={comp.rulKm}
-                anomalyFlag={comp.anomalyFlag}
-                anomalyReason={comp.anomalyReason}
-                expectedLifetimeKm={phmComp?.expectedLifetimeKm}
-                vehicleId={vehicleId}
-                hasRealHistory={phmComp?.hasRealHistory ?? false}
-              />
+              <Card key={task.category} className={`p-5 space-y-4 ${task.severity === 'critical' ? 'border-destructive/40' : task.severity === 'warning' ? 'border-amber-500/30' : ''}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className={`rounded-btn p-2.5 shrink-0 ${task.severity === 'critical' ? 'bg-destructive/15 text-destructive' : task.severity === 'warning' ? 'bg-amber-500/15 text-amber-500' : 'bg-eco/15 text-eco'}`}>
+                      <Activity className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display font-semibold">{task.title}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{task.description}</p>
+                      <span className="text-[10px] flex items-center gap-1 mt-1 text-muted-foreground">
+                        {task.source === 'generic' || task.source === 'model' ? <BookOpen className="h-2.5 w-2.5" /> : <Database className="h-2.5 w-2.5" />}
+                        {task.source === 'model' ? t('sourceModel') : task.source === 'generic' ? t('sourceOem') : t('sourceHistory')}
+                        {task.source === 'model' && task.scheduleVerified === false && <span className="text-amber-500">· {t('unverified')}</span>}
+                      </span>
+                    </div>
+                  </div>
+                  <Badge variant={task.severity === 'critical' ? 'danger' : task.severity === 'warning' ? 'warning' : 'success'} className="shrink-0">
+                    {task.severity === 'critical' ? t('overdue') : task.severity === 'warning' ? t('soon') : t('planned')}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{task.kmUntilDue !== undefined ? t('remaining', { km: Math.max(0, task.kmUntilDue).toLocaleString(locale) }) : when(task)}</span>
+                    <span className="font-mono">{t('estimated', { amount: formatCurrency(task.estimatedCost, vehicle.currency) })}</span>
+                  </div>
+                  <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                    <div className={`h-full ${tone}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>{when(task)}</span>
+                    <PartsLinkButton country={country} category={task.category} vehicle={vehicle} />
+                  </div>
+                  {task.note && <p className="text-[11px] text-muted-foreground pt-1">{task.note}</p>}
+                  {task.weakPoints?.map((w, i) => (
+                    <p key={i} className={`text-[11px] pt-1 ${w.severity === 'safety' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'}`}>
+                      <span className="font-medium">{t('weakPoints')}: </span>
+                      {locale === 'fr' ? w.fr : w.en}
+                    </p>
+                  ))}
+                  {(() => {
+                    const stat = statFor(task.category);
+                    return stat ? (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 pt-1">
+                        {t('modelStat', { pct: Math.round(stat.rate * 100), model: stat.model, system: tKI(SYSTEM_LABEL_KEY[stat.system]).toLowerCase(), band: stat.band })}
+                        {stat.fleetRate != null && ` ${t('modelStatFleet', { pct: Math.round(stat.fleetRate * 100) })}`}
+                      </p>
+                    ) : null;
+                  })()}
+                </div>
+              </Card>
             );
           })}
         </div>
       </Section>
+
+      {!telemetryRow && <p className="text-[11px] text-muted-foreground">{t('telemetryNote')}</p>}
     </div>
   );
 }

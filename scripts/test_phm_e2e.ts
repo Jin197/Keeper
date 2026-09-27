@@ -53,8 +53,7 @@ async function runE2ETest() {
   console.log(`RUL (Durée de vie restante estimée - Weibull) : ${rulKm} km`);
 
   const classification = classifyComponentState(rulKm, filtreEspVieKm, anomalyResult.flag);
-  console.log(`État classifié (Random Forest simulé) : ${classification.status}`);
-  console.log(`Taux de Confiance de l'IA : ${classification.confidence}%`);
+  console.log(`État classifié : ${classification.status}`);
 
   // 4. Test Global : Évaluation complète du véhicule
   console.log('\n--- 🧪 TEST : SCORE DE SANTÉ GLOBAL DU VÉHICULE ---');
@@ -68,7 +67,7 @@ async function runE2ETest() {
   console.log(`Score de Santé Global : ${overallEvaluation.overallScore} / 100\n`);
   
   overallEvaluation.components.forEach(comp => {
-    console.log(`- ${comp.name} : ${comp.status} (RUL: ${comp.rulKm} km) [Confiance: ${comp.confidence}%] ${comp.anomalyFlag ? '🚨 ANOMALIE' : ''}`);
+    console.log(`- ${comp.name} : ${comp.status} (RUL: ${comp.rulKm} km) ${comp.anomalyFlag ? '🚨 ANOMALIE' : ''}`);
   });
 
   console.log('\n--- ✅ FIN DU TEST E2E PHM ---');

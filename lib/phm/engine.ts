@@ -14,7 +14,6 @@ export interface TelemetryData {
 export interface PrognosticComponent {
   name: string;
   status: 'Excellent' | 'Usure modérée' | 'Remplacement imminent';
-  confidence: number;
   rulKm: number;
   anomalyFlag: boolean;
   anomalyReason?: string;
@@ -96,43 +95,20 @@ export function getWeibullBeta(compName: string): number {
 }
 
 /**
- * 3. CLASSIFICATION D'ÉTAT : Simule un Random Forest
- * Détermine l'état du composant et calcule un taux de confiance déterministe
- * basé sur la distribution probabiliste du RUL et des alertes d'anomalies.
+ * 3. CLASSIFICATION D'ÉTAT
+ * Bucket the remaining life into three plain states. This used to also emit a
+ * pseudo-random "AI confidence %" — removed: there is no model behind it and
+ * showing one to a buyer or an insurer would have been a misrepresentation.
  */
 export function classifyComponentState(
-  rulKm: number, 
-  expectedLifetimeKm: number, 
+  rulKm: number,
+  expectedLifetimeKm: number,
   hasAnomaly: boolean
-): { status: PrognosticComponent['status']; confidence: number } {
-  const lifePercentageRemaining = rulKm / expectedLifetimeKm;
-  
-  let status: PrognosticComponent['status'] = 'Excellent';
-  let confidenceBase = 0.95; // 95%
-  
-  if (hasAnomaly) {
-    status = 'Remplacement imminent';
-    confidenceBase = 0.89; // L'anomalie réduit légèrement la confiance en raison du signal bruité
-  } else if (lifePercentageRemaining < 0.15) {
-    status = 'Remplacement imminent';
-    confidenceBase = 0.94;
-  } else if (lifePercentageRemaining < 0.60) {
-    status = 'Usure modérée';
-    confidenceBase = 0.91;
-  }
-
-  // Calcul déterministe de bruit pseudo-aléatoire (+/- 2%) basé sur les paramètres physiques
-  // Évite les fluctuations incohérentes du Math.random() à chaque rechargement.
-  const seed = rulKm + expectedLifetimeKm + (hasAnomaly ? 42 : 0);
-  const hash = Math.abs(Math.sin(seed) * 1000);
-  const noise = (hash - Math.floor(hash) - 0.5) * 4; // Entre -2% et +2%
-  
-  const confidence = Math.min(99.9, Math.max(0.0, (confidenceBase * 100) + noise));
-
-  return {
-    status,
-    confidence: Number(confidence.toFixed(1))
-  };
+): { status: PrognosticComponent['status'] } {
+  const lifePercentageRemaining = expectedLifetimeKm > 0 ? rulKm / expectedLifetimeKm : 0;
+  if (hasAnomaly || lifePercentageRemaining < 0.15) return { status: 'Remplacement imminent' };
+  if (lifePercentageRemaining < 0.6) return { status: 'Usure modérée' };
+  return { status: 'Excellent' };
 }
 
 /**
@@ -162,7 +138,6 @@ export function evaluateVehicleHealth(
     evaluatedComponents.push({
       name: comp.name,
       status: classification.status,
-      confidence: classification.confidence,
       rulKm,
       anomalyFlag: compAnomaly,
       anomalyReason: compAnomaly ? anomalyCheck.reason : undefined

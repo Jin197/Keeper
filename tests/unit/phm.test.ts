@@ -89,39 +89,25 @@ describe('PHM (Prognostics and Health Management) Engine', () => {
     });
   });
 
-  describe('classifyComponentState (Random Forest Emulator)', () => {
+  describe('classifyComponentState', () => {
     it('assigns Excellent state for high remaining RUL', () => {
-      const res = classifyComponentState(25000, 30000, false);
-      expect(res.status).toBe('Excellent');
-      expect(res.confidence).toBeGreaterThanOrEqual(93);
-      expect(res.confidence).toBeLessThanOrEqual(97);
+      expect(classifyComponentState(25000, 30000, false).status).toBe('Excellent');
     });
 
     it('assigns Usure modérée state for mid-range RUL', () => {
-      const res = classifyComponentState(12000, 30000, false); // 40% left
-      expect(res.status).toBe('Usure modérée');
-      expect(res.confidence).toBeGreaterThanOrEqual(89);
-      expect(res.confidence).toBeLessThanOrEqual(93);
+      expect(classifyComponentState(12000, 30000, false).status).toBe('Usure modérée'); // 40% left
     });
 
     it('assigns Remplacement imminent for low RUL (< 15%)', () => {
-      const res = classifyComponentState(3000, 30000, false); // 10% left
-      expect(res.status).toBe('Remplacement imminent');
-      expect(res.confidence).toBeGreaterThanOrEqual(92);
-      expect(res.confidence).toBeLessThanOrEqual(96);
+      expect(classifyComponentState(3000, 30000, false).status).toBe('Remplacement imminent'); // 10% left
     });
 
     it('assigns Remplacement imminent immediately when anomaly flag is active', () => {
-      const res = classifyComponentState(25000, 30000, true);
-      expect(res.status).toBe('Remplacement imminent');
-      expect(res.confidence).toBeGreaterThanOrEqual(87);
-      expect(res.confidence).toBeLessThanOrEqual(91);
+      expect(classifyComponentState(25000, 30000, true).status).toBe('Remplacement imminent');
     });
 
-    it('is completely deterministic', () => {
-      const res1 = classifyComponentState(12000, 30000, false);
-      const res2 = classifyComponentState(12000, 30000, false);
-      expect(res1.confidence).toBe(res2.confidence); // Deterministic! No random fluctuation.
+    it('never emits a confidence figure — there is no model behind one', () => {
+      expect('confidence' in classifyComponentState(12000, 30000, false)).toBe(false);
     });
   });
 
