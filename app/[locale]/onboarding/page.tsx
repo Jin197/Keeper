@@ -21,11 +21,11 @@ export default async function OnboardingPage({ params }: PageProps) {
   // Utilisateur fictif pour le mode démo / pré-prod
   const initialUser = profile || {
     id: 'mock-user-id',
-    fullName: 'Investisseur Veloce',
-    email: 'investisseur@velocewealth.app',
+    fullName: 'Demo Driver',
+    email: 'demo@velocewealth.app',
     locale: locale as any,
-    currency: 'EUR' as any,
-    country: 'FR',
+    currency: (locale === 'fr' ? 'EUR' : 'GBP') as any,
+    country: locale === 'fr' ? 'FR' : 'GB',
     planTier: 'premium' as any,
     hasCompletedOnboarding: false,
   };

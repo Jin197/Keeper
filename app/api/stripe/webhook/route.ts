@@ -5,6 +5,19 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { env } from '@/lib/env';
 import { trackCriticalError } from '@/lib/telemetry';
 
+/**
+ * Family/Fleet prices are optional at launch (the tier is parked). Reading
+ * them through `env.stripePriceFamily*()` would throw inside the webhook and
+ * turn every subscription event into a 500 — so read them leniently here.
+ */
+function familyPriceIds(): Set<string> {
+  return new Set(
+    [process.env.STRIPE_PRICE_FAMILY_MONTHLY, process.env.STRIPE_PRICE_FAMILY_YEARLY].filter(
+      (v): v is string => Boolean(v),
+    ),
+  );
+}
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +60,8 @@ export async function POST(req: Request) {
           session.subscription as string,
         );
         await syncSubscription(admin, sub);
+      } else if (session.mode === 'payment' && session.metadata?.kind === 'sale_dossier') {
+        await recordSaleDossierPurchase(admin, session);
       }
       return NextResponse.json({ received: true });
     }
@@ -99,9 +114,7 @@ async function syncSubscription(
 
   const priceId = sub.items.data[0]?.price.id;
   const subTier: 'premium' | 'family' =
-    priceId === env.stripePriceFamilyMonthly() || priceId === env.stripePriceFamilyYearly()
-      ? 'family'
-      : 'premium';
+    priceId && familyPriceIds().has(priceId) ? 'family' : 'premium';
 
   const planTier: 'free' | 'premium' | 'family' =
     sub.status === 'active' || sub.status === 'trialing' ? subTier : 'free';
@@ -159,5 +172,36 @@ async function downgradeUserByCustomer(
 
   if (updateError) {
     throw new Error(`Supabase error (profile downgrade): ${updateError.message}`);
+  }
+}
+
+/**
+ * One-off purchase of the certified "sale dossier" PDF for a single vehicle.
+ * Idempotent on the Checkout Session id so Stripe's retries don't double-insert.
+ */
+async function recordSaleDossierPurchase(
+  admin: ReturnType<typeof createAdminClient>,
+  session: Stripe.Checkout.Session,
+) {
+  const userId = session.metadata?.user_id;
+  const vehicleId = session.metadata?.vehicle_id;
+  if (!userId || !vehicleId) return;
+  if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') return;
+
+  const { error } = await admin.from('vehicle_purchases').upsert(
+    {
+      user_id: userId,
+      vehicle_id: vehicleId,
+      kind: 'sale_dossier',
+      stripe_session_id: session.id,
+      stripe_payment_intent_id:
+        typeof session.payment_intent === 'string' ? session.payment_intent : null,
+      amount_total: session.amount_total ?? null,
+      currency: session.currency ?? null,
+    },
+    { onConflict: 'stripe_session_id' },
+  );
+  if (error) {
+    throw new Error(`Supabase error (purchase upsert): ${error.message}`);
   }
 }

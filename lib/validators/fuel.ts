@@ -11,16 +11,16 @@ export const energyTypeSchema = z.enum([
 
 export const fuelEntryInputSchema = z
   .object({
-    vehicleId: z.string().min(1, 'Véhicule requis'),
-    occurredAt: z.string().min(1, 'Date requise'),
+    vehicleId: z.string().min(1, 'Vehicle required'),
+    occurredAt: z.string().min(1, 'Date required'),
     energyType: energyTypeSchema,
-    quantity: z.coerce.number().positive('Quantité requise'),
+    quantity: z.coerce.number().positive('Quantity required'),
     unitPrice: z.coerce.number().positive('Prix unitaire requis'),
     totalPrice: z.coerce.number().positive('Total requis'),
     currency: currencySchema,
-    stationName: z.string().trim().min(1, 'Station requise').max(80),
+    stationName: z.string().trim().min(1, 'Station required').max(80),
     stationCity: z.string().trim().max(80).optional().or(z.literal('')),
-    mileageKm: z.coerce.number().int().nonnegative('Kilométrage invalide'),
+    mileageKm: z.coerce.number().int().nonnegative('Invalid mileage'),
     ocrSource: z.enum(['manual', 'ocr']).default('manual'),
   })
   .refine(

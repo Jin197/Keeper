@@ -11,33 +11,27 @@ test.beforeEach(async ({ context }) => {
 });
 
 test.describe('Stripe & GDPR Functional Specifications', () => {
-  test('renders Stripe three-tier pricing with exact values', async ({ page }) => {
-    await page.goto('/pricing');
-    
-    // Check that we redirected or land on pricing
+  test('renders two plans priced in local currency, plus the one-off dossier', async ({ page }) => {
+    await page.goto('/fr/pricing');
     await expect(page).toHaveURL(/#pricing|pricing/);
 
-    // Verify Standard plan
-    const standardPlan = page.locator('div#pricing').locator('div:has-text("Standard")').first();
-    await expect(standardPlan).toBeVisible();
-    await expect(page.locator('body')).toContainText('3 scans OCR offerts/mois');
-
-    // Verify Premium (Pro) plan
-    await expect(page.locator('body')).toContainText('9,99');
-    await expect(page.locator('body')).toContainText('89,99 €/an');
-    await expect(page.locator('body')).toContainText('Carnet certifié (Immutabilité RLS)');
-
-    // Verify Family/Pro plan
-    await expect(page.locator('body')).toContainText('Family / Pro');
-    await expect(page.locator('body')).toContainText('16,99');
-    await expect(page.locator('body')).toContainText('159,99 €/an');
-    await expect(page.locator('body')).toContainText('Jusqu\'à 5 conducteurs');
+    const pricing = page.locator('section#pricing');
+    await expect(pricing).toContainText('Gratuit');
+    await expect(pricing).toContainText('Pro');
+    await expect(pricing).toContainText('3 scans de tickets / mois');
+    await expect(pricing).toContainText('2 mois offerts');
+    // The amount is whatever the visitor's country maps to — assert shape, not value.
+    await expect(pricing.getByText(/\/ mois/).first()).toBeVisible();
+    await expect(pricing).toContainText('Dossier de vente certifié');
+    await expect(pricing).toContainText('Vous vendez bientôt');
+    // The parked Family/Fleet tier must not resurface.
+    await expect(page.locator('body')).not.toContainText('Family / Pro');
   });
 
   test('GDPR security settings interface elements', async ({ page }) => {
     // Navigate directly to security settings (will redirect if unauthenticated, but we can verify the DOM elements if rendered/mocked)
     // Or we verify that the page renders buttons for Export and Deletion
-    await page.goto('/login');
+    await page.goto('/fr/login');
     await expect(page.getByRole('heading', { name: /Bon retour/i })).toBeVisible();
   });
 });

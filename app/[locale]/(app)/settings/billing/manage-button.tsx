@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -18,6 +19,7 @@ export function ManageSubscriptionButton({
   label,
   className,
 }: Props) {
+  const t = useTranslations('preferences');
   const [pending, setPending] = useState(false);
 
   const handleClick = async () => {
@@ -44,7 +46,7 @@ export function ManageSubscriptionButton({
       {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
       {label ?? (
         <>
-          Gérer l'abonnement <ExternalLink className="h-3 w-3" />
+          {t('manageSubscription')} <ExternalLink className="h-3 w-3" />
         </>
       )}
     </Button>

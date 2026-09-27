@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { isTrialActive } from '@/lib/trial';
+import { DEFAULT_NOTIFICATION_PREFS } from '@/lib/types';
 import type {
   Vehicle,
   FuelEntry,
@@ -8,6 +9,7 @@ import type {
   Station,
   Garage,
   UserProfile,
+  NotificationPrefs,
   EnergyType,
   FuelType,
   Currency,
@@ -45,8 +47,10 @@ function mapVehicle(row: Record<string, unknown>): Vehicle {
       : undefined,
     insuranceMode:
       (row.insurance_mode as 'fixed' | 'variable' | undefined) ?? 'fixed',
+    insuranceRenewalDate: (row.insurance_renewal_date as string) ?? undefined,
     registrationFormulaNumber:
       (row.registration_formula_number as string) ?? undefined,
+    country: (row.country as string) ?? undefined,
   };
 }
 
@@ -151,6 +155,7 @@ function mapProfile(row: Record<string, unknown>): UserProfile {
     onboardingPersona: row.onboarding_persona as 'collector' | 'daily' | 'fleet' | undefined,
     onboardingObjective: row.onboarding_objective as 'tco' | 'phm' | 'resale' | undefined,
     onboardingMotorization: row.onboarding_motorization as 'hybrid' | 'electric' | 'thermal' | undefined,
+    notificationPrefs: { ...DEFAULT_NOTIFICATION_PREFS, ...((row.notification_prefs as Partial<NotificationPrefs> | null) ?? {}) },
   };
 }
 

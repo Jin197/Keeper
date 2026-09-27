@@ -1,5 +1,9 @@
 'use client';
 
+import { signupCountryOptions } from '@/lib/countries';
+import { currencyForCountry } from '@/lib/pricing';
+import { currencies } from '@/lib/currencies';
+
 import { Link } from '@/lib/i18n/routing';
 import { useState, useTransition } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -18,6 +22,17 @@ export default function SignupPage() {
   const [error, setError] = useState<string>();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
+
+  // Country drives the price band and the default currency; the browser's
+  // region is the best first guess for an anonymous visitor.
+  const guessCountry = () => {
+    if (typeof navigator === 'undefined') return locale === 'fr' ? 'FR' : 'GB';
+    const region = navigator.language?.split('-')[1]?.toUpperCase();
+    return region && /^[A-Z]{2}$/.test(region) ? region : locale === 'fr' ? 'FR' : 'GB';
+  };
+  const [country, setCountry] = useState<string>(guessCountry);
+  const [currency, setCurrency] = useState<string>(() => currencyForCountry(guessCountry()));
+  const countryOptions = signupCountryOptions(locale);
 
   // Live rule evaluation — matches lib/validators/password.ts exactly.
   // We display each rule below the input and color the satisfied ones green
@@ -196,30 +211,33 @@ export default function SignupPage() {
             <Label htmlFor="country">{t('countryLabel')}</Label>
             <div className="relative">
               <Globe className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" strokeWidth={1.5} />
-              <Select id="country" name="country" defaultValue="FR" className="ps-9" disabled={pending}>
-                <option value="FR">France</option>
-                <option value="BE">Belgique</option>
-                <option value="CH">Suisse</option>
-                <option value="CA">Canada</option>
-                <option value="MA">Maroc</option>
-                <option value="SN">Sénégal</option>
-                <option value="CI">Côte d&apos;Ivoire</option>
-                <option value="US">United States</option>
-                <option value="GB">United Kingdom</option>
-                <option value="ES">España</option>
-                <option value="PT">Portugal</option>
+              <Select
+                id="country"
+                name="country"
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setCurrency(currencyForCountry(e.target.value));
+                }}
+                className="ps-9"
+                disabled={pending}
+              >
+                {countryOptions.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
               </Select>
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="currency">{t('currencyLabel')}</Label>
-            <Select id="currency" name="currency" defaultValue="EUR" disabled={pending}>
-              <option value="EUR">€ EUR</option>
-              <option value="USD">$ USD</option>
-              <option value="CAD">$ CAD</option>
-              <option value="CHF">Fr CHF</option>
-              <option value="MAD">DH MAD</option>
-              <option value="XOF">F CFA</option>
+            <Select id="currency" name="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={pending}>
+              {currencies.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} {c.code}
+                </option>
+              ))}
             </Select>
           </div>
         </div>

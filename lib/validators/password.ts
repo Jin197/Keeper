@@ -15,7 +15,7 @@ import { z } from 'zod';
  */
 export const strongPasswordSchema = z
   .string()
-  .min(10, '10 caractères minimum')
+  .min(10, 'At least 10 characters')
   .max(128, 'Trop long (128 max)')
   .regex(/[a-z]/, 'Au moins une minuscule')
   .regex(/[A-Z]/, 'Au moins une majuscule')

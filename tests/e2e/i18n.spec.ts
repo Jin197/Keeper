@@ -11,44 +11,32 @@ test.beforeEach(async ({ context }) => {
 });
 
 test.describe('i18n routing', () => {
-  test('default locale (fr) has no prefix', async ({ page }) => {
+  test('default locale (en) has no prefix', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/$|\/\?/);
-    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-  });
-
-  test('English locale renders at /en', async ({ page }) => {
-    await page.goto('/en');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/Drive/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/cost you next month/i);
   });
 
-  test('Arabic locale switches to RTL', async ({ page }) => {
-    await page.goto('/ar');
-    await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
-    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  test('French locale renders at /fr', async ({ page }) => {
+    await page.goto('/fr');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/coûter/i);
   });
 
-  test('Spanish locale renders at /es', async ({ page }) => {
-    await page.goto('/es');
-    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-  });
-
-  test('Portuguese locale renders at /pt', async ({ page }) => {
-    await page.goto('/pt');
-    await expect(page.locator('html')).toHaveAttribute('lang', 'pt');
-  });
-
-  test('unknown locale 404s', async ({ page }) => {
-    const res = await page.goto('/de');
-    expect(res?.status()).toBe(404);
-  });
+  // ES / PT / AR catalogues exist but are not routable at launch (see lib/i18n/routing.ts).
+  for (const locale of ['es', 'pt', 'ar', 'de']) {
+    test(`unrouted locale /${locale} 404s`, async ({ page }) => {
+      const res = await page.goto(`/${locale}`);
+      expect(res?.status()).toBe(404);
+    });
+  }
 
   test('locale switcher changes URL preserving path', async ({ page }) => {
     await page.goto('/legal/terms');
-    await page.locator('select[aria-label="Langue"]').first().selectOption('en');
-    await expect(page).toHaveURL(/\/en\/legal\/terms/);
+    await page.locator('select[aria-label="Langue"]').first().selectOption('fr');
+    await expect(page).toHaveURL(/\/fr\/legal\/terms/);
   });
 });

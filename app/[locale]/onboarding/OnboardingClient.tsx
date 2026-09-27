@@ -1,31 +1,23 @@
 'use client';
 
-import React, { useState, useTransition, useEffect, useRef } from 'react';
+import React, { useRef, useState, useTransition } from 'react';
 import { useRouter } from '@/lib/i18n/routing';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
-  Car,
-  Compass,
-  Navigation,
-  Briefcase,
-  TrendingUp,
-  Cpu,
-  Coins,
+  Fuel,
+  Wrench,
+  FileBadge,
   BatteryCharging,
   Zap,
-  Fuel,
   Search,
   Loader2,
-  Check,
   ChevronLeft,
   ChevronRight,
   Sliders,
-  Calendar,
-  Wallet,
   ShieldCheck,
   Camera,
-  Upload,
 } from 'lucide-react';
 import { BRAND_NAMES, BRANDS_INDEX } from '@/lib/data/car-brands';
 import { LocaleSwitcher } from '@/components/locale-switcher';
@@ -41,477 +33,114 @@ interface OnboardingClientProps {
   locale: string;
 }
 
-// ── REGEX CLIENT-SIDE ──
-const REGEX_PLATE_FR = /^[A-Z]{2}-?\d{3}-?[A-Z]{2}$/i;
-const REGEX_PLATE_UK = /^[A-Z]{2}\d{2}\s?[A-Z]{3}$/i;
-
-const ONBOARDING_TRANSLATIONS: Record<string, any> = {
-  fr: {
-    welcome: "Bienvenue sur VeloceWealth",
-    subWelcome: "Commençons par configurer votre profil d'investisseur en 3 questions rapides.",
-    progress: "Étape {current} sur {total}",
-    personaQuestion: "Quel type de conducteur êtes-vous ?",
-    collectorLabel: "Collectionneur",
-    collectorDesc: "Passionné de véhicules de prestige. Souhaite valoriser son capital auto.",
-    dailyLabel: "Usage Quotidien",
-    dailyDesc: "Trajets réguliers ou quotidiens. Objectif : optimiser le coût au kilomètre (TCO).",
-    fleetLabel: "Gestionnaire de Flotte",
-    fleetDesc: "Gestion de véhicules professionnels. Objectif : rentabilité globale et fiscalité.",
-    
-    objectiveQuestion: "Quel est votre objectif financier prioritaire ?",
-    tcoLabel: "Optimiser mon TCO",
-    tcoDesc: "Suivi chirurgical du coût/km, réduction des dépenses énergétiques.",
-    phmLabel: "Entretien Prédictif (IA)",
-    phmDesc: "Anticiper les pannes et programmer les révisions selon l'usure calculée.",
-    resaleLabel: "Valoriser à la revente",
-    resaleDesc: "Maximiser la valeur résiduelle avec un carnet numérique certifié.",
-    
-    motorizationQuestion: "Quelle motorisation équipe votre véhicule ?",
-    hybridLabel: "Hybride",
-    hybridDesc: "Optimisation de l'éco-performance pour double motorisation thermique/électrique.",
-    electricLabel: "Électrique",
-    electricDesc: "Suivi des cycles de recharge, usure batterie et économies vs thermique.",
-    thermalLabel: "Thermique",
-    thermalDesc: "Suivi classique Essence, Diesel, GPL ou Superéthanol E85.",
-
-    vehicleSetupTitle: "Votre premier véhicule",
-    vehicleSetupSubtitle: "Saisissez sa plaque d'immatriculation pour l'identifier automatiquement.",
-    scanCarteGrise: "Scanner ma carte grise",
-    scanningCarteGrise: "Analyse en cours…",
-    orSeparator: "ou",
-    plateLabel: "Plaque d'immatriculation",
-    platePlaceholder: "AA-123-AA",
-    plateHint: "Format AA-123-AA — marque, modèle et année détectés automatiquement.",
-    mileageLabel: "Kilométrage actuel",
-    mileagePlaceholder: "42000",
-    identifying: "Identification en cours...",
-    identifiedSuccess: "{make} {model} identifié avec succès !",
-    optional: "Optionnel",
-    optionalHint: "Tous les champs ci-dessous sont facultatifs. Modifiez-les uniquement si la détection automatique est incorrecte ou si vous voulez enrichir votre profil véhicule.",
-    vinLabel: "Code VIN (17 caractères)",
-    vinPlaceholder: "Entrez le VIN si la plaque échoue",
-    customizeInfo: "Détails supplémentaires (optionnel)",
-    makeLabel: "Marque",
-    modelLabel: "Modèle",
-    yearLabel: "Année de mise en circulation",
-    fuelTypeLabel: "Motorisation",
-    purchaseDateLabel: "Date d'achat",
-    purchasePriceLabel: "Prix d'achat",
-    insuranceProviderLabel: "Assureur",
-    insuranceMonthlyLabel: "Cotisation mensuelle",
-    loading: "Finalisation en cours...",
-    completeBtn: "Valider et démarrer",
-    skipDemo: "Utiliser un véhicule de démonstration",
-    invalidPlate: "Format de plaque invalide (ex: AA-123-AA)",
-    errorSaving: "Une erreur est survenue lors de la sauvegarde.",
-    step1Title: "Profil & Personnalité",
-    step2Title: "Objectifs Financiers",
-    step3Title: "Motorisation",
-    step4Title: "Enregistrement Auto",
-  },
-  en: {
-    welcome: "Welcome to VeloceWealth",
-    subWelcome: "Let's configure your investor profile in 3 quick questions.",
-    progress: "Step {current} of {total}",
-    personaQuestion: "What type of driver are you?",
-    collectorLabel: "Collector",
-    collectorDesc: "Prestige or historic vehicle enthusiast. Focused on asset valuation.",
-    dailyLabel: "Daily Driver",
-    dailyDesc: "Daily commutes or regular drives. Goal: optimize cost per kilometer (TCO).",
-    fleetLabel: "Fleet Manager",
-    fleetDesc: "Managing multiple company vehicles. Goal: profit and tax optimization.",
-    
-    objectiveQuestion: "What is your primary financial goal?",
-    tcoLabel: "Optimize my TCO",
-    tcoDesc: "Precise tracking of cost/km, energy cost reduction.",
-    phmLabel: "Predictive Maintenance (AI)",
-    phmDesc: "Anticipate breakdowns and schedule service based on calculated wear.",
-    resaleLabel: "Maximize Resale Value",
-    resaleDesc: "Protect residual value with a certified digital logbook.",
-    
-    motorizationQuestion: "What engine type equips your vehicle?",
-    hybridLabel: "Hybrid",
-    hybridDesc: "Eco-performance optimization for dual combustion/electric engines.",
-    electricLabel: "Electric",
-    electricDesc: "Track charging cycles, battery degradation, and savings vs gas.",
-    thermalLabel: "Thermal",
-    thermalDesc: "Traditional Petrol, Diesel, LPG, or Superethanol E85 tracking.",
-
-    vehicleSetupTitle: "Your first vehicle",
-    vehicleSetupSubtitle: "Enter its license plate number to identify it automatically.",
-    scanCarteGrise: "Scan vehicle registration",
-    scanningCarteGrise: "Analysing…",
-    orSeparator: "or",
-    plateLabel: "License Plate",
-    platePlaceholder: "AA-123-AA",
-    plateHint: "Format AA-123-AA — make, model and year detected automatically.",
-    mileageLabel: "Current Mileage (km)",
-    mileagePlaceholder: "42000",
-    identifying: "Identifying vehicle...",
-    identifiedSuccess: "{make} {model} successfully identified!",
-    optional: "Optional",
-    optionalHint: "All fields below are optional. Update them only if auto-detection is wrong or to enrich your vehicle profile.",
-    vinLabel: "VIN Code (17 characters)",
-    vinPlaceholder: "Enter VIN if plate lookup fails",
-    customizeInfo: "Additional details (optional)",
-    makeLabel: "Make",
-    modelLabel: "Model",
-    yearLabel: "Year of registration",
-    fuelTypeLabel: "Engine Type",
-    purchaseDateLabel: "Purchase Date",
-    purchasePriceLabel: "Purchase Price",
-    insuranceProviderLabel: "Insurer",
-    insuranceMonthlyLabel: "Monthly Premium",
-    loading: "Completing profile...",
-    completeBtn: "Validate & Launch",
-    skipDemo: "Use a demonstration vehicle",
-    invalidPlate: "Invalid plate format (ex: AA-123-AA)",
-    errorSaving: "An error occurred during saving.",
-    step1Title: "Profile & Personality",
-    step2Title: "Financial Goals",
-    step3Title: "Motorization",
-    step4Title: "Vehicle Registration",
-  },
-  es: {
-    welcome: "Bienvenido a VeloceWealth",
-    subWelcome: "Configuremos su perfil de inversor en 3 preguntas rápidas.",
-    progress: "Paso {current} de {total}",
-    personaQuestion: "¿Qué tipo de conductor es usted?",
-    collectorLabel: "Coleccionista",
-    collectorDesc: "Apasionado de los vehículos de prestigio o históricos. Desea valorizar su capital.",
-    dailyLabel: "Uso Diario",
-    dailyDesc: "Trayectos habituales o diarios. Objetivo: optimizar el coste por kilómetro (TCO).",
-    fleetLabel: "Gestor de Flota",
-    fleetDesc: "Gestión de varios vehículos profesionales. Objetivo: rentabilidad y fiscalidad.",
-    
-    objectiveQuestion: "¿Cuál es su prioridad financiera?",
-    tcoLabel: "Optimizar mi TCO",
-    tcoDesc: "Seguimiento riguroso del coste/km, reducción del consumo de energía.",
-    phmLabel: "Mantenimiento Predictivo (IA)",
-    phmDesc: "Anticipar averías y programar revisiones según el desgaste calculado.",
-    resaleLabel: "Maximizar valor de reventa",
-    resaleDesc: "Aumentar el precio de venta con un libro de mantenimiento digital certificado.",
-    
-    motorizationQuestion: "¿Qué motorización equipa su vehículo?",
-    hybridLabel: "Híbrido",
-    hybridDesc: "Optimización eco-rendimiento para doble motor térmico y eléctrico.",
-    electricLabel: "Eléctrico",
-    electricDesc: "Control de ciclos de carga, degradación de batería y ahorro frente a gasolina.",
-    thermalLabel: "Térmico",
-    thermalDesc: "Seguimiento clásico de Gasolina, Diésel, GLP o Superetanol E85.",
-
-    vehicleSetupTitle: "Su primer vehículo",
-    vehicleSetupSubtitle: "Identifíquelo al instante a través de su matrícula.",
-    scanCarteGrise: "Escanear el permiso de circulación",
-    scanningCarteGrise: "Analizando…",
-    orSeparator: "o",
-    plateLabel: "Matrícula",
-    platePlaceholder: "AA-123-AA",
-    plateHint: "Formato AA-123-AA — marca, modelo y año detectados automáticamente.",
-    mileageLabel: "Kilometraje actual",
-    mileagePlaceholder: "42000",
-    identifying: "Identificando vehículo...",
-    identifiedSuccess: "¡{make} {model} identificado con éxito!",
-    optional: "Opcional",
-    optionalHint: "Todos los campos siguientes son opcionales. Modifíquelos solo si la detección automática es incorrecta o desea enriquecer su perfil.",
-    vinLabel: "Código VIN (17 caracteres)",
-    vinPlaceholder: "Introduzca el VIN si falla la matrícula",
-    customizeInfo: "Detalles adicionales (opcional)",
-    makeLabel: "Marca",
-    modelLabel: "Modelo",
-    yearLabel: "Año de matriculación",
-    fuelTypeLabel: "Motorización",
-    purchaseDateLabel: "Fecha de compra",
-    purchasePriceLabel: "Precio de compra",
-    insuranceProviderLabel: "Aseguradora",
-    insuranceMonthlyLabel: "Prima mensual",
-    loading: "Completando perfil...",
-    completeBtn: "Validar y comenzar",
-    skipDemo: "Usar un vehículo de demostración",
-    invalidPlate: "Formato de matrícula no válido. Ejemplo: AA-123-AA",
-    errorSaving: "Ocurrió un error al guardar.",
-    step1Title: "Perfil y Personalidad",
-    step2Title: "Objetivos Financieros",
-    step3Title: "Motorización",
-    step4Title: "Registro de Vehículo",
-  },
-  ar: {
-    welcome: "مرحباً بك في VeloceWealth",
-    subWelcome: "دعنا نحدد ملفك الاستثماري في 3 أسئلة سريعة.",
-    progress: "الخطوة {current} من {total}",
-    personaQuestion: "أي نوع من السائقين أنت؟",
-    collectorLabel: "جامع سيارات",
-    collectorDesc: "شغوف بالسيارات الفاخرة أو التاريخية. يركز على زيادة قيمة الأصول.",
-    dailyLabel: "سائق يومي",
-    dailyDesc: "التنقلات اليومية أو المنتظمة. الهدف: تحسين التكلفة لكل كيلومتر (TCO).",
-    fleetLabel: "مدير أسطول",
-    fleetDesc: "إدارة مركبات الشركة المتعددة. الهدف: تحسين الأرباح والضرائب.",
-    
-    objectiveQuestion: "ما هو هدفك المالي الرئيسي؟",
-    tcoLabel: "تحسين التكلفة الإجمالية (TCO)",
-    tcoDesc: "تتبع دقيق للغاية للتكلفة لكل كيلومتر وتقليل تكاليف الطاقة.",
-    phmLabel: "الصيانة التنبؤية (الذكاء الاصطناعي)",
-    phmDesc: "توقع الأعطال وجدولة الخدمة بناءً على التآكل المحسوب.",
-    resaleLabel: "زيادة قيمة إعادة البيع",
-    resaleDesc: "حماية القيمة المتبقية بسجل صيانة رقمي معتمد.",
-    
-    motorizationQuestion: "ما هو نوع محرك مركبتك؟",
-    hybridLabel: "هجين",
-    hybridDesc: "تحسين الأداء البيئي للمحركات المزدوجة (وقود وكهرباء).",
-    electricLabel: "كهربائي",
-    electricDesc: "تتبع دورات الشحن وتدهور البطارية والوفر مقارنة بالوقود.",
-    thermalLabel: "حراري",
-    thermalDesc: "تتبع تقليدي للبنزين، الديزل، الغاز المسال، أو الإيثانول E85.",
-
-    vehicleSetupTitle: "مركبتك الأولى",
-    vehicleSetupSubtitle: "تعرف عليها فوراً باستخدام رقم لوحة الترخيص.",
-    scanCarteGrise: "مسح بطاقة التسجيل",
-    scanningCarteGrise: "جاري التحليل…",
-    orSeparator: "أو",
-    plateLabel: "رقم اللوحة",
-    platePlaceholder: "AA-123-AA",
-    plateHint: "بتنسيق AA-123-AA — سيتم اكتشاف الماركة والطراز والسنة تلقائياً.",
-    mileageLabel: "المسافة الحالية (كم)",
-    mileagePlaceholder: "42000",
-    identifying: "جاري التعرف على المركبة...",
-    identifiedSuccess: "تم التعرف على {make} {model} بنجاح!",
-    optional: "اختياري",
-    optionalHint: "جميع الحقول أدناه اختيارية. عدّلها فقط إذا كانت نتائج الاكتشاف التلقائي غير صحيحة أو لإثراء ملف مركبتك.",
-    vinLabel: "رمز VIN (17 حرفاً)",
-    vinPlaceholder: "أدخل رمز VIN إذا فشل البحث باللوحة",
-    customizeInfo: "تفاصيل إضافية (اختياري)",
-    makeLabel: "الماركة",
-    modelLabel: "الموديل",
-    yearLabel: "سنة الصنع",
-    fuelTypeLabel: "نوع المحرك",
-    purchaseDateLabel: "تاريخ الشراء",
-    purchasePriceLabel: "سعر الشراء",
-    insuranceProviderLabel: "شركة التأمين",
-    insuranceMonthlyLabel: "القسط الشهري",
-    loading: "جاري استكمال الملف الشخصي...",
-    completeBtn: "تأكيد والبدء",
-    skipDemo: "استخدام مركبة تجريبية",
-    invalidPlate: "تنسيق اللوحة غير صالح. مثال: AA-123-AA",
-    errorSaving: "حدث خطأ أثناء الحفظ.",
-    step1Title: "الملف الشخصي والشخصية",
-    step2Title: "الأهداف المالية",
-    step3Title: "نوع المحرك",
-    step4Title: "تسجيل المركبة",
-  },
-  pt: {
-    welcome: "Bem-vindo ao VeloceWealth",
-    subWelcome: "Vamos configurar seu perfil de investidor em 3 perguntas rápidas.",
-    progress: "Passo {current} de {total}",
-    personaQuestion: "Que tipo de condutor você é?",
-    collectorLabel: "Colecionador",
-    collectorDesc: "Apaixonado por veículos de prestígio ou históricos. Focado na valorização de ativos.",
-    dailyLabel: "Condutor Diário",
-    dailyDesc: "Trajetos regulares ou diários. Objetivo: otimizar o custo por quilômetro (TCO).",
-    fleetLabel: "Gestor de Frota",
-    fleetDesc: "Gestão de múltiplos veículos comerciais. Objetivo: rentabilidade e otimização fiscal.",
-    
-    objectiveQuestion: "Qual é o seu principal objetivo financeiro?",
-    tcoLabel: "Otimizar meu TCO",
-    tcoDesc: "Acompanhamento rigoroso do custo/km, redução das despesas de energia.",
-    phmLabel: "Manutenção Preditiva (IA)",
-    phmDesc: "Antecipar avarias e programar revisões com base no desgaste calculado.",
-    resaleLabel: "Maximizar valor de revenda",
-    resaleDesc: "Maximizar o preço de revenda com um livro de bordo digital certificado.",
-    
-    motorizationQuestion: "Que motorização equipa o seu veículo?",
-    hybridLabel: "Híbrido",
-    hybridDesc: "Otimização de eco-performance para motores duplos de combustão/elétricos.",
-    electricLabel: "Elétrico",
-    electricDesc: "Controle de ciclos de carga, degradação da bateria e economia vs combustível.",
-    thermalLabel: "Térmico",
-    thermalDesc: "Acompanhamento tradicional de Gasolina, Diesel, GPL ou Superetanol E85.",
-
-    vehicleSetupTitle: "Seu primeiro veículo",
-    vehicleSetupSubtitle: "Identifique-o instantaneamente através da sua matrícula.",
-    scanCarteGrise: "Digitalizar o livrete",
-    scanningCarteGrise: "A analisar…",
-    orSeparator: "ou",
-    plateLabel: "Matrícula",
-    platePlaceholder: "AA-123-AA",
-    plateHint: "Formato AA-123-AA — marca, modelo e ano detetados automaticamente.",
-    mileageLabel: "Quilometragem atual",
-    mileagePlaceholder: "42000",
-    identifying: "Identificando veículo...",
-    identifiedSuccess: "{make} {model} identificado com sucesso!",
-    optional: "Opcional",
-    optionalHint: "Todos os campos abaixo são opcionais. Atualize-os apenas se a deteção automática estiver incorreta ou para enriquecer o seu perfil de veículo.",
-    vinLabel: "Código VIN (17 caracteres)",
-    vinPlaceholder: "Insira o VIN se a matrícula falhar",
-    customizeInfo: "Detalhes adicionais (opcional)",
-    makeLabel: "Marca",
-    modelLabel: "Modelo",
-    yearLabel: "Ano de matrícula",
-    fuelTypeLabel: "Motorização",
-    purchaseDateLabel: "Data de compra",
-    purchasePriceLabel: "Preço de compra",
-    insuranceProviderLabel: "Seguradora",
-    insuranceMonthlyLabel: "Mensalidade do seguro",
-    loading: "Concluindo perfil...",
-    completeBtn: "Validar e começar",
-    skipDemo: "Usar um veículo de demonstração",
-    invalidPlate: "Formato de matrícula inválido. Exemplo: AA-123-AA",
-    errorSaving: "Ocorreu um erro ao guardar.",
-    step1Title: "Perfil e Personalidade",
-    step2Title: "Objetivos Financistas",
-    step3Title: "Motorização",
-    step4Title: "Registo do Veículo",
-  }
+/** What the user is fed up with — stored as the legacy `onboarding_objective` values. */
+type Pain = 'fuel' | 'repairs' | 'resale';
+const PAIN_TO_OBJECTIVE: Record<Pain, 'tco' | 'phm' | 'resale'> = {
+  fuel: 'tco',
+  repairs: 'phm',
+  resale: 'resale',
 };
-
-type Persona = 'collector' | 'daily' | 'fleet';
-type Objective = 'tco' | 'phm' | 'resale';
 type Motorization = 'hybrid' | 'electric' | 'thermal';
 
+const TOTAL_STEPS = 3;
+
 export default function OnboardingClient({ initialUser, locale }: OnboardingClientProps) {
+  const t = useTranslations('onboarding');
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [pending, startTransition] = useTransition();
 
-  // Answers state
-  const [persona, setPersona] = useState<Persona | null>(null);
-  const [objective, setObjective] = useState<Objective | null>(null);
+  const [pain, setPain] = useState<Pain | null>(null);
   const [motorization, setMotorization] = useState<Motorization | null>(null);
-
-  // Animation selected highlights
   const [selectedAnim, setSelectedAnim] = useState<string | null>(null);
 
-  // Vehicle form state
+  // Vehicle form
   const [plate, setPlate] = useState('');
   const [mileage, setMileage] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
-  const [isScanningCarteGrise, setIsScanningCarteGrise] = useState(false);
+  const [isScanningDoc, setIsScanningDoc] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const carteGriseInputRef = useRef<HTMLInputElement | null>(null);
+  const [lookupCountry, setLookupCountry] = useState<string | undefined>();
+  const docInputRef = useRef<HTMLInputElement | null>(null);
+  const lastLookedUp = useRef('');
 
-  // Manual vehicle inputs
-  const [make, setMake] = useState('Peugeot');
-  const [model, setModel] = useState('3008');
-  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [make, setMake] = useState('');
+  const [model, setModel] = useState('');
+  const [year, setYear] = useState<number>(new Date().getFullYear() - 6);
   const [vin, setVin] = useState('');
-  const [fuelType, setFuelType] = useState<FuelType>('hybrid');
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
-  const [purchasePrice, setPurchasePrice] = useState('15000');
+  const [fuelType, setFuelType] = useState<FuelType>('thermal');
+  const [purchaseDate, setPurchaseDate] = useState('');
+  const [purchasePrice, setPurchasePrice] = useState('');
   const [insuranceProvider, setInsuranceProvider] = useState('');
   const [insuranceMonthly, setInsuranceMonthly] = useState('');
+  const [insuranceRenewalDate, setInsuranceRenewalDate] = useState('');
 
-  const t = ONBOARDING_TRANSLATIONS[locale] || ONBOARDING_TRANSLATIONS.fr;
   const isRtl = locale === 'ar';
+  const isFrenchMarket = (initialUser.country ?? '').toUpperCase() === 'FR' || locale === 'fr';
+  const platePlaceholder = isFrenchMarket ? t('platePlaceholderFr') : t('platePlaceholderGb');
 
-  // 1. Save QCM answers once Step 3 is selected
-  const handleSaveAnswers = (
-    chosenPersona: Persona,
-    chosenObjective: Objective,
-    chosenMotorization: Motorization
-  ) => {
-    startTransition(async () => {
-      try {
-        const res = await saveOnboardingAnswersAction({
-          onboardingPersona: chosenPersona,
-          onboardingObjective: chosenObjective,
-          onboardingMotorization: chosenMotorization,
-        });
-        if (res.error) {
-          console.error('Failed to save onboarding answers:', res.error);
-        }
-      } catch (err) {
-        console.error('Onboarding answers network error:', err);
-      }
-    });
+  const goTo = (next: number) => {
+    setDirection(next > step ? 1 : -1);
+    setStep(next);
   };
 
-  // 2. Click option with micro-animation of 300ms
-  const handleSelectOption = (type: 'persona' | 'objective' | 'motorization', val: string) => {
+  const pick = (kind: 'pain' | 'motorization', val: string) => {
     setSelectedAnim(val);
-    
     setTimeout(() => {
       setSelectedAnim(null);
-      if (type === 'persona') {
-        setPersona(val as Persona);
-        setDirection(1);
-        setStep(1);
-      } else if (type === 'objective') {
-        setObjective(val as Objective);
-        setDirection(1);
-        setStep(2);
-      } else if (type === 'motorization') {
-        setMotorization(val as Motorization);
-        // Zero-click transition straight to vehicle registration (Step 3)
-        handleSaveAnswers(persona!, objective!, val as Motorization);
-        setDirection(1);
-        setStep(3);
+      if (kind === 'pain') {
+        setPain(val as Pain);
+        goTo(1);
+      } else {
+        const m = val as Motorization;
+        setMotorization(m);
+        setFuelType(m);
+        // Persist the two answers as soon as we have them; the vehicle step is
+        // independent so a network hiccup here never blocks the user.
+        startTransition(async () => {
+          const res = await saveOnboardingAnswersAction({
+            onboardingObjective: PAIN_TO_OBJECTIVE[pain ?? 'fuel'],
+            onboardingMotorization: m,
+          });
+          if (res.error) console.error('Failed to save onboarding answers:', res.error);
+        });
+        goTo(2);
       }
-    }, 300);
+    }, 250);
   };
 
-  // 3. Smart vehicle plate/VIN lookup
-  const handleLookup = async (lookupVal: string) => {
-    const cleaned = lookupVal.toUpperCase().replace(/\s/g, '').replace(/-/g, '');
-    if (!cleaned || cleaned.length < 4) return;
+  const handleLookup = async (value: string) => {
+    const cleaned = value.toUpperCase().replace(/[\s-]/g, '');
+    if (cleaned.length < 5 || cleaned === lastLookedUp.current) return;
+    lastLookedUp.current = cleaned;
+
+    if (!isSupabaseConfigured()) {
+      setMake('Ford');
+      setModel('Focus');
+      setYear(2015);
+      toast.success(t('identified', { make: 'Ford', model: 'Focus' }), { description: 'Demo' });
+      return;
+    }
 
     setIsLookingUp(true);
     try {
-      if (!isSupabaseConfigured()) {
-        // Pre-prod fallback: simulate a premium auto-lookup with a high-tech laser effect
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        let mockMake = 'Peugeot';
-        let mockModel = '3008';
-        let mockYear = 2022;
-        let mockFuel: FuelType = 'hybrid';
-
-        if (persona === 'collector') {
-          mockMake = motorization === 'thermal' ? 'Porsche' : 'BMW';
-          mockModel = motorization === 'thermal' ? '911 Carrera' : 'i8';
-          mockYear = 2021;
-          mockFuel = motorization === 'thermal' ? 'thermal' : 'hybrid';
-        } else if (motorization === 'electric') {
-          mockMake = 'Tesla';
-          mockModel = persona === 'fleet' ? 'Model Y' : 'Model 3';
-          mockYear = 2023;
-          mockFuel = 'electric';
-        }
-
-        setMake(mockMake);
-        setModel(mockModel);
-        setYear(mockYear);
-        setFuelType(mockFuel);
-        
-        toast.success(t.identifiedSuccess.replace('{make}', mockMake).replace('{model}', mockModel), {
-          description: 'Source : SIV France (Simulé - pré-prod)',
-        });
-        return;
-      }
-
-      // Supabase is configured: fetch API
-      const param = `plate=${encodeURIComponent(cleaned)}`;
-      const res = await fetch(`/api/vehicles/lookup?${param}`);
-      
+      const res = await fetch(`/api/vehicles/lookup?q=${encodeURIComponent(cleaned)}`);
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        if (errorData.fallback === 'manual-entry') {
-          toast.warning("Véhicule non reconnu. Veuillez renseigner les détails manuellement.");
-          setShowAdvanced(true);
-        } else {
-          toast.error(errorData.error || "Recherche échouée.");
-        }
+        const err = await res.json().catch(() => ({}));
+        toast.warning(err.error || t('notRecognised'));
+        setShowAdvanced(true);
         return;
       }
-
       const data = await res.json();
       if (data.make) setMake(data.make);
-      if (data.model) setModel(data.model);
+      if (data.model) setModel(data.trim ? `${data.model} ${data.trim}`.trim() : data.model);
       if (data.year) setYear(data.year);
-      if (data.trim) setModel((prev) => `${prev} ${data.trim}`);
       if (data.vin) setVin(data.vin);
       if (data.fuel_type) setFuelType(data.fuel_type as FuelType);
-
-      toast.success(t.identifiedSuccess.replace('{make}', data.make).replace('{model}', data.model), {
-        description: data.source ? `Source : ${data.source.toUpperCase()}` : undefined,
+      if (data.country) setLookupCountry(data.country);
+      toast.success(t('identified', { make: data.make, model: data.model || '' }), {
+        description: data.source ? t('lookupSource', { source: String(data.source).toUpperCase() }) : undefined,
       });
     } catch (err) {
       console.error('Vehicle lookup error:', err);
@@ -520,22 +149,16 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
     }
   };
 
-  // 3.5 Scan the user's vehicle-registration document and pre-fill the
-  //     form. Uses Google Vision OCR + a multi-region parser
-  //     (EU harmonised / UK V5C / Maghreb).
-  const handleCarteGriseScan = async (file: File) => {
-    setIsScanningCarteGrise(true);
+  const handleDocScan = async (file: File) => {
+    setIsScanningDoc(true);
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const res = await fetch('/api/vehicles/scan-carte-grise', {
-        method: 'POST',
-        body: fd,
-      });
+      const res = await fetch('/api/vehicles/scan-carte-grise', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error || 'Scan échoué. Réessayez avec une photo plus nette.');
-        if (data.fallback === 'manual-entry') setShowAdvanced(true);
+        toast.error(data.error || t('notRecognised'));
+        setShowAdvanced(true);
         return;
       }
       const ext = data.extract as {
@@ -544,7 +167,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
         make: string | null;
         model: string | null;
         year: number | null;
-        fuelType: 'thermal' | 'electric' | 'hybrid' | null;
+        fuelType: FuelType | null;
         confidence: number;
       };
       if (ext.plate) setPlate(ext.plate);
@@ -553,527 +176,275 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
       if (ext.model) setModel(ext.model);
       if (ext.year) setYear(ext.year);
       if (ext.fuelType) setFuelType(ext.fuelType);
-
-      toast.success(
-        `Carte grise reconnue (${ext.confidence}% confiance). Vérifiez et complétez si nécessaire.`,
-        {
-          description: ext.make && ext.model ? `${ext.make} ${ext.model}` : undefined,
-        },
-      );
-
-      // Open the advanced panel so the user can verify what was extracted.
       setShowAdvanced(true);
-    } catch (err) {
-      console.error('Carte grise scan error:', err);
-      toast.error('Erreur lors du scan. Vérifiez votre connexion.');
+      toast.success(
+        t('identified', { make: ext.make ?? '', model: ext.model ?? '' }),
+        { description: `${ext.confidence}%` },
+      );
+    } catch {
+      toast.error(t('errSave'));
     } finally {
-      setIsScanningCarteGrise(false);
+      setIsScanningDoc(false);
     }
   };
 
-  // 4. Submit vehicle setup & finish onboarding
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const submitVehicle = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!plate) {
-      toast.error("Veuillez saisir votre plaque d'immatriculation.");
+    if (!plate.trim()) {
+      toast.error(t('errPlate'));
       return;
     }
     if (!mileage || Number(mileage) <= 0) {
-      toast.error("Veuillez indiquer un kilométrage valide.");
+      toast.error(t('errMileage'));
       return;
     }
 
     startTransition(async () => {
       try {
-        const payload = {
-          make,
-          model,
+        const res = await completeOnboardingAction({
+          make: make || 'Unknown',
+          model: model || 'Unknown',
           year: Number(year),
           vin: vin || undefined,
-          plate: plate.toUpperCase(),
+          plate: plate.toUpperCase().trim(),
           fuelType,
           currentMileageKm: Number(mileage),
           purchasePrice: purchasePrice ? Number(purchasePrice) : undefined,
           purchaseDate: purchaseDate || undefined,
           insuranceProvider: insuranceProvider.trim() || undefined,
           insuranceMonthly: insuranceMonthly ? Number(insuranceMonthly) : undefined,
-        };
-
-        const res = await completeOnboardingAction(payload);
+          insuranceRenewalDate: insuranceRenewalDate || undefined,
+          country: lookupCountry,
+        });
         if (res.error) {
           toast.error(res.error);
           return;
         }
-
-        // Mock mode local save
-        if (!isSupabaseConfigured()) {
-          localStorage.setItem('onboarding_completed', 'true');
-          localStorage.setItem('onboarding_persona', persona || 'daily');
-          localStorage.setItem('onboarding_objective', objective || 'tco');
-          localStorage.setItem('onboarding_motorization', motorization || 'hybrid');
-        }
-
-        toast.success("Profil et premier véhicule configurés avec succès !");
-        
-        // Final victorious redirect
+        if (!isSupabaseConfigured()) localStorage.setItem('onboarding_completed', 'true');
+        toast.success(t('done'));
         router.push('/dashboard');
         router.refresh();
-      } catch (err) {
-        toast.error(t.errorSaving);
+      } catch {
+        toast.error(t('errSave'));
       }
     });
   };
 
-  // 5. Use Demo/Mock vehicle based on choices
-  const handleSkipToDemo = () => {
+  const useDemo = () => {
     startTransition(async () => {
       try {
-        let mockMake = 'Peugeot';
-        let mockModel = '3008';
-        let mockYear = 2022;
-        let mockFuel: FuelType = 'hybrid';
-
-        if (persona === 'collector') {
-          mockMake = motorization === 'thermal' ? 'Porsche' : 'BMW';
-          mockModel = motorization === 'thermal' ? '911 Carrera' : 'i8';
-          mockYear = 2021;
-          mockFuel = motorization === 'thermal' ? 'thermal' : 'hybrid';
-        } else if (motorization === 'electric') {
-          mockMake = 'Tesla';
-          mockModel = persona === 'fleet' ? 'Model Y' : 'Model 3';
-          mockYear = 2023;
-          mockFuel = 'electric';
-        }
-
-        const payload = {
-          make: mockMake,
-          model: mockModel,
-          year: mockYear,
-          vin: 'WVWZZZ3CZWE' + Math.floor(100000 + Math.random() * 900000),
-          plate: 'VW-888-VW',
-          fuelType: mockFuel,
-          currentMileageKm: 12500,
-        };
-
-        const res = await completeOnboardingAction(payload);
+        const demo =
+          motorization === 'electric'
+            ? { make: 'Nissan', model: 'Leaf', year: 2018, fuelType: 'electric' as const }
+            : motorization === 'hybrid'
+              ? { make: 'Toyota', model: 'Yaris Hybrid', year: 2017, fuelType: 'hybrid' as const }
+              : { make: 'Ford', model: 'Focus', year: 2015, fuelType: 'thermal' as const };
+        const res = await completeOnboardingAction({
+          ...demo,
+          vin: 'WF0KXXGCBK' + Math.floor(1000000 + Math.random() * 9000000),
+          plate: isFrenchMarket ? 'DE-456-MO' : 'DE15 MOX',
+          currentMileageKm: 112480,
+        });
         if (res.error) {
           toast.error(res.error);
           return;
         }
-
-        if (!isSupabaseConfigured()) {
-          localStorage.setItem('onboarding_completed', 'true');
-        }
-
-        toast.success("Mode Démo activé. Bienvenue à bord !");
+        if (!isSupabaseConfigured()) localStorage.setItem('onboarding_completed', 'true');
+        toast.success(t('demoDone'));
         router.push('/dashboard');
         router.refresh();
-      } catch (err) {
-        toast.error(t.errorSaving);
+      } catch {
+        toast.error(t('errSave'));
       }
     });
   };
 
-  // Animation configuration for sliding carrousel
-  const slideVariants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.95,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 },
-      },
-    },
-    exit: (dir: number) => ({
-      x: dir < 0 ? 300 : -300,
-      opacity: 0,
-      scale: 0.95,
-      transition: {
-        x: { type: 'spring', stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 },
-      },
-    }),
+  const slide = {
+    enter: (dir: number) => ({ x: dir > 0 ? 240 : -240, opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { x: { type: 'spring', stiffness: 300, damping: 30 }, opacity: { duration: 0.2 } } },
+    exit: (dir: number) => ({ x: dir < 0 ? 240 : -240, opacity: 0, transition: { duration: 0.2 } }),
   };
 
-  const getStepProgress = () => {
-    return ((step + 1) / 4) * 100;
-  };
+  const stepTitle = [t('step1Title'), t('step2Title'), t('step3Title')][step] ?? '';
 
-  const getStepTitle = () => {
-    switch (step) {
-      case 0:
-        return t.step1Title;
-      case 1:
-        return t.step2Title;
-      case 2:
-        return t.step3Title;
-      case 3:
-        return t.step4Title;
-      default:
-        return "";
-    }
+  const OptionButton = ({
+    id,
+    label,
+    desc,
+    icon: Icon,
+    onClick,
+  }: {
+    id: string;
+    label: string;
+    desc: string;
+    icon: typeof Fuel;
+    onClick: () => void;
+  }) => {
+    const selected = selectedAnim === id;
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={pending}
+        className={`w-full text-left p-6 rounded-[1.8rem] border backdrop-blur-xl transition-all duration-300 flex items-start gap-4 ${
+          selected
+            ? 'border-veloce bg-veloce/10 text-white shadow-glow-veloce scale-[1.02]'
+            : 'border-white/[0.08] bg-[#1C1C24]/40 hover:bg-[#1C1C24]/80 text-muted-foreground hover:text-white'
+        }`}
+      >
+        <div className={`p-3.5 rounded-2xl flex items-center justify-center ${selected ? 'bg-veloce text-white' : 'bg-white/[0.04]'}`}>
+          <Icon className="h-6 w-6" strokeWidth={1.5} />
+        </div>
+        <div className="space-y-1">
+          <h3 className="font-display font-semibold text-lg text-white">{label}</h3>
+          <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
+        </div>
+      </button>
+    );
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0D0D12] text-white flex flex-col justify-between overflow-x-hidden select-none">
-      
-      {/* ── UNIFIED MINIMALIST TOP NAV ── */}
-      <header className="w-full sticky top-0 left-0 right-0 z-50 bg-[#0D0D12]/80 backdrop-blur-xl border-b border-white/[0.02] px-6 py-4">
+    <div dir={isRtl ? 'rtl' : 'ltr'} className="relative min-h-screen bg-[#0D0D12] text-white flex flex-col justify-between overflow-x-hidden">
+      <header className="w-full sticky top-0 z-50 bg-[#0D0D12]/80 backdrop-blur-xl border-b border-white/[0.02] px-6 py-4">
         <div className="max-w-xl mx-auto space-y-3">
-          
-          {/* Top Row: step details and language switch */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span className="font-semibold text-white tracking-wide uppercase">
-              {getStepTitle()}
-            </span>
+            <span className="font-semibold text-white tracking-wide uppercase">{stepTitle}</span>
             <div className="flex items-center gap-3">
-              <span>{t.progress.replace('{current}', String(step + 1)).replace('{total}', '4')}</span>
+              <span>{t('progress', { current: step + 1, total: TOTAL_STEPS })}</span>
               <div className="h-4 w-px bg-white/10" />
               <LocaleSwitcher variant="compact" />
             </div>
           </div>
-
-          {/* Bottom Row: progress line */}
-          <div className="bg-white/[0.04] h-1 rounded-full overflow-hidden border border-white/[0.01]">
+          <div className="bg-white/[0.04] h-1 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-gradient-veloce rounded-full shadow-glow-veloce"
               initial={{ width: 0 }}
-              animate={{ width: `${getStepProgress()}%` }}
+              animate={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
             />
           </div>
         </div>
       </header>
 
-      {/* ── MAIN IMMERSIVE CONTENT AREA ── */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8 z-40 relative">
-        
-        {/* Subtle backdrop glowing orb to emulate premium UI */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-veloce/5 blur-[120px] pointer-events-none" />
-
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait" custom={direction}>
             {step === 0 && (
-              <motion.div
-                key="step-persona"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="space-y-6"
-              >
+              <motion.div key="pain" custom={direction} variants={slide} initial="enter" animate="center" exit="exit" className="space-y-6">
                 <div className="text-center space-y-2">
-                  <h1 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                    {t.personaQuestion}
-                  </h1>
-                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    {t.subWelcome}
-                  </p>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">{t('welcome')}</p>
+                  <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{t('painQuestion')}</h1>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">{t('painSubtitle')}</p>
                 </div>
-
                 <div className="grid gap-4 mt-6">
-                  {[
-                    { key: 'collector', label: t.collectorLabel, desc: t.collectorDesc, icon: Compass },
-                    { key: 'daily', label: t.dailyLabel, desc: t.dailyDesc, icon: Navigation },
-                    { key: 'fleet', label: t.fleetLabel, desc: t.fleetDesc, icon: Briefcase },
-                  ].map((opt) => {
-                    const Icon = opt.icon;
-                    const isSelected = selectedAnim === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        onClick={() => handleSelectOption('persona', opt.key)}
-                        disabled={pending}
-                        className={`w-full text-left p-6 rounded-[1.8rem] border backdrop-blur-xl transition-all duration-300 flex items-start gap-4 ${
-                          isSelected
-                            ? 'border-veloce bg-veloce/10 text-white shadow-glow-veloce scale-[1.02]'
-                            : 'border-white/[0.08] bg-[#1C1C24]/40 hover:bg-[#1C1C24]/80 text-muted-foreground hover:text-white'
-                        }`}
-                      >
-                        <div className={`p-3.5 rounded-2xl flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-veloce text-white' : 'bg-white/[0.04] text-muted-foreground group-hover:text-white'
-                        }`}>
-                          <Icon className="h-6 w-6" strokeWidth={1.5} />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="font-display font-semibold text-lg text-white">
-                            {opt.label}
-                          </h3>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {opt.desc}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <OptionButton id="fuel" label={t('painFuelLabel')} desc={t('painFuelDesc')} icon={Fuel} onClick={() => pick('pain', 'fuel')} />
+                  <OptionButton id="repairs" label={t('painRepairLabel')} desc={t('painRepairDesc')} icon={Wrench} onClick={() => pick('pain', 'repairs')} />
+                  <OptionButton id="resale" label={t('painResaleLabel')} desc={t('painResaleDesc')} icon={FileBadge} onClick={() => pick('pain', 'resale')} />
                 </div>
               </motion.div>
             )}
 
             {step === 1 && (
-              <motion.div
-                key="step-objective"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="space-y-6"
-              >
-                <div className="flex items-center gap-2 -ml-2 mb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setDirection(-1);
-                      setStep(0);
-                    }}
-                    className="text-xs text-muted-foreground hover:text-white"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" /> {locale === 'ar' ? 'السابق' : 'Retour'}
-                  </Button>
-                </div>
-
+              <motion.div key="motor" custom={direction} variants={slide} initial="enter" animate="center" exit="exit" className="space-y-6">
+                <Button variant="ghost" size="sm" onClick={() => goTo(0)} className="-ml-2 text-xs text-muted-foreground hover:text-white">
+                  <ChevronLeft className="h-4 w-4 mr-1" /> {t('back')}
+                </Button>
                 <div className="text-center space-y-2">
-                  <h1 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                    {t.objectiveQuestion}
-                  </h1>
+                  <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white">{t('motorizationQuestion')}</h1>
                 </div>
-
                 <div className="grid gap-4 mt-6">
-                  {[
-                    { key: 'tco', label: t.tcoLabel, desc: t.tcoDesc, icon: TrendingUp },
-                    { key: 'phm', label: t.phmLabel, desc: t.phmDesc, icon: Cpu },
-                    { key: 'resale', label: t.resaleLabel, desc: t.resaleDesc, icon: Coins },
-                  ].map((opt) => {
-                    const Icon = opt.icon;
-                    const isSelected = selectedAnim === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        onClick={() => handleSelectOption('objective', opt.key)}
-                        disabled={pending}
-                        className={`w-full text-left p-6 rounded-[1.8rem] border backdrop-blur-xl transition-all duration-300 flex items-start gap-4 ${
-                          isSelected
-                            ? 'border-veloce bg-veloce/10 text-white shadow-glow-veloce scale-[1.02]'
-                            : 'border-white/[0.08] bg-[#1C1C24]/40 hover:bg-[#1C1C24]/80 text-muted-foreground hover:text-white'
-                        }`}
-                      >
-                        <div className={`p-3.5 rounded-2xl flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-veloce text-white' : 'bg-white/[0.04] text-muted-foreground group-hover:text-white'
-                        }`}>
-                          <Icon className="h-6 w-6" strokeWidth={1.5} />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="font-display font-semibold text-lg text-white">
-                            {opt.label}
-                          </h3>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {opt.desc}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <OptionButton id="thermal" label={t('thermalLabel')} desc={t('thermalDesc')} icon={Fuel} onClick={() => pick('motorization', 'thermal')} />
+                  <OptionButton id="hybrid" label={t('hybridLabel')} desc={t('hybridDesc')} icon={BatteryCharging} onClick={() => pick('motorization', 'hybrid')} />
+                  <OptionButton id="electric" label={t('electricLabel')} desc={t('electricDesc')} icon={Zap} onClick={() => pick('motorization', 'electric')} />
                 </div>
               </motion.div>
             )}
 
             {step === 2 && (
-              <motion.div
-                key="step-motorization"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="space-y-6"
-              >
-                <div className="flex items-center gap-2 -ml-2 mb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setDirection(-1);
-                      setStep(1);
-                    }}
-                    className="text-xs text-muted-foreground hover:text-white"
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" /> {locale === 'ar' ? 'السابق' : 'Retour'}
-                  </Button>
-                </div>
-
+              <motion.div key="vehicle" custom={direction} variants={slide} initial="enter" animate="center" exit="exit" className="space-y-6 max-w-xl mx-auto">
+                <Button variant="ghost" size="sm" onClick={() => goTo(1)} className="-ml-2 text-xs text-muted-foreground hover:text-white">
+                  <ChevronLeft className="h-4 w-4 mr-1" /> {t('back')}
+                </Button>
                 <div className="text-center space-y-2">
-                  <h1 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                    {t.motorizationQuestion}
-                  </h1>
+                  <h1 className="font-display text-3xl font-extrabold tracking-tight text-white">{t('vehicleTitle')}</h1>
+                  <p className="text-sm text-muted-foreground">{t('vehicleSubtitle')}</p>
                 </div>
 
-                <div className="grid gap-4 mt-6">
-                  {[
-                    { key: 'hybrid', label: t.hybridLabel, desc: t.hybridDesc, icon: BatteryCharging },
-                    { key: 'electric', label: t.electricLabel, desc: t.electricDesc, icon: Zap },
-                    { key: 'thermal', label: t.thermalLabel, desc: t.thermalDesc, icon: Fuel },
-                  ].map((opt) => {
-                    const Icon = opt.icon;
-                    const isSelected = selectedAnim === opt.key;
-                    return (
-                      <button
-                        key={opt.key}
-                        onClick={() => handleSelectOption('motorization', opt.key)}
-                        disabled={pending}
-                        className={`w-full text-left p-6 rounded-[1.8rem] border backdrop-blur-xl transition-all duration-300 flex items-start gap-4 ${
-                          isSelected
-                            ? 'border-veloce bg-veloce/10 text-white shadow-glow-veloce scale-[1.02]'
-                            : 'border-white/[0.08] bg-[#1C1C24]/40 hover:bg-[#1C1C24]/80 text-muted-foreground hover:text-white'
-                        }`}
-                      >
-                        <div className={`p-3.5 rounded-2xl flex items-center justify-center transition-colors ${
-                          isSelected ? 'bg-veloce text-white' : 'bg-white/[0.04] text-muted-foreground group-hover:text-white'
-                        }`}>
-                          <Icon className="h-6 w-6" strokeWidth={1.5} />
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="font-display font-semibold text-lg text-white">
-                            {opt.label}
-                          </h3>
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            {opt.desc}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="step-vehicle-setup"
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="space-y-6 max-w-xl mx-auto"
-              >
-                <div className="text-center space-y-2">
-                  <h1 className="font-display text-3xl font-extrabold tracking-tight text-white uppercase">
-                    {t.vehicleSetupTitle}
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {t.vehicleSetupSubtitle}
-                  </p>
-                </div>
-
-                <form onSubmit={handleFinalSubmit} className="space-y-4">
-                  {/* ── ONE-TAP SCAN: photo of registration document ── */}
+                <form onSubmit={submitVehicle} className="space-y-4">
                   <input
-                    ref={carteGriseInputRef}
+                    ref={docInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/webp,application/pdf"
                     capture="environment"
                     className="hidden"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleCarteGriseScan(file);
+                      const f = e.target.files?.[0];
+                      if (f) handleDocScan(f);
                       e.target.value = '';
                     }}
                   />
                   <button
                     type="button"
-                    onClick={() => carteGriseInputRef.current?.click()}
-                    disabled={isScanningCarteGrise}
-                    className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl border border-[#C5A059]/30 bg-gradient-to-br from-[#C5A059]/10 to-[#C5A059]/5 hover:from-[#C5A059]/15 hover:to-[#C5A059]/10 text-sm font-semibold text-[#C5A059] transition-all disabled:opacity-50"
+                    onClick={() => docInputRef.current?.click()}
+                    disabled={isScanningDoc}
+                    className="w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl border border-[#C5A059]/30 bg-gradient-to-br from-[#C5A059]/10 to-[#C5A059]/5 hover:from-[#C5A059]/15 text-sm font-semibold text-[#C5A059] transition-all disabled:opacity-50"
                   >
-                    {isScanningCarteGrise ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {t.scanningCarteGrise}
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="h-4 w-4" />
-                        {t.scanCarteGrise}
-                      </>
-                    )}
+                    {isScanningDoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                    {isScanningDoc ? t('scanning') : t('scanDoc')}
                   </button>
                   <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-mono">
                     <div className="flex-1 h-px bg-white/[0.04]" />
-                    {t.orSeparator}
+                    {t('or')}
                     <div className="flex-1 h-px bg-white/[0.04]" />
                   </div>
 
-                  {/* License plate styling and current mileage */}
                   <Card className="p-6 space-y-5 border-veloce bg-veloce/5 shadow-glow-veloce relative overflow-hidden rounded-[2.2rem]">
-                    
-                    {/* Laser scanning line overlay */}
                     {isLookingUp && (
                       <div className="absolute inset-0 pointer-events-none z-10">
                         <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#007AFF] to-transparent animate-laser-sweep" />
                       </div>
                     )}
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-[#007AFF] tracking-widest uppercase">
-                        SIV Protocol
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-[#007AFF] tracking-widest uppercase">
+                        {isFrenchMarket ? 'SIV · VIN' : 'DVLA · MOT · VIN'}
                       </span>
                       {isLookingUp ? (
-                        <div className="text-xs text-veloce flex items-center gap-1.5 font-mono">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t.identifying}
-                        </div>
+                        <span className="text-veloce flex items-center gap-1.5">
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('identifying')}
+                        </span>
                       ) : (
-                        <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
-                          <ShieldCheck className="h-3.5 w-3.5" /> Securisé
-                        </div>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                        </span>
                       )}
                     </div>
 
                     <div className="space-y-4">
-                      {/* License Plate Field */}
                       <div className="space-y-1.5">
-                        <Label htmlFor="plateOnboard" className="font-semibold text-sm text-white flex items-center gap-1">
-                          {t.plateLabel}
-                          <span className="text-destructive" aria-label="obligatoire">*</span>
+                        <Label htmlFor="plateOnboard" className="font-semibold text-sm text-white">
+                          {t('plateLabel')} <span className="text-destructive">*</span>
                         </Label>
                         <div className="relative">
                           <Input
                             id="plateOnboard"
                             name="plate"
                             value={plate}
-                            onChange={(e) => {
-                              setPlate(e.target.value);
-                              // Trigger auto lookup on 6+ characters for French plates or DVLA UK format
-                              if (e.target.value.length >= 7) {
-                                handleLookup(e.target.value);
-                              }
-                            }}
+                            onChange={(e) => setPlate(e.target.value)}
                             onBlur={(e) => handleLookup(e.target.value)}
-                            placeholder={t.platePlaceholder}
+                            placeholder={platePlaceholder}
                             className="font-mono pl-10 text-lg uppercase tracking-widest bg-black/40 border-white/[0.08] focus:border-veloce rounded-xl"
                             required
-                            aria-required="true"
+                            autoComplete="off"
                           />
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          {t.plateHint}
-                        </p>
+                        <p className="text-[11px] text-muted-foreground">{t('plateHint')}</p>
                       </div>
 
-                      {/* Current Mileage Field */}
                       <div className="space-y-1.5">
-                        <Label htmlFor="mileageOnboard" className="font-semibold text-sm text-white flex items-center gap-1">
-                          {t.mileageLabel}
-                          <span className="text-destructive" aria-label="obligatoire">*</span>
+                        <Label htmlFor="mileageOnboard" className="font-semibold text-sm text-white">
+                          {t('mileageLabel')} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                           id="mileageOnboard"
@@ -1082,16 +453,20 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                           min={0}
                           value={mileage}
                           onChange={(e) => setMileage(e.target.value)}
-                          placeholder={t.mileagePlaceholder}
+                          placeholder="112480"
                           className="font-mono text-lg bg-black/40 border-white/[0.08] focus:border-veloce rounded-xl"
                           required
-                          aria-required="true"
                         />
                       </div>
+
+                      {(make || model) && (
+                        <div className="text-xs text-muted-foreground font-mono">
+                          {make} {model} · {year} · {fuelType}
+                        </div>
+                      )}
                     </div>
                   </Card>
 
-                  {/* ── EXPANDABLE DETAILED OPTIONS ── */}
                   <button
                     type="button"
                     onClick={() => setShowAdvanced(!showAdvanced)}
@@ -1100,25 +475,16 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                   >
                     <span className="flex items-center gap-2">
                       <Sliders className="h-3.5 w-3.5 text-[#C5A059]" />
-                      {t.customizeInfo}
+                      {t('details')}
                     </span>
-                    <ChevronRight
-                      className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`}
-                    />
+                    <ChevronRight className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
                   </button>
 
                   <AnimatePresence>
                     {showAdvanced && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden space-y-4"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <Card className="p-6 bg-black/30 border-white/[0.06] rounded-[1.8rem] space-y-4">
-                          <p className="text-[11px] text-muted-foreground -mt-2">
-                            {t.optionalHint}
-                          </p>
+                          <p className="text-[11px] text-muted-foreground -mt-2">{t('detailsHint')}</p>
                           <datalist id="cg-brands">
                             {BRAND_NAMES.map((b) => (
                               <option key={b} value={b} />
@@ -1130,95 +496,47 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                             ))}
                           </datalist>
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.makeLabel}</Label>
-                              <Input
-                                value={make}
-                                onChange={(e) => setMake(e.target.value)}
-                                list="cg-brands"
-                                autoComplete="off"
-                                className="bg-black/20 border-white/[0.08]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.modelLabel}</Label>
-                              <Input
-                                value={model}
-                                onChange={(e) => setModel(e.target.value)}
-                                list="cg-models"
-                                autoComplete="off"
-                                className="bg-black/20 border-white/[0.08]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.yearLabel}</Label>
-                              <Input
-                                type="number"
-                                min={1900}
-                                max={new Date().getFullYear() + 1}
-                                value={year}
-                                onChange={(e) => setYear(Number(e.target.value))}
-                                className="bg-black/20 border-white/[0.08]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.fuelTypeLabel}</Label>
+                            <Field label={t('make')}>
+                              <Input value={make} onChange={(e) => setMake(e.target.value)} list="cg-brands" autoComplete="off" className="bg-black/20 border-white/[0.08]" />
+                            </Field>
+                            <Field label={t('model')}>
+                              <Input value={model} onChange={(e) => setModel(e.target.value)} list="cg-models" autoComplete="off" className="bg-black/20 border-white/[0.08]" />
+                            </Field>
+                            <Field label={t('year')}>
+                              <Input type="number" min={1950} max={new Date().getFullYear() + 1} value={year} onChange={(e) => setYear(Number(e.target.value))} className="bg-black/20 border-white/[0.08]" />
+                            </Field>
+                            <Field label={t('fuelType')}>
                               <select
                                 value={fuelType}
                                 onChange={(e) => setFuelType(e.target.value as FuelType)}
                                 className="w-full rounded-btn border border-white/[0.08] bg-black/60 px-3 py-1.5 text-sm"
                               >
-                                <option value="thermal">Thermique</option>
-                                <option value="electric">Électrique</option>
-                                <option value="hybrid">Hybride</option>
+                                <option value="thermal">{t('thermalLabel')}</option>
+                                <option value="hybrid">{t('hybridLabel')}</option>
+                                <option value="electric">{t('electricLabel')}</option>
                               </select>
+                            </Field>
+                            <div className="col-span-2">
+                              <Field label={t('vin')}>
+                                <Input value={vin} onChange={(e) => setVin(e.target.value.toUpperCase())} maxLength={17} className="bg-black/20 border-white/[0.08] font-mono" />
+                              </Field>
                             </div>
-                            <div className="space-y-1 col-span-2">
-                              <Label className="text-xs">VIN</Label>
-                              <Input
-                                value={vin}
-                                onChange={(e) => setVin(e.target.value.toUpperCase())}
-                                placeholder="17 caractères"
-                                maxLength={17}
-                                className="bg-black/20 border-white/[0.08] font-mono"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.purchasePriceLabel}</Label>
-                              <Input
-                                type="number"
-                                value={purchasePrice}
-                                onChange={(e) => setPurchasePrice(e.target.value)}
-                                className="bg-black/20 border-white/[0.08] font-mono"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.purchaseDateLabel}</Label>
-                              <Input
-                                type="date"
-                                value={purchaseDate}
-                                onChange={(e) => setPurchaseDate(e.target.value)}
-                                className="bg-black/20 border-white/[0.08] font-mono"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.insuranceProviderLabel}</Label>
-                              <Input
-                                value={insuranceProvider}
-                                onChange={(e) => setInsuranceProvider(e.target.value)}
-                                placeholder="AXA"
-                                className="bg-black/20 border-white/[0.08]"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">{t.insuranceMonthlyLabel}</Label>
-                              <Input
-                                type="number"
-                                value={insuranceMonthly}
-                                onChange={(e) => setInsuranceMonthly(e.target.value)}
-                                placeholder="80"
-                                className="bg-black/20 border-white/[0.08] font-mono"
-                              />
+                            <Field label={t('purchasePrice')}>
+                              <Input type="number" value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)} className="bg-black/20 border-white/[0.08] font-mono" />
+                            </Field>
+                            <Field label={t('purchaseDate')}>
+                              <Input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className="bg-black/20 border-white/[0.08] font-mono" />
+                            </Field>
+                            <Field label={t('insurer')}>
+                              <Input value={insuranceProvider} onChange={(e) => setInsuranceProvider(e.target.value)} className="bg-black/20 border-white/[0.08]" />
+                            </Field>
+                            <Field label={t('insuranceMonthly')}>
+                              <Input type="number" value={insuranceMonthly} onChange={(e) => setInsuranceMonthly(e.target.value)} className="bg-black/20 border-white/[0.08] font-mono" />
+                            </Field>
+                            <div className="col-span-2">
+                              <Field label={t('insuranceRenewal')}>
+                                <Input type="date" value={insuranceRenewalDate} onChange={(e) => setInsuranceRenewalDate(e.target.value)} className="bg-black/20 border-white/[0.08] font-mono" />
+                              </Field>
                             </div>
                           </div>
                         </Card>
@@ -1230,26 +548,20 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                     <Button
                       type="submit"
                       disabled={pending || !plate.trim() || !mileage || Number(mileage) <= 0}
-                      className="w-full py-6 bg-[#007AFF] hover:bg-[#007AFF]/90 rounded-full font-bold text-white shadow-glow-veloce flex items-center justify-center gap-2 text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-6 bg-[#007AFF] hover:bg-[#007AFF]/90 rounded-full font-bold text-white shadow-glow-veloce flex items-center justify-center gap-2 text-base disabled:opacity-50"
                     >
                       {pending ? (
                         <>
-                          <Loader2 className="h-5 w-5 animate-spin" /> {t.loading}
+                          <Loader2 className="h-5 w-5 animate-spin" /> {t('finishing')}
                         </>
                       ) : (
                         <>
-                          {t.completeBtn} <ChevronRight className="h-5 w-5" />
+                          {t('finish')} <ChevronRight className="h-5 w-5" />
                         </>
                       )}
                     </Button>
-
-                    <button
-                      type="button"
-                      onClick={handleSkipToDemo}
-                      disabled={pending}
-                      className="w-full text-center py-2 text-xs font-semibold text-[#C5A059] hover:underline transition-all"
-                    >
-                      {t.skipDemo}
+                    <button type="button" onClick={useDemo} disabled={pending} className="w-full text-center py-2 text-xs font-semibold text-[#C5A059] hover:underline">
+                      {t('demo')}
                     </button>
                   </div>
                 </form>
@@ -1259,16 +571,22 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
         </div>
       </main>
 
-      {/* ── FOOTER STATUS ── */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-muted-foreground z-50">
-        <div>
-          VeloceWealth Inc. &copy; {new Date().getFullYear()}
-        </div>
+      <footer className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-muted-foreground">
+        <div>Velocewealth &copy; {new Date().getFullYear()}</div>
         <div className="flex items-center gap-1.5 font-mono text-[10px]">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>VeloceWealth Network: OPÉRATIONNEL</span>
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span>{t('footerStatus')}</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs">{label}</Label>
+      {children}
     </div>
   );
 }

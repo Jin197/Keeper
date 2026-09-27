@@ -14,6 +14,7 @@ import { useUser } from '@/components/user-context';
 import { updateProfileAction } from '@/server/actions/profile';
 import { DeleteAccountFlow } from '@/components/domain/delete-account-flow';
 import { getCurrenciesByRegion } from '@/lib/currencies';
+import { signupCountryOptions } from '@/lib/countries';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/lib/i18n/routing';
 import type { Locale } from '@/lib/i18n/routing';
@@ -206,7 +207,7 @@ export default function ProfileSettingsPage() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const [pending, startTransition] = useTransition();
   const [isDeleting, startDelete] = useTransition();
@@ -300,17 +301,12 @@ export default function ProfileSettingsPage() {
             <div className="space-y-1.5">
               <Label htmlFor="country">{t.country}</Label>
               <Select id="country" name="country" defaultValue={user.country}>
-                <option value="FR">{t.countries.FR}</option>
-                <option value="BE">{t.countries.BE}</option>
-                <option value="CH">{t.countries.CH}</option>
-                <option value="MA">{t.countries.MA}</option>
-                <option value="SN">{t.countries.SN}</option>
-                <option value="CI">{t.countries.CI}</option>
-                <option value="CA">{t.countries.CA}</option>
-                <option value="US">{t.countries.US}</option>
-                <option value="GB">{t.countries.GB}</option>
-                <option value="ES">{t.countries.ES}</option>
-                <option value="PT">{t.countries.PT}</option>
+                {/* Full list, labelled in the UI language; the country also sets the price band. */}
+                {signupCountryOptions(locale).map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
               </Select>
             </div>
             <div className="space-y-1.5">

@@ -70,7 +70,9 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <StructuredData />
       {children}
-      <ChatbotWidget />
+      {/* The assistant's knowledge base and fallback answers are French-only;
+          keep it off the English experience until it is translated. */}
+      {locale === 'fr' && <ChatbotWidget />}
       <CookieBanner />
     </NextIntlClientProvider>
   );
@@ -84,16 +86,13 @@ function StructuredData() {
     name: 'Velocewealth',
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web',
+    // Free tier exists, so the lowest price is 0. No aggregateRating: we have
+    // no reviews yet and inventing one is a Google penalty waiting to happen.
     offers: {
       '@type': 'Offer',
-      price: '4.99',
-      priceCurrency: 'EUR',
+      price: '0',
+      priceCurrency: 'GBP',
       availability: 'https://schema.org/InStock',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '12000',
     },
     url: base,
   };

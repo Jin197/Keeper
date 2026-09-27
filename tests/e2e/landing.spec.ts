@@ -14,18 +14,28 @@ test.describe('Landing page', () => {
   test('renders hero with primary CTA', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: /démarrer gratuitement/i }).first(),
-    ).toBeVisible();
+    await expect(page.getByRole('link', { name: /add my car/i }).first()).toBeVisible();
   });
 
-  test('shows the 6 feature cards', async ({ page }) => {
+  test('shows the three pain cards', async ({ page }) => {
     await page.goto('/');
-    const features = await page
-      .locator('section#features')
-      .getByRole('heading', { level: 3 })
-      .all();
-    expect(features.length).toBe(3);
+    const pains = await page.locator('section').filter({ hasText: /sound familiar/i }).getByRole('heading', { level: 3 }).all();
+    expect(pains.length).toBe(3);
+  });
+
+  test('data-sources table lists the launch countries', async ({ page }) => {
+    await page.goto('/');
+    const table = page.locator('section#features table');
+    await expect(table).toBeVisible();
+    await expect(table).toContainText('United Kingdom');
+    await expect(table).toContainText('France');
+  });
+
+  test('pricing shows a local currency amount and the yearly toggle', async ({ page }) => {
+    await page.goto('/');
+    const pricing = page.locator('section#pricing');
+    await expect(pricing.getByRole('button', { name: /yearly/i })).toBeVisible();
+    await expect(pricing.getByText(/\/ month/).first()).toBeVisible();
   });
 
   test('FAQ accordions expand', async ({ page }) => {
@@ -37,11 +47,8 @@ test.describe('Landing page', () => {
 
   test('signup CTA navigates to /signup', async ({ page }) => {
     await page.goto('/');
-    await page
-      .getByRole('link', { name: /démarrer gratuitement/i })
-      .first()
-      .click({ force: true });
+    await page.getByRole('link', { name: /add my car/i }).first().click({ force: true });
     await expect(page).toHaveURL(/\/signup/);
-    await expect(page.getByRole('heading', { name: /créer/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /create/i })).toBeVisible();
   });
 });

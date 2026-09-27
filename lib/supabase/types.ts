@@ -27,6 +27,7 @@ export type Database = {
           onboarding_persona: 'collector' | 'daily' | 'fleet' | null;
           onboarding_objective: 'tco' | 'phm' | 'resale' | null;
           onboarding_motorization: 'hybrid' | 'electric' | 'thermal' | null;
+          notification_prefs: Json;
         };
         Insert: {
           id: string;
@@ -43,6 +44,7 @@ export type Database = {
           onboarding_persona?: 'collector' | 'daily' | 'fleet' | null;
           onboarding_objective?: 'tco' | 'phm' | 'resale' | null;
           onboarding_motorization?: 'hybrid' | 'electric' | 'thermal' | null;
+          notification_prefs?: Json;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
         Relationships: [];
@@ -69,7 +71,9 @@ export type Database = {
           insurance_provider: string | null;
           insurance_monthly: number | null;
           insurance_mode: 'fixed' | 'variable';
+          insurance_renewal_date: string | null;
           registration_formula_number: string | null;
+          country: string | null;
           archived_at: string | null;
           created_at: string;
           updated_at: string;
@@ -95,7 +99,9 @@ export type Database = {
           insurance_provider?: string | null;
           insurance_monthly?: number | null;
           insurance_mode?: 'fixed' | 'variable';
+          insurance_renewal_date?: string | null;
           registration_formula_number?: string | null;
+          country?: string | null;
           archived_at?: string | null;
         };
         Update: Partial<Database['public']['Tables']['vehicles']['Insert']>;
@@ -148,7 +154,7 @@ export type Database = {
           vehicle_id: string;
           user_id: string;
           occurred_at: string;
-          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'other';
+          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'belt' | 'fluid' | 'gearbox' | 'other';
           description: string;
           cost: number;
           currency: string;
@@ -167,7 +173,7 @@ export type Database = {
           vehicle_id: string;
           user_id: string;
           occurred_at: string;
-          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'other';
+          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'belt' | 'fluid' | 'gearbox' | 'other';
           description: string;
           cost: number;
           currency: string;
@@ -325,7 +331,7 @@ export type Database = {
           user_id: string;
           vehicle_id: string;
           source: 'plan' | 'phm' | 'manual';
-          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'other';
+          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'belt' | 'fluid' | 'gearbox' | 'other';
           title: string;
           description: string | null;
           instructions: Json | null;
@@ -353,7 +359,7 @@ export type Database = {
           user_id: string;
           vehicle_id: string;
           source?: 'plan' | 'phm' | 'manual';
-          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'other';
+          category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'belt' | 'fluid' | 'gearbox' | 'other';
           title: string;
           description?: string | null;
           instructions?: Json | null;
@@ -381,24 +387,26 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          kind: 'maintenance_reminder' | 'maintenance_overdue' | 'fine_majoration_soon' | 'fine_added' | 'mfa_required' | 'other';
+          kind: 'maintenance_reminder' | 'maintenance_overdue' | 'forecast_due' | 'inspection_due' | 'insurance_renewal' | 'welcome' | 'fine_majoration_soon' | 'fine_added' | 'mfa_required' | 'other';
           title: string;
           body: string | null;
           link: string | null;
           related_vehicle_id: string | null;
           related_task_id: string | null;
+          dedupe_key: string | null;
           read_at: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          kind: 'maintenance_reminder' | 'maintenance_overdue' | 'fine_majoration_soon' | 'fine_added' | 'mfa_required' | 'other';
+          kind: 'maintenance_reminder' | 'maintenance_overdue' | 'forecast_due' | 'inspection_due' | 'insurance_renewal' | 'welcome' | 'fine_majoration_soon' | 'fine_added' | 'mfa_required' | 'other';
           title: string;
           body?: string | null;
           link?: string | null;
           related_vehicle_id?: string | null;
           related_task_id?: string | null;
+          dedupe_key?: string | null;
         };
         Update: { read_at?: string | null };
         Relationships: [];
@@ -425,6 +433,63 @@ export type Database = {
           notes?: string | null;
         };
         Update: Partial<Database['public']['Tables']['insurance_records']['Insert']>;
+        Relationships: [];
+      };
+      model_failure_rates: {
+        Row: {
+          id: number;
+          make: string;
+          model: string;
+          age_band: string;
+          km_band: string;
+          system: string;
+          tests: number;
+          failures: number;
+          advisories: number;
+          fail_rate: number;
+          source_years: string | null;
+          computed_at: string;
+        };
+        Insert: {
+          id?: number;
+          make: string;
+          model: string;
+          age_band: string;
+          km_band: string;
+          system: string;
+          tests: number;
+          failures: number;
+          advisories?: number;
+          fail_rate: number;
+          source_years?: string | null;
+          computed_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['model_failure_rates']['Insert']>;
+        Relationships: [];
+      };
+      vehicle_purchases: {
+        Row: {
+          id: string;
+          user_id: string;
+          vehicle_id: string;
+          kind: 'sale_dossier';
+          stripe_session_id: string;
+          stripe_payment_intent_id: string | null;
+          amount_total: number | null;
+          currency: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          vehicle_id: string;
+          kind: 'sale_dossier';
+          stripe_session_id: string;
+          stripe_payment_intent_id?: string | null;
+          amount_total?: number | null;
+          currency?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['vehicle_purchases']['Insert']>;
         Relationships: [];
       };
     };

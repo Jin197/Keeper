@@ -1,6 +1,7 @@
 export type FuelType = 'thermal' | 'electric' | 'hybrid';
 export type EnergyType = 'gasoline' | 'diesel' | 'electric' | 'e85' | 'gpl';
-export type Currency = 'EUR' | 'USD' | 'XOF' | 'XAF' | 'MAD' | 'CAD' | 'CHF';
+/** ISO-4217 code. Kept as a string alias: the app prices in ~70 currencies (see lib/pricing.ts). */
+export type Currency = string;
 export type Locale = 'fr' | 'en' | 'es' | 'ar' | 'pt';
 
 export interface Vehicle {
@@ -26,7 +27,11 @@ export interface Vehicle {
   insuranceProvider?: string;
   insuranceMonthly?: number;
   insuranceMode?: 'fixed' | 'variable';
+  /** ISO date (YYYY-MM-DD) the current policy renews — drives the compare-before-renewal nudge. */
+  insuranceRenewalDate?: string;
   registrationFormulaNumber?: string;
+  /** ISO-3166 alpha-2 registration country; decides which public data sources apply. */
+  country?: string;
 }
 
 export interface InsuranceRecord {
@@ -79,6 +84,9 @@ export type MaintenanceCategory =
   | 'filter'
   | 'battery'
   | 'inspection'
+  | 'belt'
+  | 'fluid'
+  | 'gearbox'
   | 'other';
 
 export interface MaintenanceTaskInstructions {
@@ -121,10 +129,33 @@ export interface MaintenanceTaskRecord {
 export type InAppNotificationKind =
   | 'maintenance_reminder'
   | 'maintenance_overdue'
+  | 'forecast_due'
+  | 'inspection_due'
+  | 'insurance_renewal'
+  | 'welcome'
   | 'fine_majoration_soon'
   | 'fine_added'
   | 'mfa_required'
   | 'other';
+
+/** Persisted on profiles.notification_prefs; read by the reminder crons. */
+export interface NotificationPrefs {
+  /** Channel: also send an email (in-app is always on). */
+  email: boolean;
+  /** Topics */
+  forecast: boolean;
+  inspection: boolean;
+  insurance: boolean;
+  fuel: boolean;
+}
+
+export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
+  email: true,
+  forecast: true,
+  inspection: true,
+  insurance: true,
+  fuel: true,
+};
 
 export interface InAppNotification {
   id: string;
@@ -180,7 +211,7 @@ export interface MaintenanceEntry {
   id: string;
   vehicleId: string;
   occurredAt: string;
-  category: 'oil' | 'tires' | 'brakes' | 'filter' | 'battery' | 'inspection' | 'other';
+  category: MaintenanceCategory;
   description: string;
   cost: number;
   currency: Currency;
@@ -254,7 +285,9 @@ export interface UserProfile {
   isTrial?: boolean;
   hasCompletedOnboarding?: boolean;
   onboardingPersona?: 'collector' | 'daily' | 'fleet';
+  /** tco = "fuel costs", phm = "repairs & breakdowns", resale = "resale value". */
   onboardingObjective?: 'tco' | 'phm' | 'resale';
   onboardingMotorization?: 'hybrid' | 'electric' | 'thermal';
+  notificationPrefs?: NotificationPrefs;
 }
 

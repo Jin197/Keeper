@@ -22,18 +22,20 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Velocewealth — Pilotez votre voiture comme un investissement',
+    default: 'Velocewealth — Know what your car will cost you next',
     template: '%s · Velocewealth',
   },
-  description:
-    'Suivi énergétique hybride, maintenance prédictive et carnet certifié. Transformez votre voiture en patrimoine maîtrisé.',
+  description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
   keywords: [
-    'gestion automobile',
+    'car running costs',
+    'cost per mile',
+    'MOT history',
+    'car maintenance reminder',
+    'cheapest fuel near me',
+    'service history',
     'coût au kilomètre',
-    'TCO',
     'carnet entretien',
-    'suivi carburant',
-    'voiture électrique',
+    'prix carburant',
   ],
   authors: [{ name: 'Velocewealth' }],
   metadataBase: new URL(
@@ -41,23 +43,21 @@ export const metadata: Metadata = {
   ),
   openGraph: {
     type: 'website',
-    title: 'Velocewealth — Pilotez votre voiture comme un investissement',
-    description:
-      'Suivi énergétique hybride, maintenance prédictive et carnet certifié. Transformez votre voiture en patrimoine maîtrisé.',
+    title: 'Velocewealth — Know what your car will cost you next',
+    description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&h=630&fit=crop&q=80',
         width: 1200,
         height: 630,
-        alt: 'Velocewealth — Gestion de Patrimoine Automobile',
+        alt: 'Velocewealth — car running costs and maintenance forecast',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Velocewealth — Pilotez votre voiture comme un investissement',
-    description:
-      'Suivi énergétique hybride, maintenance prédictive et carnet certifié. Transformez votre voiture en patrimoine maîtrisé.',
+    title: 'Velocewealth — Know what your car will cost you next',
+    description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
     images: ['https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&h=630&fit=crop&q=80'],
   },
 };

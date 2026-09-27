@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { TRIAL_DAYS, trialDaysRemaining } from '@/lib/trial';
+import { resolvePricing, formatPrice } from '@/lib/pricing';
+import { resolveRequestCountry } from '@/lib/geo';
 import { ManageSubscriptionButton } from './manage-button';
 import { BillingPricingSelector } from './billing-pricing';
 
@@ -23,8 +25,8 @@ const TRANSLATIONS = {
     renewsAuto: "Renouvellement automatique. Modifiez votre abonnement à tout moment.",
     trialDesc: (days: number) => `Profitez de toutes les fonctions Premium pendant ${TRIAL_DAYS} jours (sans carte bancaire). Il vous reste ${days} jour${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Passez Premium pour OCR illimité, carnet certifié et export fiscal.",
-    trialPriceNote: "€ (Période d'essai — puis 9,99 €/mois)",
-    perMonth: "€/mois",
+    trialPriceNote: (price: string) => `(Période d'essai — puis ${price}/mois)`,
+    perMonth: "/mois",
     paymentMethod: "Mode de paiement",
     paymentMethodDesc: "Géré via le portail Stripe — cliquez sur « Modifier ».",
     noPaymentMethod: "Aucun mode de paiement enregistré.",
@@ -53,8 +55,8 @@ const TRANSLATIONS = {
     renewsAuto: "Automatic renewal. Modify your subscription at any time.",
     trialDesc: (days: number) => `Enjoy all Premium features for ${TRIAL_DAYS} days (no credit card required). You have ${days} day${days > 1 ? 's' : ''} left.`,
     upgradeDesc: "Upgrade to Premium for unlimited OCR, certified logbook, and tax export.",
-    trialPriceNote: "€ (Trial period — then €9.99/mo)",
-    perMonth: "€/month",
+    trialPriceNote: (price: string) => `(Trial period — then ${price}/mo)`,
+    perMonth: "/month",
     paymentMethod: "Payment Method",
     paymentMethodDesc: "Managed via Stripe portal — click 'Modify'.",
     noPaymentMethod: "No payment method recorded.",
@@ -83,8 +85,8 @@ const TRANSLATIONS = {
     renewsAuto: "Renovación automática. Modifica tu suscripción en cualquier momento.",
     trialDesc: (days: number) => `Disfruta de todas las funciones Premium durante ${TRIAL_DAYS} días (sin tarjeta de crédito). Te quedan ${days} día${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Pásate a Premium para obtener OCR ilimitado, carnet certificado y exportación fiscal.",
-    trialPriceNote: "€ (Período de prueba — luego 9,99 €/mes)",
-    perMonth: "€/mes",
+    trialPriceNote: (price: string) => `(Período de prueba — luego ${price}/mes)`,
+    perMonth: "/mes",
     paymentMethod: "Método de pago",
     paymentMethodDesc: "Gestionado a través del portal Stripe — haz clic en 'Modificar'.",
     noPaymentMethod: "Ningún método de pago registrado.",
@@ -113,8 +115,8 @@ const TRANSLATIONS = {
     renewsAuto: "تجديد تلقائي. تعديل اشتراكك في أي وقت.",
     trialDesc: (days: number) => `استمتع بجميع الميزات البريميوم لمدة ${TRIAL_DAYS} يومًا (لا تتطلب بطاقة ائتمان). المتبقي ${days} يوم.`,
     upgradeDesc: "قم بالترقية إلى بريميوم للحصول على مسح OCR غير محدود، ودفتر معتمد، وتصدير ضريبي.",
-    trialPriceNote: "يورو (فترة تجريبية — ثم 9.99 يورو/شهر)",
-    perMonth: "يورو/شهر",
+    trialPriceNote: (price: string) => `(فترة تجريبية — ثم ${price}/شهر)`,
+    perMonth: "/شهر",
     paymentMethod: "طريقة الدفع",
     paymentMethodDesc: "تدار عبر بوابة Stripe — انقر على 'تعديل'.",
     noPaymentMethod: "لم يتم تسجيل أي طريقة دفع.",
@@ -143,8 +145,8 @@ const TRANSLATIONS = {
     renewsAuto: "Renovação automática. Altere sua assinatura a qualquer momento.",
     trialDesc: (days: number) => `Aproveite todos os recursos Premium por ${TRIAL_DAYS} dias (sem necessidade de cartão de crédito). Restam-lhe ${days} dia${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Atualize para o Premium para obter OCR ilimitado, caderneta certificada e exportação fiscal.",
-    trialPriceNote: "€ (Período de teste — depois 9,99 €/mês)",
-    perMonth: "€/mês",
+    trialPriceNote: (price: string) => `(Período de teste — depois ${price}/mês)`,
+    perMonth: "/mês",
     paymentMethod: "Método de pagamento",
     paymentMethodDesc: "Gerenciado via portal Stripe — clique em 'Alterar'.",
     noPaymentMethod: "Nenhum método de pagamento registrado.",
@@ -170,7 +172,7 @@ interface PageProps {
 
 export default async function BillingPage({ params }: PageProps) {
   const { locale } = await params;
-  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.fr;
+  const t = TRANSLATIONS[locale as keyof typeof TRANSLATIONS] || TRANSLATIONS.en;
 
   const profile = isSupabaseConfigured() ? await getProfile() : null;
   const isPremium = profile?.planTier === 'premium';
@@ -180,6 +182,10 @@ export default async function BillingPage({ params }: PageProps) {
 
   const remainingDays =
     isTrial && profile?.createdAt ? trialDaysRemaining(profile.createdAt) : 0;
+
+  const country = resolveRequestCountry(profile?.country, locale === 'fr' ? 'FR' : 'GB');
+  const pricing = resolvePricing(country, profile?.currency);
+  const monthlyLabel = formatPrice(pricing.monthly, pricing.currency, locale);
 
   return (
     <div className="space-y-6">
@@ -201,10 +207,10 @@ export default async function BillingPage({ params }: PageProps) {
             </p>
             <div className="flex items-baseline gap-1 mt-4">
               <span className="font-mono text-3xl font-bold tabular-nums">
-                {isSubscribed ? (isFamily ? '16,99' : '9,99') : '0'}
+                {isSubscribed ? monthlyLabel : formatPrice(0, pricing.currency, locale)}
               </span>
               <span className="text-muted-foreground">
-                {isTrial ? t.trialPriceNote : t.perMonth}
+                {isTrial ? t.trialPriceNote(monthlyLabel) : t.perMonth}
               </span>
             </div>
           </div>
@@ -226,7 +232,7 @@ export default async function BillingPage({ params }: PageProps) {
       </Card>
 
       {/* Renders pricing selector directly inside settings for unsubscribed users */}
-      {!isSubscribed && <BillingPricingSelector currentLocale={locale} />}
+      {!isSubscribed && <BillingPricingSelector pricing={pricing} locale={locale} />}
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">

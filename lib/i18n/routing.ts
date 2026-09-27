@@ -19,7 +19,11 @@ export type Locale = (typeof allLocales)[number];
  */
 export const locales = ['fr', 'en'] as const satisfies readonly Locale[];
 
-export const defaultLocale: Locale = 'fr';
+/**
+ * English is the default: the launch market is the UK (the only country with a
+ * free official per-vehicle history), so `/` serves EN and French lives at `/fr`.
+ */
+export const defaultLocale: Locale = 'en';
 
 export const localeLabels: Record<Locale, string> = {
   fr: 'Français',
@@ -43,7 +47,7 @@ export const isRtl = (locale: string) => rtlLocales.includes(locale as Locale);
 export const routing = defineRouting({
   locales,
   defaultLocale,
-  localePrefix: 'as-needed', // /dashboard for fr, /en/dashboard for others
+  localePrefix: 'as-needed', // /dashboard for en, /fr/dashboard for French
 });
 
 export const { Link, redirect, usePathname, useRouter, getPathname } =
