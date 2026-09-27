@@ -5,13 +5,42 @@ Everything in code is done and tested. These four steps need **your** accounts
 from a machine that has no `.env.local`, no Supabase CLI login and no Vercel
 link (which is the state of the repo checkout used to build this).
 
-## 1. Apply the 4 migrations (≈ 5 min)
+## 0. A blocking defect found on your live database (27 Sep)
+
+The secret API key authenticates as `service_role` — the Auth admin API accepts
+it — but **every table in `public` refuses it**: Postgres answers 42501
+"permission denied for table profiles" and even hints
+`GRANT SELECT ON public.profiles TO service_role`. The `anon` role can read
+those same tables. The grants from migration `20260518000000` are therefore not
+in force on this project.
+
+Every server-side write uses that role, so as things stand, in production:
+
+- the Stripe webhook cannot set `profiles.plan_tier` → **a customer pays and
+  stays on the free plan**, silently;
+- `pushInAppNotification` fails → no reminders at all;
+- both crons fail on their first query.
+
+None of it shows in the UI. `20260927000000_restore_service_role_grants.sql`
+fixes it with a loop over every table (so it also covers the new ones) and
+raises an exception if `service_role` still cannot update `profiles`, so a
+broken backend fails the migration instead of the launch.
+
+**Verify after `db push`** — this must print the profile row, not a 403:
+
+```bash
+curl -s "$SUPABASE_URL/rest/v1/profiles?select=id,plan_tier&limit=1" \
+  -H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY"
+```
+
+## 1. Apply the 6 migrations (≈ 5 min)
 
 ```bash
 npm i -g supabase            # once
 supabase login               # opens the browser
 supabase link --project-ref <your-project-ref>   # Settings → General in the Supabase dashboard
 npm run db:push              # applies:
+#   20260927000000_restore_service_role_grants.sql  ← read §0 first
 #   20260919000000_launch_pivot.sql        vehicles.country, insurance_renewal_date, vehicle_purchases
 #   20260920000000_model_failure_rates.sql the DVSA statistics table
 #   20260920000100_maintenance_categories.sql belt / fluid / gearbox
@@ -37,6 +66,7 @@ Project → Settings → Environment Variables (Production + Preview):
 | Variable | Value |
 |---|---|
 | `CRON_SECRET` | `openssl rand -hex 32` — Vercel sends it as `Authorization: Bearer …` on both crons in `vercel.json` |
+| `SUPABASE_SECRET_KEY` | the `sb_secret_…` key. **Never** as `NEXT_PUBLIC_*` |
 | `RESEND_API_KEY`, `EMAIL_FROM` | from resend.com, or leave empty → reminders stay in-app only |
 | `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY` (+ `_B`, `_C`), `STRIPE_PRICE_SALE_DOSSIER` | see `docs/LAUNCH.md §3` |
 | `DVLA_API_KEY` | free, instant: https://developer-portal.driver-vehicle-licensing.api.gov.uk/ |
@@ -52,7 +82,8 @@ this machine into `data/model-failure-rates.json` (git-ignored, see the
 figures in `docs/LAUNCH.md §3b`). To load it into your database:
 
 ```bash
-SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SERVICE_ROLE_KEY=<service role key> npm run dvsa:upload
+set -a; source .env.local; set +a   # SUPABASE_URL + SUPABASE_SECRET_KEY are already there
+npm run dvsa:upload
 ```
 
 To rebuild next year: download the new year's three zips from

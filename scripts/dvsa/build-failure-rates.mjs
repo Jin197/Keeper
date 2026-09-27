@@ -22,7 +22,7 @@
  * `--dir` folders must contain the extracted CSVs: test_result*.csv,
  * test_item*.csv and the lookups (item_detail*.csv, item_group*.csv).
  * Delimiter (comma or pipe) is auto-detected. `--upload` upserts the JSON into
- * Supabase using SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY from the env.
+ * Supabase using SUPABASE_URL / SUPABASE_SECRET_KEY from the env.
  *
  * Runtime: the 2023 year is ~40 M tests / ~60 M items; loading into SQLite
  * takes 15–40 min on a laptop, aggregation a few minutes. Node ≥ 22.5 for
@@ -303,8 +303,10 @@ function round(x) {
 // ── 5. Optional upload to Supabase ───────────────────────────────────
 async function upload(records) {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for --upload');
+  // Supabase renamed the backend key in 2026 (sb_secret_… / SUPABASE_SECRET_KEY);
+  // accept either name so a copy-paste from the dashboard works.
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_SECRET_KEY) are required for --upload');
   const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const computedAt = new Date().toISOString();

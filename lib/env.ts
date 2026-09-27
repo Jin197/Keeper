@@ -60,7 +60,15 @@ export const env = {
   appUrl: () => process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   supabaseUrl: () => required('NEXT_PUBLIC_SUPABASE_URL'),
   supabaseAnonKey: () => required('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
-  supabaseServiceRoleKey: () => required('SUPABASE_SERVICE_ROLE_KEY'),
+  /**
+   * The backend key. Supabase renamed these in 2026: `sb_secret_…` replaces the
+   * legacy service_role JWT, and the dashboard now calls the variable
+   * SUPABASE_SECRET_KEY. Accept both so a copy-paste from either era works.
+   */
+  supabaseServiceRoleKey: () =>
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    required('SUPABASE_SERVICE_ROLE_KEY'),
   stripeSecret: () => required('STRIPE_SECRET_KEY'),
   stripeWebhookSecret: () => required('STRIPE_WEBHOOK_SECRET'),
   stripePriceMonthly: () => required('STRIPE_PRICE_MONTHLY'),
