@@ -10,10 +10,12 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SVC = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Supabase renamed the backend key in 2026 (sb_secret_… / SUPABASE_SECRET_KEY).
+// Accept either name so revoking the legacy service_role JWT does not break this.
+const SVC = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!URL || !SVC) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment');
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY in environment');
   process.exit(1);
 }
 

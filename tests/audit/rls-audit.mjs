@@ -19,14 +19,26 @@ dotenv.config({ path: '.env.local' });
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SVC = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Supabase renamed the backend key in 2026 (sb_secret_… / SUPABASE_SECRET_KEY).
+// Accept either name so revoking the legacy service_role JWT does not break this.
+const SVC = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const A_EMAIL = process.env.SUPABASE_TEST_USER_A_EMAIL;
 const A_PASS = process.env.SUPABASE_TEST_USER_A_PASSWORD;
 const B_EMAIL = process.env.SUPABASE_TEST_USER_B_EMAIL;
 const B_PASS = process.env.SUPABASE_TEST_USER_B_PASSWORD;
 
-if (!URL || !ANON || !SVC || !A_EMAIL || !A_PASS || !B_EMAIL || !B_PASS) {
-  console.error('Missing env vars. See file header for setup.');
+const missing = Object.entries({
+  NEXT_PUBLIC_SUPABASE_URL: URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ANON,
+  'SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY)': SVC,
+  SUPABASE_TEST_USER_A_EMAIL: A_EMAIL,
+  SUPABASE_TEST_USER_A_PASSWORD: A_PASS,
+  SUPABASE_TEST_USER_B_EMAIL: B_EMAIL,
+  SUPABASE_TEST_USER_B_PASSWORD: B_PASS,
+}).filter(([, v]) => !v).map(([k]) => k);
+if (missing.length) {
+  console.error(`Missing env vars:\n  ${missing.join('\n  ')}`);
+  console.error('\nThe two test users are created by: node tests/audit/setup-rls-users.mjs');
   process.exit(2);
 }
 

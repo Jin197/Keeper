@@ -205,3 +205,42 @@ promesse centrale, et la couche 2 devient la première nouveauté de la semaine 
 Dès réception des cinq valeurs (`MOT_CLIENT_ID`, `MOT_CLIENT_SECRET`,
 `MOT_TOKEN_URL`, `MOT_SCOPE_URL`, `MOT_API_KEY`), les coller dans Vercel suffit :
 le bloc apparaît au déploiement suivant, sans changement de code.
+
+---
+
+## Rotation des clés Supabase — ordre à respecter
+
+Deux clés donnent un accès total (lecture/écriture sur toutes les données
+utilisateur, RLS contournée, plus l'API Auth admin) et doivent tourner avant
+l'ouverture des inscriptions :
+
+1. la clé secrète `sb_secret_…` (`SUPABASE_SECRET_KEY`) ;
+2. le **JWT legacy `service_role`** — celui qui commence par `eyJ…`. Il expire
+   en 2036 et donne exactement les mêmes droits. Révoquer la première en
+   laissant le second actif ne change rien à l'exposition.
+
+Rien dans le code ne dépend plus du JWT legacy : `lib/env.ts` préfère
+`SUPABASE_SECRET_KEY`, et les quatre scripts d'audit acceptent désormais les
+deux noms. `NEXT_PUBLIC_SUPABASE_ANON_KEY` contient déjà la clé *publishable*
+(le nom de la variable est historique) — elle est publique par conception et n'a
+pas à tourner.
+
+**Ordre, pour éviter une coupure :**
+
+1. Supabase → Settings → API → Secret keys → **Create new**. Ne rien révoquer
+   encore : les deux clés coexistent.
+2. Coller la nouvelle dans `.env.local` **et** dans Vercel (Production +
+   Preview), en `SUPABASE_SECRET_KEY`. Jamais en `NEXT_PUBLIC_*` : ce préfixe
+   l'enverrait au navigateur.
+3. Vérifier avant de couper quoi que ce soit :
+   `curl -s -o /dev/null -w '%{http_code}\n' "$SUPABASE_URL/rest/v1/profiles?select=id&limit=1" -H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY"`
+   → doit renvoyer `200`.
+4. Redéployer Vercel pour que les fonctions serveur prennent la nouvelle valeur.
+5. Alors seulement : révoquer l'ancienne clé secrète, puis
+   Settings → API → **Legacy keys → Revoke** pour le JWT `service_role`.
+6. Re-tester : un `GET /rest/v1/profiles` avec l'**ancienne** clé doit maintenant
+   échouer, et l'app doit continuer de fonctionner.
+
+Si l'étape 5 est faite avant l'étape 3, le webhook Stripe et les deux crons
+tombent sans rien afficher dans l'UI — le même mode de panne silencieuse que le
+défaut §0.
