@@ -86,6 +86,12 @@ const signupSchema = z.object({
 export type AuthResult = {
   error?: string;
   ok?: boolean;
+  /**
+   * Signup succeeded but Supabase requires the address to be confirmed before
+   * it hands out a session, so there is nothing to redirect to yet. The form
+   * shows a "check your inbox" panel instead.
+   */
+  confirmationRequired?: boolean;
   /** When set, the client must collect a TOTP code and call mfaLoginChallengeAction. */
   mfaRequired?: { factorId: string };
 };
@@ -274,10 +280,15 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.auth.signUp({
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      // Where the link in the confirmation email lands. Without this Supabase
+      // falls back to the project's Site URL, which is not necessarily this
+      // deployment.
+      emailRedirectTo: `${appUrl}/auth/callback?next=/dashboard`,
       data: {
         full_name: parsed.data.fullName,
         country: parsed.data.country,
@@ -291,6 +302,14 @@ export async function signupAction(formData: FormData): Promise<AuthResult> {
   // Persist the chosen locale in the cookie immediately so the new account
   // experience renders in the picked language from the very next navigation.
   setLocaleCookie(parsed.data.locale);
+
+  // With "Confirm email" enabled (the Supabase default, and the setting on this
+  // project) signUp returns a user but no session. Redirecting to /dashboard
+  // then bounces straight back to the login screen with no explanation — the
+  // person has just signed up and is told to sign in. Ask them to open the
+  // email instead. When confirmations are off, a session is returned here and
+  // the original redirect still applies.
+  if (!data.session) return { ok: true, confirmationRequired: true };
 
   revalidatePath('/', 'layout');
   redirect('/dashboard');

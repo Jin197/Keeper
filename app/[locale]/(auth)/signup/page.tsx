@@ -20,6 +20,8 @@ export default function SignupPage() {
   const locale = useLocale();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string>();
+  /** Set to the address once signup succeeded and Supabase wants it confirmed. */
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState<string>();
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState('');
 
@@ -49,7 +51,13 @@ export default function SignupPage() {
     startTransition(async () => {
       setError(undefined);
       const res = await signupAction(formData);
-      if (res?.error) setError(res.error);
+      if (res?.error) {
+        setError(res.error);
+        return;
+      }
+      if (res?.confirmationRequired) {
+        setAwaitingConfirmation(String(formData.get('email') ?? ''));
+      }
     });
   };
 
@@ -63,6 +71,21 @@ export default function SignupPage() {
       if (res.url) window.location.href = res.url;
     });
   };
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl bg-emerald-500/10 text-emerald-400 w-12 h-12 flex items-center justify-center">
+          <Check className="h-6 w-6" strokeWidth={2.5} />
+        </div>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t('checkInboxTitle')}</h1>
+        <p className="text-sm text-muted-foreground">
+          {t('checkInboxBody', { email: awaitingConfirmation })}
+        </p>
+        <p className="text-xs text-muted-foreground">{t('checkInboxSpam')}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
