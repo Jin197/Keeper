@@ -244,3 +244,54 @@ pas à tourner.
 Si l'étape 5 est faite avant l'étape 3, le webhook Stripe et les deux crons
 tombent sans rien afficher dans l'UI — le même mode de panne silencieuse que le
 défaut §0.
+
+---
+
+# Audit de lancement — 28 septembre 2026, pour le 1er octobre
+
+État vérifié contre le projet réel, pas de mémoire.
+
+## Vérifié et fonctionnel
+
+- Schéma : **28/28 migrations** appliquées sur `rivqcchifgbiqlrlernk`, historique enregistré.
+- `service_role` : lecture/écriture confirmée sur 7 tables, aucun `42501`.
+- Statistiques DVSA : **331 549 lignes**, 1 214 modèles, rechargées en 40 s.
+- Buckets : `receipts`, `invoices` (privés), `vehicle-photos`, `avatars` (publics).
+- Email : domaine `keeperapp.app` vérifié chez Resend (eu-west-1), SPF + DKIM + MX.
+  Envoi réel testé. SMTP Supabase configuré.
+- **Inscription de bout en bout** : compte créé, profil généré par le déclencheur
+  avec toutes les métadonnées, essai de 30 jours actif, mail de confirmation remis
+  au SMTP.
+- Auth : mot de passe minimum aligné à 10 (Supabase acceptait 6).
+- Code : 27 commits, typecheck propre, 172 tests, `next build` propre **sans** clé
+  Stripe ni Google.
+
+## Bloquant pour le 1er
+
+1. **Domaine non branché.** Aucun `A` ni `CNAME` sur `keeperapp.app`. La Site URL
+   Supabase pointe pourtant dessus : chaque lien de confirmation mène dans le vide.
+   *C'est le blocage numéro un.*
+2. **Variables Vercel.** Les 8 de base + les 8 `LEGAL_ENTITY_*`. Attention :
+   `NEXT_PUBLIC_APP_URL` doit valoir `https://keeperapp.app`, pas `localhost`.
+3. **Déploiement jamais fait.** Rien n'a tourné ailleurs qu'en local.
+4. **Code non poussé.** 27 commits uniquement sur cette machine — aucune sauvegarde.
+
+## Dégradé mais livrable
+
+- **Scan de ticket** : sans `GOOGLE_APPLICATION_CREDENTIALS_JSON`, la route renvoie
+  un 500 avec un message technique. Le scan est pourtant annoncé sur la page
+  d'accueil. Soit on configure Vision, soit on masque la promesse.
+- **Recherche de plaque** : sans `DVLA_API_KEY` / `SIV_API_KEY`, saisie manuelle
+  seulement.
+- **Couche 2 du pronostic** absente jusqu'aux identifiants DVSA (réf. KE2U58ET).
+- **DMARC absent** — risque d'indésirables sur les mails de confirmation.
+- **Rate limiting** sans Upstash : dégradé, pas bloquant.
+- 4 messages d'erreur encore en français en dur dans les routes API.
+- « Keeper AI » est une recherche par mots-clés tant qu'il n'y a pas de clé OpenAI.
+
+## Hors périmètre du 1er
+
+Stripe et les paiements (premier encaissement possible fin octobre, l'essai étant
+de 30 jours sans carte), la validation des 10 carnets constructeurs, Sentry, le
+visuel `luxury-car.png`, les 30 autres modèles.
+
