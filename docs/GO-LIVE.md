@@ -151,6 +151,14 @@ the scope `https://tapi.dvsa.gov.uk/.default` (→ `MOT_SCOPE_URL`) and an
   - [ ] Upload DVSA (`npm run dvsa:upload`) — ré-agrège 5,9 Go de SQLite avant
         d'écrire, compter ~20–40 min. Un seul process à la fois : SQLite rend
         `database is locked` si deux tournent en parallèle.
+        Si l'upload casse en route (réseau, timeout), **ne pas relancer
+        `dvsa:upload`** : `npm run dvsa:reupload` renvoie les mêmes lignes depuis
+        `data/model-failure-rates.json` en quelques minutes, sans ré-agréger.
+        L'écriture est idempotente (upsert sur la clé unique, puis purge par
+        `computed_at`), donc une reprise est sans risque.
+        La table peut rester vide sans rien casser : la couche 3 est gardée
+        partout (`failureProfile && …`), l'app affiche simplement les couches 1
+        et 2 en attendant.
   - [ ] **Révoquer et régénérer** la clé secrète (Supabase → Settings → API).
         ⚠️ **Deux** clés ont fuité en conversation et doivent tourner : la clé
         `sb_secret_…` *et* le JWT legacy `service_role` (Settings → API → Legacy

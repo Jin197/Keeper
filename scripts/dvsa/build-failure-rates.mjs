@@ -29,7 +29,7 @@
  * `node:sqlite`.
  */
 
-import { createReadStream, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { join, resolve, dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
@@ -47,6 +47,26 @@ const dbPath = resolve(opt('db', './data/dvsa/work.sqlite'));
 const outPath = resolve(opt('out', './data/model-failure-rates.json'));
 const minTests = Number(opt('min-tests', '50'));
 const skipLoad = flag('skip-load');
+
+// `--from-json` re-uploads the previous run's result and never touches SQLite.
+// Aggregating the 5.9 GB working database takes tens of minutes, so a network
+// failure halfway through a 331k-row upload must not cost that again. It runs
+// before the database is opened on purpose: opening it immediately sets a PRAGMA,
+// which fails with "database is locked" while an aggregation is in flight — the
+// very moment you are most likely to want this path. Re-uploading is idempotent
+// (upsert on the unique key, then prune by computed_at).
+if (flag('from-json')) {
+  if (!existsSync(outPath)) {
+    console.error(`--from-json needs ${outPath}; run the pipeline first.`);
+    process.exit(1);
+  }
+  const t0 = Date.now();
+  const records = JSON.parse(readFileSync(outPath, 'utf8'));
+  console.log(`Re-uploading ${records.length.toLocaleString()} rows from ${outPath}`);
+  await upload(records);
+  console.log(`Done in ${Math.round((Date.now() - t0) / 1000)} s`);
+  process.exit(0);
+}
 
 if (dirs.length === 0 && !skipLoad) {
   console.error('Give at least one --dir with extracted DVSA CSVs (or --skip-load to reuse an existing --db).');
@@ -325,6 +345,7 @@ async function upload(records) {
 
 // ── main ─────────────────────────────────────────────────────────────
 const t0 = Date.now();
+
 if (!skipLoad) {
   for (const dir of dirs) {
     if (!existsSync(dir)) throw new Error(`No such directory: ${dir}`);
