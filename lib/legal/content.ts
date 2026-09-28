@@ -458,7 +458,7 @@ export const IMPRINT: Bilingual<{
   dataBody: string;
   disputeTitle: string;
   disputeBody: string;
-  labels: Record<'name' | 'form' | 'capital' | 'registry' | 'vat' | 'address' | 'publisher' | 'email', string>;
+  labels: Record<'name' | 'form' | 'capital' | 'registry' | 'vat' | 'vatNote' | 'address' | 'publisher' | 'email', string>;
   hosting: string[];
 }> = {
   en: {
@@ -473,7 +473,7 @@ export const IMPRINT: Bilingual<{
     dataBody: 'How personal data is processed is described in the privacy policy.',
     disputeTitle: 'Complaints and disputes',
     disputeBody: 'Write to the contact address above first — most things are settled that way. If a dispute remains, a consumer may refer it to a mediator or to the online dispute-resolution platform of their country of residence, and in any case retains the right to go to court.',
-    labels: { name: 'Legal name', form: 'Legal form', capital: 'Share capital', registry: 'Company registration', vat: 'VAT number', address: 'Registered address', publisher: 'Publishing director', email: 'Contact' },
+    labels: { name: 'Legal name', form: 'Legal form', capital: 'Share capital', registry: 'Company registration', vat: 'VAT number', vatNote: 'VAT status', address: 'Registered address', publisher: 'Publishing director', email: 'Contact' },
     hosting: [
       'Application: Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA — served from the EU region.',
       'Database and file storage: Supabase Inc. — instance hosted in Frankfurt, Germany.',
@@ -492,7 +492,7 @@ export const IMPRINT: Bilingual<{
     dataBody: 'Les modalités de traitement des données personnelles sont décrites dans la politique de confidentialité.',
     disputeTitle: 'Réclamations et litiges',
     disputeBody: "Écrivez d'abord à l'adresse de contact ci-dessus — la plupart des situations se règlent ainsi. Si un litige subsiste, un consommateur peut saisir un médiateur ou la plateforme de règlement en ligne des litiges de son pays de résidence, et conserve en tout état de cause le droit de saisir les tribunaux.",
-    labels: { name: 'Dénomination', form: 'Forme juridique', capital: 'Capital social', registry: 'Immatriculation', vat: 'Numéro de TVA', address: 'Siège social', publisher: 'Directeur de la publication', email: 'Contact' },
+    labels: { name: 'Dénomination', form: 'Forme juridique', capital: 'Capital social', registry: 'Immatriculation', vat: 'Numéro de TVA', vatNote: 'Régime de TVA', address: 'Siège social', publisher: 'Directeur de la publication', email: 'Contact' },
     hosting: [
       "Application : Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis — servie depuis la région UE.",
       "Base de données et stockage : Supabase Inc. — instance hébergée à Francfort, Allemagne.",

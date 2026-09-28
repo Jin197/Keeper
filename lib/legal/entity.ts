@@ -19,6 +19,13 @@ export interface LegalEntity {
   capital: string | null;
   registry: string | null;
   vat: string | null;
+  /**
+   * For a publisher that charges no VAT there is no number to give, but the
+   * exemption must still be stated (in France: "TVA non applicable, article
+   * 293 B du CGI"). It gets its own line so it is not printed under a
+   * "VAT number" label, which would read as a stutter.
+   */
+  vatNote: string | null;
   address: string | null;
   publisher: string | null;
   email: string;
@@ -36,6 +43,7 @@ export function legalEntity(): LegalEntity {
     capital: v('LEGAL_ENTITY_CAPITAL'),
     registry: v('LEGAL_ENTITY_REGISTRY'),
     vat: v('LEGAL_ENTITY_VAT'),
+    vatNote: v('LEGAL_ENTITY_VAT_NOTE'),
     address: v('LEGAL_ENTITY_ADDRESS'),
     publisher: v('LEGAL_ENTITY_PUBLISHER'),
     email: v('LEGAL_ENTITY_EMAIL') ?? 'legal@keeperapp.app',

@@ -24,6 +24,7 @@ export default async function ImprintPage() {
     [t.labels.capital, e.capital],
     [t.labels.registry, e.registry],
     [t.labels.vat, e.vat],
+    [t.labels.vatNote, e.vatNote],
     [t.labels.address, e.address],
     [t.labels.publisher, e.publisher],
     [t.labels.email, e.email],
