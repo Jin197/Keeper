@@ -215,7 +215,7 @@
     "premiumF6": "Rappel & comparaison à l'échéance d'assurance",
     "oneOffTitle": "Vous vendez bientôt ?",
     "oneOffBody": "En formule gratuite, achetez le dossier de vente certifié pour une voiture, une fois : {amount}. Sans abonnement.",
-    "vatNote": "Prix TTC quand la taxe s'applique, calculée par Stripe Tax selon votre pays.",
+    "vatNote": "Prix définitif, aucune taxe n'est ajoutée. TVA non applicable, art. 293 B du CGI.",
     "countryNote": "Pays détecté : {country}. Incorrect ? Modifiez-le dans votre profil.",
     "partnerName": "Garage partenaire",
     "partnerDescription": "Référencement & contacts.",

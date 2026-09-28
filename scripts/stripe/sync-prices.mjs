@@ -186,7 +186,12 @@ async function syncPrice(product, spec) {
     unit_amount: base.unit_amount,
     currency_options: options,
     ...(spec.interval === 'one_time' ? {} : { recurring: { interval: spec.interval === 'yearly' ? 'year' : 'month' } }),
-    tax_behavior: 'inclusive', // prices in lib/pricing.ts are tax-inclusive; Stripe Tax breaks the tax out
+    // Prices in lib/pricing.ts are what the buyer pays. The publisher is under
+    // the French small-business scheme (franchise en base, art. 293 B CGI) and
+    // charges no VAT, so 'inclusive' simply means "this is the final amount".
+    // It stays correct if VAT registration happens later and Stripe Tax is
+    // turned on, since Stripe then breaks the tax out of the same total.
+    tax_behavior: 'inclusive',
     metadata: { keeper_kind: spec.kind, keeper_band: spec.band, keeper_interval: spec.interval },
   });
   console.log(`  ${label}: created ${created.id} (${human} + ${Object.keys(options).length} currencies)`);
@@ -213,5 +218,8 @@ for (const spec of wanted) {
 
 console.log('\n── Paste into Vercel (Production + Preview) ──');
 for (const r of results) console.log(`${r.envVar}=${r.id}`);
-console.log('\nReminder: Stripe Tax must be enabled, and the webhook must point at /api/stripe/webhook.');
+console.log('\nReminder: the webhook must point at /api/stripe/webhook.');
+console.log('Do NOT enable Stripe Tax while the publisher is under franchise en base:');
+console.log('it would add VAT that is not owed and must not be collected.');
+console.log('Revisit once VAT registration happens (turnover threshold, or EU B2C above 10k EUR).');
 if (!APPLY) console.log('Nothing was created — re-run with --apply.');

@@ -215,7 +215,7 @@
     "premiumF6": "Insurance renewal reminder & comparison",
     "oneOffTitle": "Selling soon?",
     "oneOffBody": "Free users can buy the certified sale dossier for one car, once: {amount}. No subscription.",
-    "vatNote": "Prices include VAT/sales tax where applicable, computed by Stripe Tax for your country.",
+    "vatNote": "Final price — no tax is added. The publisher is not VAT-registered (French small-business scheme, art. 293 B CGI).",
     "countryNote": "Detected country: {country}. Wrong? Set it in your profile.",
     "partnerName": "Partner garage",
     "partnerDescription": "Listing & leads.",
