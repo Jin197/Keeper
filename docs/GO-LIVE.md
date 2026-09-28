@@ -163,7 +163,10 @@ the scope `https://tapi.dvsa.gov.uk/.default` (→ `MOT_SCOPE_URL`) and an
         ⚠️ **Deux** clés ont fuité en conversation et doivent tourner : la clé
         `sb_secret_…` *et* le JWT legacy `service_role` (Settings → API → Legacy
         keys → Revoke). Le JWT legacy expire en 2036 et donne le même accès total.
-  - [ ] Déposer la demande d'accès DVSA MOT History (formulaire de 5 min).
+  - [x] Demande d'accès DVSA MOT History déposée le 28/09/2026 —
+        **référence formulaire `KE2U58ET`**. Délai annoncé : jusqu'à 5 jours
+        ouvrés, donc réponse attendue entre le 2 et le 5 octobre — **après** le
+        lancement du 30. Voir « Ce qui n'est pas là au lancement » ci-dessous.
 
 - [ ] **28 Septembre — Circuit de paiement & Légalité**
   - [ ] Compte Stripe activé (Vérification Identité + IBAN).
@@ -183,3 +186,22 @@ the scope `https://tapi.dvsa.gov.uk/.default` (→ `MOT_SCOPE_URL`) and an
   - [ ] Intégration Sentry (`NEXT_PUBLIC_SENTRY_DSN`).
   - [ ] Ouverture officielle du Soft Launch (accès utilisateur ouvert, 0 budget pub).
 
+---
+
+## Ce qui n'est pas là au lancement du 30 septembre
+
+**La couche 2 du pronostic — l'historique de contrôle technique réel du véhicule.**
+Elle dépend de l'API DVSA MOT History, demandée le 28/09 (réf. `KE2U58ET`), dont
+les identifiants arrivent au mieux le 2 octobre. `isMotHistoryConfigured()` est
+donc `false` au lancement : l'app affiche « MOT history is available once the DVSA
+key is configured » et rien ne casse.
+
+Conséquence à tenir : **la page d'accueil ne doit pas promettre l'historique de
+la voiture du client** au lancement. Ce qui est réellement livré le 30, ce sont
+les couches 1 et 3 — le carnet constructeur par génération de modèle, et les
+statistiques de panne DVSA 2024 (328 000+ lignes, 1 214 modèles). C'est déjà la
+promesse centrale, et la couche 2 devient la première nouveauté de la semaine 2.
+
+Dès réception des cinq valeurs (`MOT_CLIENT_ID`, `MOT_CLIENT_SECRET`,
+`MOT_TOKEN_URL`, `MOT_SCOPE_URL`, `MOT_API_KEY`), les coller dans Vercel suffit :
+le bloc apparaît au déploiement suivant, sans changement de code.
