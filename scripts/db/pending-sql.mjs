@@ -13,14 +13,22 @@
  * Usage
  *   node scripts/db/pending-sql.mjs                     # everything from 20260919 on
  *   node scripts/db/pending-sql.mjs --since 20260920000000
- *   npm run db:sql > catchup.sql
+ *   npm run db:sql                 # writes ./catchup.sql
+ *   npm run db:sql -- --out /tmp/x.sql
+ *
+ * It writes a file rather than printing, because `npm run db:sql > catchup.sql`
+ * also captures npm's own "> velocewealth@0.1.0 db:sql" banner, and the SQL
+ * editor then fails on the first line. Use --stdout if you want to pipe it.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
 const sinceIdx = args.indexOf('--since');
 const since = sinceIdx >= 0 ? args[sinceIdx + 1] : '20260919000000';
+const outIdx = args.indexOf('--out');
+const outPath = outIdx >= 0 ? args[outIdx + 1] : 'catchup.sql';
+const toStdout = args.includes('--stdout');
 
 const dir = 'supabase/migrations';
 const files = readdirSync(dir)
@@ -56,5 +64,12 @@ for (const f of files) {
   out.push(readFileSync(join(dir, f), 'utf8').trimEnd(), '');
 }
 
-process.stdout.write(out.join('\n'));
-console.error(`${files.length} migrations → stdout`);
+const sql = out.join('\n');
+if (toStdout) {
+  process.stdout.write(sql);
+  console.error(`${files.length} migrations → stdout`);
+} else {
+  writeFileSync(outPath, sql);
+  console.log(`${files.length} migrations → ${outPath} (${sql.split('\n').length} lines)`);
+  console.log('Paste the whole file into the Supabase SQL editor and run it once.');
+}

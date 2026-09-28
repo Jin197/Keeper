@@ -133,3 +133,45 @@ the scope `https://tapi.dvsa.gov.uk/.default` (→ `MOT_SCOPE_URL`) and an
 **API key** (→ `MOT_API_KEY`). Paste the five values into Vercel; the UK
 "MOT history" block appears on the next deploy. Until then the app says
 "MOT history is available once the DVSA key is configured" — nothing breaks.
+
+---
+
+## 📅 Planning de lancement Soft Launch (27 - 30 Septembre)
+
+- [x] **27–28 Septembre — Déblocage de la base de données**
+  - [x] Script `catchup.sql` généré (`npm run db:sql` — écrit le fichier lui-même ;
+        ne pas rediriger avec `>`, npm y ajoute son propre bandeau et l'éditeur SQL
+        échoue alors sur la première ligne).
+  - [x] `catchup.sql` exécuté dans l'éditeur SQL Supabase — les 6 migrations sont en
+        place (`vehicles.country`, `insurance_renewal_date`, `vehicle_purchases`,
+        `model_failure_rates`, `profiles.notification_prefs`, PostGIS retiré).
+  - [x] Privilèges `service_role` vérifiés le 28/09 : `GET /rest/v1/profiles` avec la
+        clé secrète renvoie 200 et une ligne. Le `42501 permission denied` du §0 a
+        disparu, pour la clé `sb_secret_` comme pour le JWT legacy.
+  - [ ] Upload DVSA (`npm run dvsa:upload`) — ré-agrège 5,9 Go de SQLite avant
+        d'écrire, compter ~20–40 min. Un seul process à la fois : SQLite rend
+        `database is locked` si deux tournent en parallèle.
+  - [ ] **Révoquer et régénérer** la clé secrète (Supabase → Settings → API).
+        ⚠️ **Deux** clés ont fuité en conversation et doivent tourner : la clé
+        `sb_secret_…` *et* le JWT legacy `service_role` (Settings → API → Legacy
+        keys → Revoke). Le JWT legacy expire en 2036 et donne le même accès total.
+  - [ ] Déposer la demande d'accès DVSA MOT History (formulaire de 5 min).
+
+- [ ] **28 Septembre — Circuit de paiement & Légalité**
+  - [ ] Compte Stripe activé (Vérification Identité + IBAN).
+  - [ ] Exécuter `npm run stripe:prices:apply` en mode Test.
+  - [ ] Tester le flux complet avec carte de test `4242` (`stripe listen` + bascule `profiles.plan_tier`).
+  - [ ] Configurer les clés Stripe de production (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, etc.).
+  - [ ] Renseigner les variables `LEGAL_ENTITY_*` (Mentions légales & CGV).
+
+- [ ] **29 Septembre — Clés d'API & Répétition générale**
+  - [ ] Configurer `GOOGLE_APPLICATION_CREDENTIALS_JSON` (Vision OCR).
+  - [ ] Configurer `DVLA_API_KEY` & `SIV_API_KEY`.
+  - [ ] Configurer `CRON_SECRET` & `RESEND_API_KEY` (avec SMTP personnalisé Supabase).
+  - [ ] Répétition générale du parcours client complet (Desktop & Mobile) sur l'URL Vercel.
+
+- [ ] **30 Septembre — Marge & Soft Launch**
+  - [ ] Vérification du visuel `luxury-car.png`.
+  - [ ] Intégration Sentry (`NEXT_PUBLIC_SENTRY_DSN`).
+  - [ ] Ouverture officielle du Soft Launch (accès utilisateur ouvert, 0 budget pub).
+

@@ -17,6 +17,7 @@
     "test:e2e:ui": "playwright test --ui",
     "audit:rls": "node tests/audit/rls-audit.mjs",
     "db:push": "supabase db push",
+    "db:sql": "node scripts/db/pending-sql.mjs",
     "dvsa:build": "node scripts/dvsa/build-failure-rates.mjs --dir data/dvsa/2024 --db data/dvsa/work.sqlite --out data/model-failure-rates.json",
     "dvsa:upload": "node scripts/dvsa/build-failure-rates.mjs --skip-load --db data/dvsa/work.sqlite --out data/model-failure-rates.json --upload",
     "stripe:prices": "node scripts/stripe/sync-prices.mjs",
