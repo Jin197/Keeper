@@ -1,6 +1,6 @@
-# 💾 Stratégie de Sauvegarde, Restauration & Résilience · VeloceWealth
+# 💾 Stratégie de Sauvegarde, Restauration & Résilience · Keeper
 
-Ce guide décrit la politique de sauvegarde automatisée, les procédures de restauration validées, la synchronisation sécurisée des pièces justificatives sur notre stockage privé, et les processus d'audit continu de la plateforme VeloceWealth.
+Ce guide décrit la politique de sauvegarde automatisée, les procédures de restauration validées, la synchronisation sécurisée des pièces justificatives sur notre stockage privé, et les processus d'audit continu de la plateforme Keeper.
 
 ---
 
@@ -23,9 +23,9 @@ Si vous utilisez l'infrastructure sur un plan gratuit ou auto-hébergé, vous de
 DB_HOST="aws-0-eu-west-3.pooler.supabase.com" # Remplacez par votre hôte
 DB_NAME="postgres"
 DB_USER="postgres.your-project-id"
-BACKUP_DIR="/var/backups/velocewealth"
+BACKUP_DIR="/var/backups/keeper"
 DATE=$(date +\%Y-\%m-\%d_\%H-\%M-\%S)
-FILENAME="${BACKUP_DIR}/velocewealth_backup_${DATE}.sql.gz"
+FILENAME="${BACKUP_DIR}/keeper_backup_${DATE}.sql.gz"
 
 # Créer le répertoire si nécessaire
 mkdir -p "${BACKUP_DIR}"
@@ -34,14 +34,14 @@ mkdir -p "${BACKUP_DIR}"
 PGPASSWORD="${SUPABASE_DB_PASSWORD}" pg_dump -h "${DB_HOST}" -p 5432 -U "${DB_USER}" -d "${DB_NAME}" --clean --no-owner --no-privileges | gzip > "${FILENAME}"
 
 # Rétention locale : Supprimer les sauvegardes de plus de 30 jours
-find "${BACKUP_DIR}" -type f -name "velocewealth_backup_*.sql.gz" -mtime +30 -delete
+find "${BACKUP_DIR}" -type f -name "keeper_backup_*.sql.gz" -mtime +30 -delete
 
 echo "Backup PostgreSQL terminé : ${FILENAME}"
 ```
 
 **Planification Cron (Tous les jours à 03:00 du matin)** :
 ```cron
-0 3 * * * /bin/bash /Users/jinola/Autocar_app/scripts/backup-db.sh >> /var/log/velocewealth-backup.log 2>&1
+0 3 * * * /bin/bash /Users/jinola/Autocar_app/scripts/backup-db.sh >> /var/log/keeper-backup.log 2>&1
 ```
 
 ---
@@ -61,7 +61,7 @@ Pour restaurer un fichier SQL compressé généré par `pg_dump` :
 
 1. **Décompresser le fichier de sauvegarde** :
    ```bash
-   gunzip velocewealth_backup_2026-05-23_03-00-00.sql.gz
+   gunzip keeper_backup_2026-05-23_03-00-00.sql.gz
    ```
 
 2. **Exécuter la restauration PostgreSQL** (ceci nettoie et reconstruit les schémas existants grâce au drapeau `--clean` du dump) :
@@ -71,7 +71,7 @@ Pour restaurer un fichier SQL compressé généré par `pg_dump` :
      -p 5432 \
      -U postgres.your-project-id \
      -d postgres \
-     -f velocewealth_backup_2026-05-23_03-00-00.sql
+     -f keeper_backup_2026-05-23_03-00-00.sql
    ```
 
 3. **Vérification d'intégrité après restauration** :
@@ -85,7 +85,7 @@ Pour restaurer un fichier SQL compressé généré par `pg_dump` :
 
 ## 🔒 3. Synchronisation en Temps Réel des Factures (Supabase Storage Privé)
 
-Toutes les pièces justificatives d'entretien et les reçus d'énergie de VeloceWealth sont **100 % sécurisés** :
+Toutes les pièces justificatives d'entretien et les reçus d'énergie de Keeper sont **100 % sécurisés** :
 
 * **Configuration Buckets Privés (`supabase/migrations/20260509120300_storage_buckets.sql`)** :
   * Les buckets `invoices` (factures) et `receipts` (reçus d'énergie) sont créés avec le drapeau `public = false`. **Aucun accès anonyme direct sur le web n'est autorisé.**

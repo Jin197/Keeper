@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => {
     try {
-      window.localStorage.setItem('velocewealth-cookies-acknowledged', 'refused');
+      window.localStorage.setItem('keeper-cookies-acknowledged', 'refused');
     } catch (e) {
       // Ignore security errors on about:blank
     }

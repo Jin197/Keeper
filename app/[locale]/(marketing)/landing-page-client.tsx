@@ -111,7 +111,7 @@ export function LandingPageClient({ locale, pricing, checkoutReady }: Props) {
             </Badge>
             <h1 className="font-display text-[2.5rem] sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.02] text-white [text-wrap:balance]">
               {t('titleLead')}{' '}
-              <span className="font-serif italic font-normal text-gradient-veloce bg-gradient-to-r from-[#007AFF] via-cyan-400 to-indigo-400">
+              <span className="font-serif italic font-normal text-gradient-keeper bg-gradient-to-r from-[#007AFF] via-cyan-400 to-indigo-400">
                 {t('titleHighlight')}
               </span>
             </h1>
@@ -158,7 +158,7 @@ export function LandingPageClient({ locale, pricing, checkoutReady }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <ForecastTile icon={Fuel} label={t('forecastFuel')} value={fmt(pricing.band === 'A' ? 164 : 96)} hint={t('forecastFuelHint')} tone="emerald" />
                 <ForecastTile icon={Wrench} label={t('forecastService')} value={fmt(pricing.band === 'A' ? 190 : 110)} hint={t('forecastServiceHint')} tone="amber" />
-                <ForecastTile icon={ShieldCheck} label={t('forecastInspection')} value="23 d" hint={t('forecastInspectionHint')} tone="veloce" />
+                <ForecastTile icon={ShieldCheck} label={t('forecastInspection')} value="23 d" hint={t('forecastInspectionHint')} tone="keeper" />
                 <ForecastTile icon={Gauge} label="€/km" value={fmt(pricing.band === 'A' ? 0.21 : 0.12)} hint="↓ 6 %" tone="muted" />
               </div>
 
@@ -327,14 +327,14 @@ function ForecastTile({
   label: string;
   value: string;
   hint: string;
-  tone: 'emerald' | 'amber' | 'veloce' | 'muted';
+  tone: 'emerald' | 'amber' | 'keeper' | 'muted';
 }) {
   const color =
     tone === 'emerald'
       ? 'text-emerald-400'
       : tone === 'amber'
         ? 'text-amber-400'
-        : tone === 'veloce'
+        : tone === 'keeper'
           ? 'text-[#007AFF]'
           : 'text-muted-foreground';
   return (

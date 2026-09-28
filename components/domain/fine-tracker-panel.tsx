@@ -113,7 +113,7 @@ export function FineTrackerPanel({
             type="button"
             size="sm"
             onClick={() => setOpenAdd(true)}
-            className="bg-veloce hover:bg-veloce/90 text-white rounded-full gap-1.5"
+            className="bg-keeper hover:bg-keeper/90 text-white rounded-full gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
             Ajouter une amende
@@ -153,7 +153,7 @@ export function FineTrackerPanel({
         )}
 
         <p className="mt-5 text-[10px] text-muted-foreground/60 italic">
-          Données déclaratives. Velocewealth n'est pas affilié à l'ANTAI. Les
+          Données déclaratives. Keeper n'est pas affilié à l'ANTAI. Les
           calculs sont indicatifs.
         </p>
       </Card>
@@ -221,7 +221,7 @@ function FineRow({
     window.open(url, '_blank', 'noopener,noreferrer');
     if (!fine.noticeNumber || !fine.documentKey) {
       toast.info(
-        "Saisis ton numéro d'avis sur la page ANTAI — Velocewealth ne peut pas pré-remplir tant qu'il n'est pas connu.",
+        "Saisis ton numéro d'avis sur la page ANTAI — Keeper ne peut pas pré-remplir tant qu'il n'est pas connu.",
       );
     }
   };
@@ -515,7 +515,7 @@ function AddFineModal({
           <Button
             type="submit"
             disabled={pending}
-            className="bg-veloce hover:bg-veloce/90 text-white"
+            className="bg-keeper hover:bg-keeper/90 text-white"
           >
             {pending ? 'Enregistrement…' : 'Enregistrer'}
           </Button>
@@ -562,7 +562,7 @@ function ContestFineModal({
     >
       <form onSubmit={submit} className="space-y-4">
         <p className="text-xs text-muted-foreground">
-          La contestation officielle se fait sur antai.gouv.fr. Velocewealth
+          La contestation officielle se fait sur antai.gouv.fr. Keeper
           enregistre votre raison pour votre suivi personnel.
         </p>
         <div className="space-y-1">

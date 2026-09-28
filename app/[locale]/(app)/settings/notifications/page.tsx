@@ -45,7 +45,7 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-xl font-semibold flex items-center gap-2">
-          <Bell className="h-5 w-5 text-veloce" /> {t('title')}
+          <Bell className="h-5 w-5 text-keeper" /> {t('title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
       </div>
@@ -73,7 +73,7 @@ export default function NotificationsPage() {
       </Card>
 
       <Card className="p-5 flex items-start gap-3 bg-muted/30">
-        <Info className="h-4 w-4 text-veloce mt-0.5 shrink-0" />
+        <Info className="h-4 w-4 text-keeper mt-0.5 shrink-0" />
         <div>
           <div className="text-sm font-medium">{t('howTitle')}</div>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{t('howBody')}</p>
@@ -87,7 +87,7 @@ function Row({ icon: Icon, label, hint, on, disabled, onToggle }: { icon: typeof
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <div className="flex items-start gap-3 min-w-0">
-        <div className={`rounded-btn p-2 shrink-0 ${on ? 'bg-veloce/10 text-veloce' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`rounded-btn p-2 shrink-0 ${on ? 'bg-keeper/10 text-keeper' : 'bg-muted text-muted-foreground'}`}>
           <Icon className="h-4 w-4" strokeWidth={1.5} />
         </div>
         <div className="min-w-0">
@@ -102,7 +102,7 @@ function Row({ icon: Icon, label, hint, on, disabled, onToggle }: { icon: typeof
         aria-label={label}
         disabled={disabled}
         onClick={onToggle}
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-pill transition-colors disabled:opacity-60 ${on ? 'bg-veloce' : 'bg-muted'}`}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-pill transition-colors disabled:opacity-60 ${on ? 'bg-keeper' : 'bg-muted'}`}
       >
         <span className={`absolute left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : ''}`} />
       </button>

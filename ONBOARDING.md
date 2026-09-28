@@ -1,4 +1,4 @@
-# Velocewealth — Onboarding backend
+# Keeper — Onboarding backend
 
 Ce guide te fait passer de "code prêt" à "tout fonctionne en prod" en 4 étapes :
 1. **Supabase** (auth + DB + storage)
@@ -14,7 +14,7 @@ Compte ~30 minutes pour Supabase + Stripe en local, +20 min pour Google + Mapbox
 
 ### 1.1 Créer le projet
 1. Va sur https://supabase.com/dashboard → **New project**
-2. Nom : `velocewealth`. Région : `Europe (Frankfurt)` ou `Europe (Paris)` (RGPD)
+2. Nom : `keeper`. Région : `Europe (Frankfurt)` ou `Europe (Paris)` (RGPD)
 3. Mot de passe DB : génère-en un fort, **note-le** (tu en auras besoin pour `supabase db push`)
 4. Plan Free suffit pour démarrer
 
@@ -82,7 +82,7 @@ npm run dev
 
 ### 2.2 Créer le produit + prix
 1. **Products → Add product**
-2. Name: `Velocewealth Premium`, Description: `OCR illimité, carnet certifié, export fiscal`
+2. Name: `Keeper Premium`, Description: `OCR illimité, carnet certifié, export fiscal`
 3. Pricing :
    - Prix mensuel récurrent **4.99 EUR / mois** → note l'ID `price_...`
    - **Add another price** : annuel **45.00 EUR / year** → note l'ID `price_...`
@@ -110,7 +110,7 @@ Garde la commande `stripe listen` tournante dans un terminal pendant que tu dév
 
 ### 2.6 Webhook — prod (après déploiement)
 1. **Developers → Webhooks → Add endpoint**
-2. URL : `https://velocewealth.app/api/stripe/webhook` (ou votre domaine de production Vercel)
+2. URL : `https://keeperapp.app/api/stripe/webhook` (ou votre domaine de production Vercel)
 3. Events à écouter :
    - `checkout.session.completed`
    - `customer.subscription.created`
@@ -119,7 +119,7 @@ Garde la commande `stripe listen` tournante dans un terminal pendant que tu dév
 4. Le `Signing secret` affiché → c'est le `STRIPE_WEBHOOK_SECRET` de prod
 
 ### 2.7 Tester le checkout
-- Connecte-toi à Velocewealth
+- Connecte-toi à Keeper
 - Va sur `/pricing`, clique "Essai 30 jours mensuel"
 - Carte de test : `4242 4242 4242 4242`, exp future, CVC `123`
 - Après checkout, retour sur `/settings/billing` → tu dois voir "Premium actif"
@@ -129,10 +129,10 @@ Garde la commande `stripe listen` tournante dans un terminal pendant que tu dév
 ## 3. Google Cloud Vision (OCR)
 
 ### 3.1 Projet GCP + activation API
-1. https://console.cloud.google.com → crée un projet `velocewealth`
+1. https://console.cloud.google.com → crée un projet `keeper`
 2. **APIs & Services → Library** → cherche "Cloud Vision API" → **Enable**
 3. **APIs & Services → Credentials → + Create credentials → Service account**
-4. Nom : `velocewealth-vision`, role : `Cloud Vision API User`
+4. Nom : `keeper-vision`, role : `Cloud Vision API User`
 
 ### 3.2 Récupérer la clé JSON
 1. Sur la page du service account créé → **Keys → Add Key → Create new key → JSON**
@@ -148,7 +148,7 @@ Garde la commande `stripe listen` tournante dans un terminal pendant que tu dév
 - Active la facturation sur le projet (sinon les API ne marchent pas même en gratuit)
 
 ### 3.4 Tester
-- Dans Velocewealth, va sur `/fuel/scan`
+- Dans Keeper, va sur `/fuel/scan`
 - Prends une photo de ticket OU upload un fichier
 - Vérifie que le formulaire se pré-remplit avec les valeurs extraites
 
@@ -159,8 +159,8 @@ Garde la commande `stripe listen` tournante dans un terminal pendant que tu dév
 1. https://account.mapbox.com → compte gratuit (50 000 chargements/mois)
 2. **Tokens → Default public token** → copie-le dans `NEXT_PUBLIC_MAPBOX_TOKEN`
 3. **Pour la prod** : crée un token restreint avec `URL restrictions` pour sécuriser vos quotas :
-   - `https://velocewealth.app`
-   - `https://*.velocewealth.app`
+   - `https://keeperapp.app`
+   - `https://*.keeperapp.app`
    - `http://localhost:*` (pour préserver le développement local)
 
 La carte interactive activée Phase 4. Sans token, la page `/map` affiche un placeholder.

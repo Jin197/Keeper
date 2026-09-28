@@ -25,7 +25,7 @@ export async function PremiumGate({
   const t = await getTranslations('components');
   return (
     <Card variant="premium" className="p-6 text-center space-y-3">
-      <div className="rounded-full bg-veloce/10 text-veloce h-12 w-12 mx-auto flex items-center justify-center">
+      <div className="rounded-full bg-keeper/10 text-keeper h-12 w-12 mx-auto flex items-center justify-center">
         <Lock className="h-5 w-5" strokeWidth={1.5} />
       </div>
       <div>

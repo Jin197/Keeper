@@ -159,12 +159,12 @@ export function InsuranceManager({
             className={cn(
               'rounded-card border p-3 text-left transition-all',
               mode === 'fixed'
-                ? 'border-veloce bg-veloce/5 ring-2 ring-veloce/20'
+                ? 'border-keeper bg-keeper/5 ring-2 ring-keeper/20'
                 : 'border-border bg-card hover:border-border/80',
             )}
           >
             <div className="flex items-center gap-2 mb-1">
-              <ShieldCheck className="h-4 w-4 text-veloce" />
+              <ShieldCheck className="h-4 w-4 text-keeper" />
               <span className="font-semibold text-sm">{t('fixed')}</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-snug">{t('fixedHint')}</p>
@@ -176,7 +176,7 @@ export function InsuranceManager({
             className={cn(
               'rounded-card border p-3 text-left transition-all',
               mode === 'variable'
-                ? 'border-veloce bg-veloce/5 ring-2 ring-veloce/20'
+                ? 'border-keeper bg-keeper/5 ring-2 ring-keeper/20'
                 : 'border-border bg-card hover:border-border/80',
             )}
           >
@@ -239,7 +239,7 @@ export function InsuranceManager({
               <Button
                 type="submit"
                 disabled={pending}
-                className="bg-veloce hover:bg-veloce/90 text-white gap-1 w-full sm:w-auto"
+                className="bg-keeper hover:bg-keeper/90 text-white gap-1 w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
                 {t('add')}

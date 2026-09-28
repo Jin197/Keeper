@@ -54,7 +54,7 @@ export async function enrollMfaAction(): Promise<MfaEnrollResult> {
 
   const { data, error } = await supabase.auth.mfa.enroll({
     factorType: 'totp',
-    friendlyName: `Velocewealth (${new Date().toISOString().slice(0, 10)})`,
+    friendlyName: `Keeper (${new Date().toISOString().slice(0, 10)})`,
   });
   if (error) return { error: error.message };
   return {

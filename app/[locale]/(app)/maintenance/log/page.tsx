@@ -28,7 +28,7 @@ export default async function CertifiedLogPage() {
     return (
       <div className="container py-12 max-w-xl">
         <Card className="p-10 text-center">
-          <ShieldCheck className="h-10 w-10 mx-auto text-veloce" strokeWidth={1.5} />
+          <ShieldCheck className="h-10 w-10 mx-auto text-keeper" strokeWidth={1.5} />
           <h1 className="font-display text-xl font-bold mt-4">
             {t('emptyTitle')}
           </h1>
@@ -91,7 +91,7 @@ export default async function CertifiedLogPage() {
           const v = vehicles.find((veh) => veh.id === m.vehicleId);
           return (
             <li key={m.id} className="ml-6">
-              <span className="absolute -left-2 mt-2 h-4 w-4 rounded-full border-2 border-veloce bg-background" />
+              <span className="absolute -left-2 mt-2 h-4 w-4 rounded-full border-2 border-keeper bg-background" />
               <Card className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>

@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://velocewealth.app';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://keeperapp.app';
   const resendKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
 
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
 async function sendEmail(apiKey: string, from: string, to: string, subject: string, body: string, link: string, cta: string, footer: string) {
   const html = `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0d0d12;color:#f5f5f7;padding:32px">
   <div style="max-width:520px;margin:0 auto;background:#16161a;border:1px solid #2a2a30;border-radius:20px;padding:28px">
-    <div style="font-size:11px;letter-spacing:.12em;color:#8b8b93;text-transform:uppercase">Velocewealth</div>
+    <div style="font-size:11px;letter-spacing:.12em;color:#8b8b93;text-transform:uppercase">Keeper</div>
     <h1 style="font-size:20px;margin:12px 0 8px">${escapeHtml(subject)}</h1>
     <p style="color:#c7c7cf;line-height:1.5;margin:0 0 20px">${escapeHtml(body)}</p>
     <a href="${link}" style="display:inline-block;background:#007aff;color:#fff;text-decoration:none;padding:12px 18px;border-radius:999px;font-weight:600">${escapeHtml(cta)}</a>

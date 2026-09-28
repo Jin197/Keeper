@@ -239,7 +239,7 @@ export default function LoginPage() {
     return (
       <div className="space-y-6">
         <div className="flex items-start gap-3">
-          <div className="rounded-btn bg-veloce/10 text-veloce p-2.5 shrink-0">
+          <div className="rounded-btn bg-keeper/10 text-keeper p-2.5 shrink-0">
             <ShieldCheck className="h-5 w-5" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
@@ -373,7 +373,7 @@ export default function LoginPage() {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">{t('passwordLabel')}</Label>
-            <Link href="/forgot-password" className="text-xs text-veloce hover:underline">
+            <Link href="/forgot-password" className="text-xs text-keeper hover:underline">
               {t('forgotPassword')}
             </Link>
           </div>
@@ -428,7 +428,7 @@ export default function LoginPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         {t('noAccount')}{' '}
-        <Link href="/signup" className="text-veloce hover:underline font-medium">
+        <Link href="/signup" className="text-keeper hover:underline font-medium">
           {t('createAccount')}
         </Link>
       </p>

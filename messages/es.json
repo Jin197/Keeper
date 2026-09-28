@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Velocewealth",
+    "appName": "Keeper",
     "tagline": "Conduce tu coche como un activo",
     "cancel": "Cancelar",
     "save": "Guardar",
@@ -100,7 +100,7 @@
       "badge": "Sin publicidad — Pro desde 9.99 €/mes",
       "titleLead": "Conduce tu coche como",
       "titleHighlight": "un activo.",
-      "subtitle": "Velocewealth transforma tu vehículo de gasto en patrimonio gestionado. Coste por km, libro certificado, índice de reventa — de un vistazo.",
+      "subtitle": "Keeper transforma tu vehículo de gasto en patrimonio gestionado. Coste por km, libro certificado, índice de reventa — de un vistazo.",
       "ctaPrimary": "Empezar gratis",
       "ctaSecondary": "Ver demo",
       "rating": "★★★★★ 4.8/5",
@@ -118,7 +118,7 @@
       "title": "Tres pasos para retomar el control",
       "subtitle": "Del registro a tu primer coste por km — cinco minutos.",
       "step1Title": "Añade tu vehículo",
-      "step1Description": "Marca, modelo, kilometraje. Velocewealth identifica tu motorización y empieza el seguimiento.",
+      "step1Description": "Marca, modelo, kilometraje. Keeper identifica tu motorización y empieza el seguimiento.",
       "step2Title": "Escanea tus tickets",
       "step2Description": "Fotografía repostajes o recargas. Nuestro OCR lee, clasifica y calcula todo.",
       "step3Title": "Conduce con claridad",
@@ -128,7 +128,7 @@
       "title": "Todo lo necesario para retomar el control",
       "subtitle": "Seis módulos diseñados para convertir la complejidad en claridad.",
       "ocrTitle": "Escaneo OCR ilimitado",
-      "ocrDescription": "Fotografía tickets de combustible y recargas — Velocewealth lee, clasifica y calcula todo.",
+      "ocrDescription": "Fotografía tickets de combustible y recargas — Keeper lee, clasifica y calcula todo.",
       "logTitle": "Libro certificado",
       "logDescription": "Historial de mantenimiento inalterable, firmado criptográficamente, exportable en PDF.",
       "resaleTitle": "Índice de reventa en tiempo real",
@@ -141,7 +141,7 @@
       "predictDescription": "Algoritmos que anticipan el desgaste real y te avisan en el momento adecuado."
     },
     "testimonials": {
-      "title": "Ya conducen con Velocewealth",
+      "title": "Ya conducen con Keeper",
       "subtitle": "De conductores particulares a gestores de pequeñas flotas.",
       "t1Quote": "Descubrí que mi coche me cuesta 0,28 €/km. Más que un Uber en trayectos cortos — cambié mi rutina.",
       "t1Author": "Karim B.",
@@ -162,9 +162,9 @@
       "q3": "¿Puedo cancelar en cualquier momento?",
       "a3": "Sí. Sin compromiso, sin penalización. Cancela desde Ajustes → Suscripción con un clic vía el portal Stripe.",
       "q4": "¿Funciona fuera de Europa?",
-      "a4": "Sí. Velocewealth está disponible en Francia, Bélgica, Suiza, Marruecos, Senegal, Costa de Marfil, Canadá y EE.UU. desde el lanzamiento.",
+      "a4": "Sí. Keeper está disponible en Francia, Bélgica, Suiza, Marruecos, Senegal, Costa de Marfil, Canadá y EE.UU. desde el lanzamiento.",
       "q5": "¿Mi vehículo eléctrico está bien gestionado?",
-      "a5": "Perfectamente. Velocewealth gestiona térmico, eléctrico e híbrido. El mix energético se calcula automáticamente.",
+      "a5": "Perfectamente. Keeper gestiona térmico, eléctrico e híbrido. El mix energético se calcula automáticamente.",
       "q6": "¿Diferencias entre Standard y Premium?",
       "a6": "Standard es gratuito con entrada manual limitada. Premium (4,99 €/mes) desbloquea OCR ilimitado, libro certificado, TCO completo y exportación fiscal."
     },
@@ -212,17 +212,17 @@
     "mentionsLink": "Aviso legal",
     "cookiesLink": "Cookies",
     "contact": "Contacto",
-    "copyright": "© 2026 Velocewealth",
+    "copyright": "© 2026 Keeper",
     "rights": "Todos los derechos reservados"
   },
   "cookies": {
     "title": "Solo cookies esenciales",
-    "description": "Velocewealth solo utiliza cookies estrictamente necesarias (sesión, preferencias). Sin cookies publicitarias, sin tracking de terceros.",
+    "description": "Keeper solo utiliza cookies estrictamente necesarias (sesión, preferencias). Sin cookies publicitarias, sin tracking de terceros.",
     "accept": "Entendido",
     "manage": "Gestionar",
     "acceptAll": "Aceptar todo",
     "refuseAll": "Rechazar todo",
-    "dpoMention": "Para cualquier duda sobre sus datos, contacte con nuestro DPO en dpo@velocewealth.app."
+    "dpoMention": "Para cualquier duda sobre sus datos, contacte con nuestro DPO en dpo@keeperapp.app."
   },
   "legal": {
     "termsTitle": "Condiciones de uso",

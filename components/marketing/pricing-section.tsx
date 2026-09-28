@@ -142,13 +142,13 @@ export function PricingSection({ pricing, locale, compact = false, hideOneOff = 
               <CheckoutButton
                 interval={interval}
                 label={t('trialCta')}
-                className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-veloce"
+                className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-keeper"
               />
             ) : (
               <>
                 <Button
                   asChild
-                  className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-veloce"
+                  className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-keeper"
                 >
                   <Link href="/signup">{t('trialCta')}</Link>
                 </Button>

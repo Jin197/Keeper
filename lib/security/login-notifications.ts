@@ -23,7 +23,7 @@ interface NotifyOpts {
  *
  * Activation: set the following Vercel env vars to turn this on in prod.
  *   - RESEND_API_KEY (Resend dashboard → API keys)
- *   - EMAIL_FROM     (e.g. "Velocewealth <security@velocewealth.app>")
+ *   - EMAIL_FROM     (e.g. "Keeper <security@keeperapp.app>")
  * Until both are set, this function is a no-op (returns immediately).
  */
 export async function notifyNewDeviceLoginIfNeeded(

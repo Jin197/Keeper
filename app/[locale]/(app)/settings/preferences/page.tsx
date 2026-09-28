@@ -49,7 +49,7 @@ export default function PreferencesPage() {
                 className={cn(
                   'rounded-card border p-4 flex flex-col items-center gap-2 transition-colors',
                   active
-                    ? 'border-veloce bg-veloce/10 text-veloce'
+                    ? 'border-keeper bg-keeper/10 text-keeper'
                     : 'border-border hover:bg-muted',
                 )}
               >
@@ -78,7 +78,7 @@ export default function PreferencesPage() {
                 className={cn(
                   'rounded-card border p-4 flex flex-col items-center justify-center gap-2 transition-colors relative',
                   active
-                    ? 'border-veloce bg-veloce/10 text-veloce font-semibold'
+                    ? 'border-keeper bg-keeper/10 text-keeper font-semibold'
                     : 'border-border hover:bg-muted text-muted-foreground hover:text-foreground',
                   isPending && 'opacity-60 cursor-not-allowed'
                 )}
@@ -88,7 +88,7 @@ export default function PreferencesPage() {
                 </span>
                 <span className="text-xs font-medium text-center">{localeLabels[l]}</span>
                 {active && (
-                  <span className="absolute top-2 right-2 rounded-full bg-veloce text-white p-0.5 shadow-sm">
+                  <span className="absolute top-2 right-2 rounded-full bg-keeper text-white p-0.5 shadow-sm">
                     <Check className="h-3.5 w-3.5" strokeWidth={3} />
                   </span>
                 )}

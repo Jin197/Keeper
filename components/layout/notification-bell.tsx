@@ -123,7 +123,7 @@ export function NotificationBell({
                   type="button"
                   onClick={handleMarkAll}
                   disabled={pending}
-                  className="text-[11px] text-veloce hover:underline disabled:opacity-50 flex items-center gap-1"
+                  className="text-[11px] text-keeper hover:underline disabled:opacity-50 flex items-center gap-1"
                 >
                   <CheckCheck className="h-3 w-3" />
                   {t('markAll')}
@@ -186,7 +186,7 @@ function NotificationRow({
       disabled={disabled}
       className={cn(
         'w-full text-left px-4 py-3 border-b border-border/40 last:border-0 transition-colors hover:bg-muted/30 flex gap-3',
-        !notification.readAt && 'bg-veloce/5',
+        !notification.readAt && 'bg-keeper/5',
       )}
     >
       <div
@@ -211,7 +211,7 @@ function NotificationRow({
         </div>
       </div>
       {!notification.readAt && (
-        <div className="h-2 w-2 rounded-full bg-veloce mt-2 shrink-0" />
+        <div className="h-2 w-2 rounded-full bg-keeper mt-2 shrink-0" />
       )}
     </button>
   );
@@ -246,7 +246,7 @@ function accentFor(kind: InAppNotificationKind): string {
       return 'bg-destructive/15 text-destructive';
     case 'maintenance_reminder':
     case 'welcome':
-      return 'bg-veloce/15 text-veloce';
+      return 'bg-keeper/15 text-keeper';
     case 'forecast_due':
     case 'inspection_due':
     case 'insurance_renewal':

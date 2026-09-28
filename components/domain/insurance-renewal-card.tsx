@@ -58,9 +58,9 @@ export async function InsuranceRenewalCard({ vehicles, country }: Props) {
         : new Intl.RelativeTimeFormat(locale, { numeric: 'always' }).format(days, 'day');
 
   return (
-    <Card className="p-5 border-veloce/30 bg-veloce/5">
+    <Card className="p-5 border-keeper/30 bg-keeper/5">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="rounded-btn bg-veloce/15 text-veloce p-3 shrink-0 w-fit">
+        <div className="rounded-btn bg-keeper/15 text-keeper p-3 shrink-0 w-fit">
           <ShieldCheck className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">

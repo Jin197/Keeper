@@ -51,13 +51,13 @@ export async function RegulatoryKpiCard({
     <Card className="p-5">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <Scale className="h-3.5 w-3.5 text-veloce" />
+          <Scale className="h-3.5 w-3.5 text-keeper" />
           {t('regTitle')}
         </div>
         {hrefFirstVehicle && (
           <Link
             href={hrefFirstVehicle}
-            className="text-xs text-veloce hover:underline flex items-center gap-1"
+            className="text-xs text-keeper hover:underline flex items-center gap-1"
           >
             {t('regHistory')}
             <ChevronRight className="h-3 w-3" />

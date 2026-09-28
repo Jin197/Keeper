@@ -148,7 +148,7 @@ export default async function HealthPage({ params }: { params: Promise<{ vehicle
           label={t('annualMileage')}
           value={`${Math.round(annualKm / 1000)}k km`}
           hint={annualHint}
-          icon={<Gauge className="h-4 w-4 text-veloce" />}
+          icon={<Gauge className="h-4 w-4 text-keeper" />}
           explain={tTip('annualMileage')}
         />
         <KpiCard

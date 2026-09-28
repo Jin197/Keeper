@@ -19,7 +19,7 @@ const config: Config = {
     },
     extend: {
       colors: {
-        veloce: {
+        keeper: {
           50: '#E6F2FF',
           100: '#CCE5FF',
           200: '#99CCFF',
@@ -104,7 +104,7 @@ const config: Config = {
         sm: '8px',
       },
       boxShadow: {
-        'glow-veloce': '0 0 0 1px rgba(0,122,255,0.20), 0 8px 32px -8px rgba(0,122,255,0.35)',
+        'glow-keeper': '0 0 0 1px rgba(0,122,255,0.20), 0 8px 32px -8px rgba(0,122,255,0.35)',
         'glow-eco': '0 0 0 1px rgba(46,204,113,0.20), 0 8px 32px -8px rgba(46,204,113,0.35)',
         soft: '0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
         elevated: '0 8px 32px -8px rgba(0,0,0,0.40)',
@@ -112,7 +112,7 @@ const config: Config = {
       backgroundImage: {
         'gradient-glass':
           'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-        'gradient-veloce': 'linear-gradient(135deg, #007AFF 0%, #0052AD 100%)',
+        'gradient-keeper': 'linear-gradient(135deg, #007AFF 0%, #0052AD 100%)',
         'gradient-eco': 'linear-gradient(135deg, #2ECC71 0%, #1C7A44 100%)',
       },
       keyframes: {

@@ -121,7 +121,7 @@ It asks for your name, contact email, postal address, and whether you apply
 as an individual or an organisation — that is why it cannot be filled in for
 you. Suggested answers:
 
-- **Organisation / use**: Velocewealth — consumer web app that shows a car
+- **Organisation / use**: Keeper — consumer web app that shows a car
   owner the MOT history of *their own* vehicle (plate entered by the owner)
   to forecast maintenance. Read-only, per-vehicle lookups, cached 24 h,
   no bulk download, no resale of data.

@@ -48,7 +48,7 @@ interface TabsTriggerProps {
   value: string;
   children: ReactNode;
   icon?: ReactNode;
-  accent?: 'veloce' | 'eco' | 'amber' | 'destructive' | 'gold';
+  accent?: 'keeper' | 'eco' | 'amber' | 'destructive' | 'gold';
   badge?: ReactNode;
 }
 
@@ -56,15 +56,15 @@ export function TabsTrigger({
   value,
   children,
   icon,
-  accent = 'veloce',
+  accent = 'keeper',
   badge,
 }: TabsTriggerProps) {
   const ctx = useContext(TabsCtx);
   if (!ctx) throw new Error('TabsTrigger must be used inside <Tabs>');
   const active = ctx.value === value;
   const accentClasses = {
-    veloce: active
-      ? 'text-veloce border-veloce'
+    keeper: active
+      ? 'text-keeper border-keeper'
       : 'text-muted-foreground hover:text-foreground border-transparent',
     eco: active
       ? 'text-eco border-eco'

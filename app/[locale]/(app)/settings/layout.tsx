@@ -86,7 +86,7 @@ export default function SettingsLayout({
                     className={cn(
                       'flex items-center gap-2 rounded-btn px-3 py-2 text-sm whitespace-nowrap transition-colors',
                       active
-                        ? 'bg-veloce/10 text-veloce font-medium'
+                        ? 'bg-keeper/10 text-keeper font-medium'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                     )}
                   >

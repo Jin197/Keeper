@@ -70,8 +70,8 @@ const LABELS: Record<
  * user has NOT enabled MFA. Three tones:
  *   - mustEnable=true:              red/destructive, the app will redirect
  *                                   non-settings pages until MFA is on.
- *   - grace still running:          blue/veloce reminder with a countdown.
- *   - no deadline (MFA optional):   blue/veloce nudge, no countdown.
+ *   - grace still running:          blue/keeper reminder with a countdown.
+ *   - no deadline (MFA optional):   blue/keeper nudge, no countdown.
  *
  * That last branch matters while `MFA_MANDATORY` is off in mfa-status.ts:
  * grace still expires, so daysRemaining reaches 0, but nothing becomes
@@ -98,7 +98,7 @@ export function MfaBanner({ daysRemaining, mustEnable }: Props) {
         'border-b text-sm transition-colors',
         mustEnable
           ? 'border-destructive/30 bg-destructive/10 text-destructive'
-          : 'border-veloce/20 bg-veloce/5 text-foreground',
+          : 'border-keeper/20 bg-keeper/5 text-foreground',
       )}
     >
       <div className="container py-2.5 flex items-center justify-between gap-3 flex-wrap">
@@ -106,7 +106,7 @@ export function MfaBanner({ daysRemaining, mustEnable }: Props) {
           {mustEnable ? (
             <ShieldAlert className="h-4 w-4 shrink-0" strokeWidth={2} />
           ) : (
-            <ShieldCheck className="h-4 w-4 shrink-0 text-veloce" strokeWidth={2} />
+            <ShieldCheck className="h-4 w-4 shrink-0 text-keeper" strokeWidth={2} />
           )}
           <span className="leading-tight">{message}</span>
         </div>
@@ -116,7 +116,7 @@ export function MfaBanner({ daysRemaining, mustEnable }: Props) {
             'text-xs font-semibold px-3 py-1 rounded-full border transition-colors shrink-0',
             mustEnable
               ? 'border-destructive/40 hover:bg-destructive/20 text-destructive bg-destructive/5'
-              : 'border-veloce/30 hover:bg-veloce/15 text-veloce',
+              : 'border-keeper/30 hover:bg-keeper/15 text-keeper',
           )}
         >
           {t.cta}

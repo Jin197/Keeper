@@ -30,7 +30,7 @@ export async function trackCriticalError(error: Error, source: 'stripe' | 'supab
 
   if (apiKey && token && listId) {
     const cardTitle = `🚨 [CRITICAL ERROR] [${source.toUpperCase()}] - ${error.name}: ${error.message}`;
-    const cardDesc = `Une erreur critique a été détectée sur **${source.toUpperCase()}** à ${new Date().toISOString()}.\n\n### Détails de l'erreur :\n- **Type** : ${error.name}\n- **Message** : ${error.message}\n- **Stack Trace** :\n\`\`\`\n${error.stack || 'Non disponible'}\n\`\`\`\n\n_Alerte générée automatiquement par la télémétrie de supervision VeloceWealth._`;
+    const cardDesc = `Une erreur critique a été détectée sur **${source.toUpperCase()}** à ${new Date().toISOString()}.\n\n### Détails de l'erreur :\n- **Type** : ${error.name}\n- **Message** : ${error.message}\n- **Stack Trace** :\n\`\`\`\n${error.stack || 'Non disponible'}\n\`\`\`\n\n_Alerte générée automatiquement par la télémétrie de supervision Keeper._`;
 
     const postData = JSON.stringify({
       name: cardTitle,

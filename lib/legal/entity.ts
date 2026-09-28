@@ -38,8 +38,8 @@ export function legalEntity(): LegalEntity {
     vat: v('LEGAL_ENTITY_VAT'),
     address: v('LEGAL_ENTITY_ADDRESS'),
     publisher: v('LEGAL_ENTITY_PUBLISHER'),
-    email: v('LEGAL_ENTITY_EMAIL') ?? 'legal@velocewealth.app',
-    dpoEmail: v('LEGAL_ENTITY_DPO_EMAIL') ?? v('LEGAL_ENTITY_EMAIL') ?? 'privacy@velocewealth.app',
+    email: v('LEGAL_ENTITY_EMAIL') ?? 'legal@keeperapp.app',
+    dpoEmail: v('LEGAL_ENTITY_DPO_EMAIL') ?? v('LEGAL_ENTITY_EMAIL') ?? 'privacy@keeperapp.app',
   };
 }
 

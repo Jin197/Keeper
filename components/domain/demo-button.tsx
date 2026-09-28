@@ -38,7 +38,7 @@ export function DemoButton() {
       disabled={pending}
       variant="outline"
       size="lg"
-      className="mt-4 border-veloce text-veloce hover:bg-veloce/10 gap-2 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] shadow-[0_0_20px_rgba(0,122,255,0.15)] rounded-full px-6 py-2.5"
+      className="mt-4 border-keeper text-keeper hover:bg-keeper/10 gap-2 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] shadow-[0_0_20px_rgba(0,122,255,0.15)] rounded-full px-6 py-2.5"
       aria-label={t('demoActivate')}
     >
       {pending ? (
@@ -48,7 +48,7 @@ export function DemoButton() {
         </>
       ) : (
         <>
-          <Sparkles className="h-4 w-4 text-veloce animate-pulse" />
+          <Sparkles className="h-4 w-4 text-keeper animate-pulse" />
           <span>{t('demoActivate')}</span>
         </>
       )}

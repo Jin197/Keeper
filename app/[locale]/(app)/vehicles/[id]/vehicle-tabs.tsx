@@ -114,7 +114,7 @@ export function VehicleTabs({
         <TabsTrigger
           value="compliance"
           icon={<ShieldAlert className="h-4 w-4" />}
-          accent={openFinesCount > 0 ? 'destructive' : 'veloce'}
+          accent={openFinesCount > 0 ? 'destructive' : 'keeper'}
           badge={
             openFinesCount > 0 ? (
               <Badge variant="danger" className="text-[9px] px-1.5 py-0">
@@ -258,7 +258,7 @@ export function VehicleTabs({
           </Button>
           <Button
             asChild
-            className="h-auto py-4 bg-veloce text-white hover:bg-veloce/90 flex-col items-start gap-1.5"
+            className="h-auto py-4 bg-keeper text-white hover:bg-keeper/90 flex-col items-start gap-1.5"
           >
             <Link href={`/maintenance/prognostics/${vehicle.id}`}>
               <div className="flex items-center gap-2">

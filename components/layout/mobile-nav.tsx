@@ -39,7 +39,7 @@ export function MobileNav() {
               <li key={item.href} className="flex justify-center">
                 <Link
                   href={item.href}
-                  className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-veloce text-white shadow-glow-veloce"
+                  className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-keeper text-white shadow-glow-keeper"
                   aria-label={item.label}
                 >
                   <Icon className="h-6 w-6" strokeWidth={2} />
@@ -53,7 +53,7 @@ export function MobileNav() {
                 href={item.href}
                 className={cn(
                   'flex flex-col items-center gap-0.5 py-3 text-[10px] leading-tight',
-                  active ? 'text-veloce' : 'text-muted-foreground',
+                  active ? 'text-keeper' : 'text-muted-foreground',
                 )}
               >
                 <Icon className="h-5 w-5" strokeWidth={1.5} />

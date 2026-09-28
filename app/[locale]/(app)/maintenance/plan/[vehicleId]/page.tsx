@@ -208,9 +208,9 @@ async function SourceBanner({
   const t = await getTranslations('plan');
   if (source === 'model') {
     return (
-      <Card className="p-5 border-veloce/30">
+      <Card className="p-5 border-keeper/30">
         <div className="flex items-start gap-4">
-          <div className="rounded-btn bg-veloce/10 text-veloce p-2.5 shrink-0">
+          <div className="rounded-btn bg-keeper/10 text-keeper p-2.5 shrink-0">
             <BookOpen className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ async function SourceBanner({
     return (
       <Card variant="premium" className="p-5">
         <div className="flex items-start gap-4">
-          <div className="rounded-btn bg-veloce/15 text-veloce p-2.5 shrink-0">
+          <div className="rounded-btn bg-keeper/15 text-keeper p-2.5 shrink-0">
             <Brain className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">
@@ -255,9 +255,9 @@ async function SourceBanner({
 
   if (source === 'hybrid') {
     return (
-      <Card className="p-5 border-veloce/30">
+      <Card className="p-5 border-keeper/30">
         <div className="flex items-start gap-4">
-          <div className="rounded-btn bg-veloce/10 text-veloce p-2.5 shrink-0">
+          <div className="rounded-btn bg-keeper/10 text-keeper p-2.5 shrink-0">
             <Brain className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">

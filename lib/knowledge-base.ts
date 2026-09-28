@@ -114,13 +114,13 @@ export function searchKnowledgeBase(query: string): string {
   }
 
   if (results.length === 0) {
-    return "Je suis désolé, je n'ai pas trouvé de réponse exacte dans ma base de connaissances. N'hésitez pas à reformuler votre question ou à contacter le support direct à support@velocewealth.com.";
+    return "Je suis désolé, je n'ai pas trouvé de réponse exacte dans ma base de connaissances. N'hésitez pas à reformuler votre question ou à contacter le support direct à support@keeperapp.app.";
   }
 
   return results.slice(0, 2).join('\n\n'); // Limite à 2 réponses pertinentes
 }
 
-export const SYSTEM_PROMPT = `Tu es l'assistant IA officiel de VeloceWealth, une plateforme SaaS premium de gestion de patrimoine automobile.
+export const SYSTEM_PROMPT = `Tu es l'assistant IA officiel de Keeper, une plateforme SaaS premium de gestion de patrimoine automobile.
 Ton rôle est d'aider les utilisateurs avec courtoisie, professionnalisme et concision, en te basant UNIQUEMENT sur la base de connaissances suivante.
 
 BASE DE CONNAISSANCES:
@@ -131,5 +131,5 @@ ${KNOWLEDGE_BASE.map(c =>
 INSTRUCTIONS:
 1. Réponds toujours en français.
 2. Garde le ton "Premium", expert, et rassurant.
-3. Si la réponse n'est pas dans la base de connaissances, dis que tu ne peux pas répondre pour le moment et propose de contacter support@velocewealth.com.
+3. Si la réponse n'est pas dans la base de connaissances, dis que tu ne peux pas répondre pour le moment et propose de contacter support@keeperapp.app.
 4. Fais des phrases courtes et directes.`;

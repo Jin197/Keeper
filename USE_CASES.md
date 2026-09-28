@@ -1,4 +1,4 @@
-# Velocewealth — User Cases
+# Keeper — User Cases
 
 Mise à jour : 2026-05-28 · Stack livrée : Next.js 14, Supabase, Stripe, Resend, Google Vision, Upstash Redis.
 
@@ -156,7 +156,7 @@ Ces capacités existent dans le code mais ne sont pas encore des parcours utilis
 - **OCR multi-régions de carte grise** : couvre EU harmonisé (1999/37/CE), UK V5C, Maghreb (MA/DZ/TN). Confidence score ≥30% pour pré-fill auto.
 - **Vehicle lookup cascade** : Cache Redis (24h) → SIV France (si `SIV_API_KEY` posée) → DVLA UK → NHTSA. Aujourd'hui aucun provider SIV configuré, donc on tombe en mode OCR ou saisie.
 - **Knowledge-base maintenance** : 7 catégories × {checklist 5-8 étapes, outils, difficulté DIY 1-5, durée minutes, tutoriel URL}. Embarquée dans la modale de planification.
-- **Chatbot IA** : widget flottant sur toutes les pages, route `/api/chat`, knowledge-base interne sur Velocewealth.
+- **Chatbot IA** : widget flottant sur toutes les pages, route `/api/chat`, knowledge-base interne sur Keeper.
 - **PHM telemetry pipeline** : ingestion OBD, calcul Z-score, dégradation linéaire des composants, anomaly detection (rpm + load + maf).
 - **Audit logs auth append-only** : trigger `prevent_auth_audit_mutation` autorise uniquement le cascade `SET user_id = NULL` à la suppression de compte.
 
@@ -166,7 +166,7 @@ Ces capacités existent dans le code mais ne sont pas encore des parcours utilis
 
 À ne PAS promettre commercialement tant que ce n'est pas livré :
 
-- ❌ **Recherche d'amendes par plaque/VIN** auprès de l'ANTAI — impossible légalement (données pénales, art. 10 RGPD, pas d'API publique). Velocewealth fait du suivi déclaratif uniquement.
+- ❌ **Recherche d'amendes par plaque/VIN** auprès de l'ANTAI — impossible légalement (données pénales, art. 10 RGPD, pas d'API publique). Keeper fait du suivi déclaratif uniquement.
 - ❌ **Web Push** sur mobile — pas implémenté ; les rappels passent par email + cloche in-app.
 - ❌ **Export ICS** (calendrier Apple/Google) — endpoint à ajouter si demandé.
 - ❌ **Apple Sign In** — code prêt mais feature-flag `NEXT_PUBLIC_APPLE_ENABLED` désactivé tant que le provider n'est pas configuré.
@@ -187,6 +187,6 @@ Ces capacités existent dans le code mais ne sont pas encore des parcours utilis
 | Tests E2E Playwright | Présents sur landing, auth-pages, i18n, stripe-gdpr |
 | Build Next.js production | OK, 158 pages statiques + 21 routes dynamiques |
 | Stripe | Checkout + portal + webhook + 4 price IDs configurés en test mode |
-| Resend | Domaine `velocewealth.com` vérifié, SPF + DKIM + MX OK |
+| Resend | Domaine `keeperapp.app` vérifié, SPF + DKIM + MX OK |
 | Cron Vercel | 1 job actif : `maintenance-reminders` daily 05:00 UTC |
 | Charte design | Slate Minimal Pro, Inter + JetBrains Mono pour chiffres, dark default |

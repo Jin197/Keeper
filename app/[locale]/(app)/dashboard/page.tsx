@@ -61,7 +61,7 @@ const TRANSLATIONS = {
     yourVehicles: "Vos véhicules",
     add: "Ajouter",
     welcome: "Bienvenue",
-    emptyStateDesc: "Pour commencer, ajoutez votre premier véhicule. Velocewealth calculera automatiquement votre coût au kilomètre dès la première dépense.",
+    emptyStateDesc: "Pour commencer, ajoutez votre premier véhicule. Keeper calculera automatiquement votre coût au kilomètre dès la première dépense.",
     addFirstVehicle: "Ajouter mon premier véhicule",
     enableDemoMode: "Activer le Mode Démo",
     notConfigured: "Backend non configuré",
@@ -91,7 +91,7 @@ const TRANSLATIONS = {
     yourVehicles: "Your vehicles",
     add: "Add",
     welcome: "Welcome",
-    emptyStateDesc: "To start, add your first vehicle. Velocewealth will automatically compute your running cost per kilometer starting from the first expense.",
+    emptyStateDesc: "To start, add your first vehicle. Keeper will automatically compute your running cost per kilometer starting from the first expense.",
     addFirstVehicle: "Add my first vehicle",
     enableDemoMode: "Activate Demo Mode",
     notConfigured: "Backend not configured",
@@ -121,7 +121,7 @@ const TRANSLATIONS = {
     yourVehicles: "Tus vehículos",
     add: "Añadir",
     welcome: "Bienvenido",
-    emptyStateDesc: "Para empezar, añade tu primer vehículo. Velocewealth calculará automáticamente tu coste por kilómetro desde el primer gasto.",
+    emptyStateDesc: "Para empezar, añade tu primer vehículo. Keeper calculará automáticamente tu coste por kilómetro desde el primer gasto.",
     addFirstVehicle: "Añadir mi primer vehículo",
     enableDemoMode: "Activar el Modo Demo",
     notConfigured: "Backend no configurado",
@@ -151,7 +151,7 @@ const TRANSLATIONS = {
     yourVehicles: "مركباتك",
     add: "إضافة",
     welcome: "مرحباً بك",
-    emptyStateDesc: "للبدء، أضف مركبتك الأولى. سيقوم Velocewealth تلقائياً بحساب التكلفة لكل كيلومتر بدءاً من المصروف الأول.",
+    emptyStateDesc: "للبدء، أضف مركبتك الأولى. سيقوم Keeper تلقائياً بحساب التكلفة لكل كيلومتر بدءاً من المصروف الأول.",
     addFirstVehicle: "إضافة مركبتي الأولى",
     enableDemoMode: "تفعيل الوضع التجريبي",
     notConfigured: "قاعدة البيانات غير مهيأة",
@@ -181,7 +181,7 @@ const TRANSLATIONS = {
     yourVehicles: "Seus veículos",
     add: "Adicionar",
     welcome: "Bem-vindo",
-    emptyStateDesc: "Para começar, adicione o seu primeiro veículo. O Velocewealth calculará automaticamente o seu custo por quilómetro a partir da primeira despesa.",
+    emptyStateDesc: "Para começar, adicione o seu primeiro veículo. O Keeper calculará automaticamente o seu custo por quilómetro a partir da primeira despesa.",
     addFirstVehicle: "Adicionar meu primeiro veículo",
     enableDemoMode: "Ativar o Modo Demo",
     notConfigured: "Backend não configurado",
@@ -227,7 +227,7 @@ export default async function DashboardPage({ params }: PageProps) {
     return (
       <div className="container py-12">
         <Card variant="premium" className="p-10 max-w-2xl mx-auto text-center">
-          <div className="rounded-full bg-veloce/10 text-veloce h-16 w-16 mx-auto flex items-center justify-center">
+          <div className="rounded-full bg-keeper/10 text-keeper h-16 w-16 mx-auto flex items-center justify-center">
             <Car className="h-8 w-8" strokeWidth={1.5} />
           </div>
           <h1 className="font-display text-2xl font-bold mt-6">

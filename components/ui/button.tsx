@@ -8,7 +8,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-veloce text-white hover:bg-veloce-600 shadow-glow-veloce',
+          'bg-keeper text-white hover:bg-keeper-600 shadow-glow-keeper',
         success:
           'bg-eco text-white hover:bg-eco-600 shadow-glow-eco',
         outline:
@@ -18,7 +18,7 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        link: 'text-veloce underline-offset-4 hover:underline',
+        link: 'text-keeper underline-offset-4 hover:underline',
       },
       size: {
         sm: 'h-9 px-3 text-xs',

@@ -68,7 +68,7 @@ export function LocaleSwitcher({ variant = 'compact' }: Props) {
           className={cn(
             'w-full flex items-center justify-between rounded-btn px-3 py-2 text-sm transition-colors',
             l === current
-              ? 'bg-veloce/10 text-veloce font-medium'
+              ? 'bg-keeper/10 text-keeper font-medium'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground',
           )}
         >

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Velocewealth",
+    "appName": "Keeper",
     "tagline": "Conduza o seu carro como um ativo",
     "cancel": "Cancelar",
     "save": "Guardar",
@@ -100,7 +100,7 @@
       "badge": "Sem publicidade — Pro desde 9.99 €/mês",
       "titleLead": "Conduza o seu carro como",
       "titleHighlight": "um ativo.",
-      "subtitle": "Velocewealth transforma o seu veículo de despesa em património gerido. Custo por km, livro certificado, índice de revenda — num só olhar.",
+      "subtitle": "Keeper transforma o seu veículo de despesa em património gerido. Custo por km, livro certificado, índice de revenda — num só olhar.",
       "ctaPrimary": "Começar grátis",
       "ctaSecondary": "Ver demo",
       "rating": "★★★★★ 4.8/5",
@@ -118,7 +118,7 @@
       "title": "Três passos para retomar o controlo",
       "subtitle": "Do registo ao primeiro custo por km — cinco minutos.",
       "step1Title": "Adicione o seu veículo",
-      "step1Description": "Marca, modelo, quilometragem. Velocewealth identifica o motor e começa o seguimento.",
+      "step1Description": "Marca, modelo, quilometragem. Keeper identifica o motor e começa o seguimento.",
       "step2Title": "Digitalize os seus recibos",
       "step2Description": "Fotografe abastecimentos ou recargas. O nosso OCR lê, classifica e calcula tudo.",
       "step3Title": "Conduza com clareza",
@@ -128,7 +128,7 @@
       "title": "Tudo o que precisa para retomar o controlo",
       "subtitle": "Seis módulos para transformar a complexidade em clareza.",
       "ocrTitle": "OCR ilimitado",
-      "ocrDescription": "Fotografe recibos de combustível e recargas — Velocewealth lê, classifica e calcula tudo.",
+      "ocrDescription": "Fotografe recibos de combustível e recargas — Keeper lê, classifica e calcula tudo.",
       "logTitle": "Livro certificado",
       "logDescription": "Histórico de manutenção inalterável, assinado criptograficamente, exportável em PDF.",
       "resaleTitle": "Índice de revenda em tempo real",
@@ -141,7 +141,7 @@
       "predictDescription": "Algoritmos que antecipam o desgaste real e alertam-no na altura certa."
     },
     "testimonials": {
-      "title": "Já conduzem com Velocewealth",
+      "title": "Já conduzem com Keeper",
       "subtitle": "De condutores particulares a gestores de pequenas frotas.",
       "t1Quote": "Descobri que o meu carro me custa 0,28 €/km. Mais que um Uber em viagens curtas — mudei a rotina.",
       "t1Author": "Karim B.",
@@ -164,7 +164,7 @@
       "q4": "A app funciona fora da Europa?",
       "a4": "Sim. Disponível em França, Bélgica, Suíça, Marrocos, Senegal, Costa do Marfim, Canadá e EUA desde o lançamento.",
       "q5": "O meu veículo elétrico é bem acompanhado?",
-      "a5": "Perfeitamente. Velocewealth gere térmico, elétrico e híbrido. Mix energético calculado automaticamente.",
+      "a5": "Perfeitamente. Keeper gere térmico, elétrico e híbrido. Mix energético calculado automaticamente.",
       "q6": "Diferenças entre Standard e Premium?",
       "a6": "Standard é grátis com entrada manual limitada. Premium (4,99 €/mês) desbloqueia OCR ilimitado, livro certificado, TCO completo e exportação fiscal."
     },
@@ -212,17 +212,17 @@
     "mentionsLink": "Aviso legal",
     "cookiesLink": "Cookies",
     "contact": "Contacto",
-    "copyright": "© 2026 Velocewealth",
+    "copyright": "© 2026 Keeper",
     "rights": "Todos os direitos reservados"
   },
   "cookies": {
     "title": "Apenas cookies essenciais",
-    "description": "Velocewealth utiliza apenas cookies estritamente necessários (sessão, preferências). Sem cookies publicitários, sem rastreamento.",
+    "description": "Keeper utiliza apenas cookies estritamente necessários (sessão, preferências). Sem cookies publicitários, sem rastreamento.",
     "accept": "Entendido",
     "manage": "Gerir",
     "acceptAll": "Aceitar tudo",
     "refuseAll": "Recusar tudo",
-    "dpoMention": "Para qualquer dúvida sobre seus dados, entre em contato com o DPO em dpo@velocewealth.app."
+    "dpoMention": "Para qualquer dúvida sobre seus dados, entre em contato com o DPO em dpo@keeperapp.app."
   },
   "legal": {
     "termsTitle": "Termos de Utilização",

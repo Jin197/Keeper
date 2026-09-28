@@ -131,7 +131,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
       >
         <div className="flex items-start justify-between border-b border-border p-5 gap-3">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="rounded-btn bg-veloce/10 text-veloce p-2 shrink-0">
+            <div className="rounded-btn bg-keeper/10 text-keeper p-2 shrink-0">
               <Wrench className="h-5 w-5" strokeWidth={2} />
             </div>
             <div className="min-w-0">
@@ -225,7 +225,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
           <div className="rounded-card border border-border bg-muted/20 p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                <ListChecks className="h-3.5 w-3.5 text-veloce" />
+                <ListChecks className="h-3.5 w-3.5 text-keeper" />
                 {t('checklist')}
               </h3>
               <div className="text-[11px] text-muted-foreground font-mono">
@@ -238,7 +238,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
                   key={i}
                   className="flex gap-2 items-start text-foreground/85"
                 >
-                  <span className="font-mono text-veloce text-[10px] shrink-0 mt-0.5">
+                  <span className="font-mono text-keeper text-[10px] shrink-0 mt-0.5">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <span>{step}</span>
@@ -267,7 +267,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
                 href={instructions.tutorialUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-veloce hover:underline flex items-center gap-1 mt-1"
+                className="text-xs text-keeper hover:underline flex items-center gap-1 mt-1"
               >
                 <Youtube className="h-3 w-3" />
                 {t('tutorial')}
@@ -276,7 +276,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
           </div>
 
           {task.reasoning && (
-            <p className="text-[11px] text-muted-foreground italic border-l-2 border-veloce/30 pl-3">
+            <p className="text-[11px] text-muted-foreground italic border-l-2 border-keeper/30 pl-3">
               {task.reasoning}
             </p>
           )}
@@ -293,7 +293,7 @@ export function ScheduleTaskModal({ task, open, onClose, onScheduled }: Props) {
             <Button
               type="submit"
               disabled={pending}
-              className="bg-veloce hover:bg-veloce/90 text-white"
+              className="bg-keeper hover:bg-keeper/90 text-white"
             >
               {pending ? t('submitting') : t('submit')}
             </Button>

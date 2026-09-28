@@ -108,7 +108,7 @@ const LABELS: Record<
     resendCode: 'Renvoyer un code',
     step3Heading: 'Votre compte a été supprimé',
     step3Body:
-      'Toutes vos données ont été effacées. Merci d\'avoir essayé Velocewealth.',
+      'Toutes vos données ont été effacées. Merci d\'avoir essayé Keeper.',
     redirecting: 'Redirection...',
     sentToast: 'Code envoyé à votre adresse email',
     rateLimitedToast:
@@ -151,7 +151,7 @@ const LABELS: Record<
     resendCode: 'Resend a code',
     step3Heading: 'Your account has been deleted',
     step3Body:
-      'All your data has been erased. Thank you for trying Velocewealth.',
+      'All your data has been erased. Thank you for trying Keeper.',
     redirecting: 'Redirecting...',
     sentToast: 'Code sent to your email',
     rateLimitedToast: 'You already requested a code recently. Check your inbox.',
@@ -193,7 +193,7 @@ const LABELS: Record<
     resendCode: 'Reenviar un código',
     step3Heading: 'Tu cuenta ha sido eliminada',
     step3Body:
-      'Todos tus datos han sido borrados. Gracias por probar Velocewealth.',
+      'Todos tus datos han sido borrados. Gracias por probar Keeper.',
     redirecting: 'Redirigiendo...',
     sentToast: 'Código enviado a tu correo',
     rateLimitedToast:
@@ -236,7 +236,7 @@ const LABELS: Record<
     resendCode: 'إعادة إرسال الرمز',
     step3Heading: 'تم حذف حسابك',
     step3Body:
-      'تم محو جميع بياناتك. شكراً لتجربتك Velocewealth.',
+      'تم محو جميع بياناتك. شكراً لتجربتك Keeper.',
     redirecting: 'إعادة التوجيه...',
     sentToast: 'تم إرسال الرمز إلى بريدك',
     rateLimitedToast: 'لقد طلبت رمزاً مؤخراً. تحقق من البريد.',
@@ -278,7 +278,7 @@ const LABELS: Record<
     resendCode: 'Reenviar um código',
     step3Heading: 'Sua conta foi excluída',
     step3Body:
-      'Todos os seus dados foram apagados. Obrigado por experimentar a Velocewealth.',
+      'Todos os seus dados foram apagados. Obrigado por experimentar a Keeper.',
     redirecting: 'Redirecionando...',
     sentToast: 'Código enviado para o seu email',
     rateLimitedToast: 'Já solicitou um código recentemente. Verifique a caixa.',

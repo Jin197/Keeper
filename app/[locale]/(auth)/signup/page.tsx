@@ -251,11 +251,11 @@ export default function SignupPage() {
 
         <p className="text-xs text-muted-foreground">
           {t('termsAcceptance')}{' '}
-          <Link href="/legal/terms" className="text-veloce hover:underline">
+          <Link href="/legal/terms" className="text-keeper hover:underline">
             {t('termsLink')}
           </Link>{' '}
           {t('and')}{' '}
-          <Link href="/legal/privacy" className="text-veloce hover:underline">
+          <Link href="/legal/privacy" className="text-keeper hover:underline">
             {t('privacyLink')}
           </Link>
           .
@@ -264,7 +264,7 @@ export default function SignupPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         {t('alreadyHaveAccount')}{' '}
-        <Link href="/login" className="text-veloce hover:underline font-medium">
+        <Link href="/login" className="text-keeper hover:underline font-medium">
           {t('signIn')}
         </Link>
       </p>

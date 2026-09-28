@@ -27,12 +27,12 @@ const supabase = createClient(URL, SVC, {
 });
 
 const userA = {
-  email: 'audit_user_a@velocewealth.local',
+  email: 'audit_user_a@keeper.local',
   password: 'AuditUserAPass123!'
 };
 
 const userB = {
-  email: 'audit_user_b@velocewealth.local',
+  email: 'audit_user_b@keeper.local',
   password: 'AuditUserBPass123!'
 };
 

@@ -21,8 +21,8 @@ const TRANSLATIONS = {
     premiumActive: "Premium actif",
     familyActive: "Family/Pro actif",
     standard: "Standard",
-    trialTitle: "Essai Velocewealth Premium",
-    standardTitle: "Velocewealth Standard",
+    trialTitle: "Essai Keeper Premium",
+    standardTitle: "Keeper Standard",
     renewsAuto: "Renouvellement automatique. Modifiez votre abonnement à tout moment.",
     trialDesc: (days: number) => `Profitez de toutes les fonctions Premium pendant ${TRIAL_DAYS} jours (sans carte bancaire). Il vous reste ${days} jour${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Passez Premium pour OCR illimité, carnet certifié et export fiscal.",
@@ -51,8 +51,8 @@ const TRANSLATIONS = {
     premiumActive: "Premium active",
     familyActive: "Family/Pro active",
     standard: "Standard",
-    trialTitle: "Velocewealth Premium Trial",
-    standardTitle: "Velocewealth Standard",
+    trialTitle: "Keeper Premium Trial",
+    standardTitle: "Keeper Standard",
     renewsAuto: "Automatic renewal. Modify your subscription at any time.",
     trialDesc: (days: number) => `Enjoy all Premium features for ${TRIAL_DAYS} days (no credit card required). You have ${days} day${days > 1 ? 's' : ''} left.`,
     upgradeDesc: "Upgrade to Premium for unlimited OCR, certified logbook, and tax export.",
@@ -81,8 +81,8 @@ const TRANSLATIONS = {
     premiumActive: "Premium activo",
     familyActive: "Family/Pro activo",
     standard: "Estándar",
-    trialTitle: "Prueba Velocewealth Premium",
-    standardTitle: "Velocewealth Estándar",
+    trialTitle: "Prueba Keeper Premium",
+    standardTitle: "Keeper Estándar",
     renewsAuto: "Renovación automática. Modifica tu suscripción en cualquier momento.",
     trialDesc: (days: number) => `Disfruta de todas las funciones Premium durante ${TRIAL_DAYS} días (sin tarjeta de crédito). Te quedan ${days} día${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Pásate a Premium para obtener OCR ilimitado, carnet certificado y exportación fiscal.",
@@ -111,8 +111,8 @@ const TRANSLATIONS = {
     premiumActive: "بريميوم نشط",
     familyActive: "عائلي/محترف نشط",
     standard: "عادي",
-    trialTitle: "تجربة Velocewealth بريميوم",
-    standardTitle: "Velocewealth قياسي",
+    trialTitle: "تجربة Keeper بريميوم",
+    standardTitle: "Keeper قياسي",
     renewsAuto: "تجديد تلقائي. تعديل اشتراكك في أي وقت.",
     trialDesc: (days: number) => `استمتع بجميع الميزات البريميوم لمدة ${TRIAL_DAYS} يومًا (لا تتطلب بطاقة ائتمان). المتبقي ${days} يوم.`,
     upgradeDesc: "قم بالترقية إلى بريميوم للحصول على مسح OCR غير محدود، ودفتر معتمد، وتصدير ضريبي.",
@@ -141,8 +141,8 @@ const TRANSLATIONS = {
     premiumActive: "Premium ativo",
     familyActive: "Family/Pro ativo",
     standard: "Padrão",
-    trialTitle: "Teste Velocewealth Premium",
-    standardTitle: "Velocewealth Padrão",
+    trialTitle: "Teste Keeper Premium",
+    standardTitle: "Keeper Padrão",
     renewsAuto: "Renovação automática. Altere sua assinatura a qualquer momento.",
     trialDesc: (days: number) => `Aproveite todos os recursos Premium por ${TRIAL_DAYS} dias (sem necessidade de cartão de crédito). Restam-lhe ${days} dia${days > 1 ? 's' : ''}.`,
     upgradeDesc: "Atualize para o Premium para obter OCR ilimitado, caderneta certificada e exportação fiscal.",
@@ -197,7 +197,7 @@ export default async function BillingPage({ params }: PageProps) {
               <Sparkles className="h-3 w-3" /> {isSubscribed ? `${isFamily ? t.familyActive : t.premiumActive}` : isTrial ? t.trialActive : t.standard}
             </Badge>
             <div className="font-display text-2xl font-bold mt-3">
-              {isSubscribed ? `Velocewealth ${isFamily ? 'Family/Pro' : 'Premium'}` : isTrial ? t.trialTitle : t.standardTitle}
+              {isSubscribed ? `Keeper ${isFamily ? 'Family/Pro' : 'Premium'}` : isTrial ? t.trialTitle : t.standardTitle}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               {isSubscribed

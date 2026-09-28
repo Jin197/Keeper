@@ -22,7 +22,7 @@ export default async function OnboardingPage({ params }: PageProps) {
   const initialUser = profile || {
     id: 'mock-user-id',
     fullName: 'Demo Driver',
-    email: 'demo@velocewealth.app',
+    email: 'demo@keeperapp.app',
     locale: locale as any,
     currency: (locale === 'fr' ? 'EUR' : 'GBP') as any,
     country: locale === 'fr' ? 'FR' : 'GB',

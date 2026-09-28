@@ -159,7 +159,7 @@ export function VehiclePhotoUpload({ name = 'imageUrl', onUploaded }: VehiclePho
           {isUploading && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black/30">
               <div
-                className="h-full bg-veloce transition-all duration-500 ease-out"
+                className="h-full bg-keeper transition-all duration-500 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -180,20 +180,20 @@ export function VehiclePhotoUpload({ name = 'imageUrl', onUploaded }: VehiclePho
             flex flex-col items-center justify-center gap-3
             cursor-pointer
             ${isDragOver
-              ? 'border-veloce bg-veloce/10 scale-[1.01]'
-              : 'border-border hover:border-veloce/50 hover:bg-veloce/5'
+              ? 'border-keeper bg-keeper/10 scale-[1.01]'
+              : 'border-border hover:border-keeper/50 hover:bg-keeper/5'
             }
           `}
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-8 w-8 text-veloce animate-spin" />
+              <Loader2 className="h-8 w-8 text-keeper animate-spin" />
               <span className="text-sm text-muted-foreground">{t('uploading')}</span>
             </>
           ) : isDragOver ? (
             <>
-              <Upload className="h-8 w-8 text-veloce animate-bounce" />
-              <span className="text-sm text-veloce font-medium">{t('dropHere')}</span>
+              <Upload className="h-8 w-8 text-keeper animate-bounce" />
+              <span className="text-sm text-keeper font-medium">{t('dropHere')}</span>
             </>
           ) : (
             <>

@@ -1,11 +1,11 @@
-# Stratégie de Déploiement, GTM & Marketing · VeloceWealth
+# Stratégie de Déploiement, GTM & Marketing · Keeper
 > **Date de rédaction** : 21 Mai 2026  
 > **Auteur** : Antigravity (Architecte Fintech & Lead Frontend)  
 > **Statut** : Plan GTM V1
 
 ---
 
-Ce document détaille la feuille de route opérationnelle, technique et commerciale à suivre immédiatement après la phase de développement de **VeloceWealth** afin de garantir un lancement sécurisé, performant et à forte croissance.
+Ce document détaille la feuille de route opérationnelle, technique et commerciale à suivre immédiatement après la phase de développement de **Keeper** afin de garantir un lancement sécurisé, performant et à forte croissance.
 
 ---
 
@@ -25,7 +25,7 @@ graph TD
 ### 1.1. Hébergement Applicatif (Vercel)
 * **Configuration multi-région** : Déploiement fixé sur la région **Frankfurt (fra1)** via le fichier `vercel.json` pour être au plus près de la base de données Supabase (RGPD compliancy).
 * **Noms de domaines & DNS** :
-  * Domaine principal : `velocewealth.app` (ou `.com`).
+  * Domaine principal : `keeperapp.app` (ou `.com`).
   * Redirection automatique des requêtes HTTP vers HTTPS avec forçage TLS 1.3.
   * Déclaration des enregistrements TXT pour SPF, DKIM et DMARC afin de légitimer les emails de bienvenue envoyés par l'application.
 
@@ -42,9 +42,9 @@ graph TD
 * **Stripe Live Mode** :
   * Basculer le compte Stripe en mode réel (*live*).
   * Recréer les identifiants de produits et de prix réels dans Stripe, puis mettre à jour les variables `STRIPE_PRICE_MONTHLY` et `STRIPE_PRICE_YEARLY` dans le fichier `.env` de production.
-  * Mettre à jour l'URL du webhook Stripe de production pour pointer vers `https://velocewealth.app/api/stripe/webhook` et copier la signature `whsec_...` réelle.
+  * Mettre à jour l'URL du webhook Stripe de production pour pointer vers `https://keeperapp.app/api/stripe/webhook` et copier la signature `whsec_...` réelle.
 * **Google Cloud & Mapbox** :
-  * Restreindre le token d'API public Mapbox aux seuls domaines `velocewealth.app` et ses sous-domaines.
+  * Restreindre le token d'API public Mapbox aux seuls domaines `keeperapp.app` et ses sous-domaines.
   * Configurer un plafond de budget mensuel d'alerte sur Google Cloud Platform pour l'API Cloud Vision (OCR) afin de bloquer les abus potentiels.
 
 ---
@@ -68,7 +68,7 @@ Pour piloter l'application comme un instrument de précision, nous mettons en pl
 
 ## 3. Stratégie Marketing & Acquisition Client (Go-To-Market)
 
-VeloceWealth ne vend pas un "tracker de factures", mais un **instrument d'optimisation financière**. Le ton marketing doit être expert, exclusif et focalisé sur le retour sur investissement (ROI).
+Keeper ne vend pas un "tracker de factures", mais un **instrument d'optimisation financière**. Le ton marketing doit être expert, exclusif et focalisé sur le retour sur investissement (ROI).
 
 ### 3.1. Acquisition Organique (Le Moteur SEO)
 Le référencement naturel est le canal d'acquisition le plus rentable à long terme.
@@ -85,12 +85,12 @@ Le référencement naturel est le canal d'acquisition le plus rentable à long t
 * **Partage du "Carnet Numérique Certifié"** :
   * Lors de la vente de son véhicule, l'abonné Premium génère un lien public de consultation de sa voiture (sans données personnelles, uniquement les factures vérifiées, kilométrages et hashs cryptographiques).
   * L'intégration de ce lien sur les plateformes de vente d'occasion (La Centrale, LeBonCoin, Mobile.de) rassure instantanément l'acheteur.
-  * Chaque acheteur consultant ce rapport sécurisé découvre **VeloceWealth** au moment idéal de sa prise de décision d'achat, créant une boucle de recommandation virale organique.
+  * Chaque acheteur consultant ce rapport sécurisé découvre **Keeper** au moment idéal de sa prise de décision d'achat, créant une boucle de recommandation virale organique.
 
-### 3.3. Partenariats B2B (Le Réseau VeloceWealth)
+### 3.3. Partenariats B2B (Le Réseau Keeper)
 * **Les Garages & Spécialistes Indépendants** :
   * Recruter des garages de confiance et les référencer gratuitement sur notre carte Mapbox.
-  * Fournir aux professionnels un portail partenaire leur permettant de certifier directement les factures qu'ils émettent pour les abonnés VeloceWealth.
+  * Fournir aux professionnels un portail partenaire leur permettant de certifier directement les factures qu'ils émettent pour les abonnés Keeper.
   * En échange, le professionnel gagne en visibilité auprès d'une clientèle qualifiée de propriétaires de véhicules haut de gamme.
 * **Clubs Automobiles & Assureurs** :
   * Mettre en place des partenariats d'affiliation avec des clubs de marque (Porsche Club, Club Alpine, etc.) offrant 3 mois d'essai Premium à leurs membres.

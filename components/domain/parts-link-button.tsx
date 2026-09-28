@@ -25,7 +25,7 @@ export function PartsLinkButton({ country, category, vehicle, className = '' }: 
       href={link.url}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className={`inline-flex items-center gap-1.5 text-xs font-medium text-veloce hover:underline ${className}`}
+      className={`inline-flex items-center gap-1.5 text-xs font-medium text-keeper hover:underline ${className}`}
       title={link.tracked ? t('buyPartsTracked') : undefined}
     >
       <ShoppingCart className="h-3.5 w-3.5" />

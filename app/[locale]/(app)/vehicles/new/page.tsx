@@ -160,11 +160,11 @@ export default function NewVehiclePage() {
       <PageHeader title={t('title')} description={t('subtitle')} />
 
       <form ref={formRef} action={handleSubmit} className="space-y-4">
-        <Card className="p-6 space-y-5 border-veloce bg-veloce/5 shadow-[0_0_30px_rgba(0,122,255,0.05)] relative overflow-hidden">
+        <Card className="p-6 space-y-5 border-keeper bg-keeper/5 shadow-[0_0_30px_rgba(0,122,255,0.05)] relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-wider text-veloce">{t('quickEntry')}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-keeper">{t('quickEntry')}</div>
             {isLookingUp && (
-              <div className="text-xs text-veloce flex items-center gap-1.5 font-mono">
+              <div className="text-xs text-keeper flex items-center gap-1.5 font-mono">
                 <Loader2 className="h-3 w-3 animate-spin" /> {t('identifying')}
               </div>
             )}
@@ -245,7 +245,7 @@ export default function NewVehiclePage() {
                   <Label htmlFor="trim">{t('trim')}</Label>
                   <Input id="trim" name="trim" placeholder="Titanium" />
                 </div>
-                <div className={`space-y-1.5 col-span-2 transition-all duration-300 ${showVinFallback ? 'ring-2 ring-veloce/50 rounded-xl p-3 bg-veloce/5' : ''}`}>
+                <div className={`space-y-1.5 col-span-2 transition-all duration-300 ${showVinFallback ? 'ring-2 ring-keeper/50 rounded-xl p-3 bg-keeper/5' : ''}`}>
                   <Label htmlFor="vin">
                     {t('vin')} <span className="text-eco text-[10px] font-mono">({t('optional')})</span>
                   </Label>
@@ -273,7 +273,7 @@ export default function NewVehiclePage() {
                   return (
                     <label
                       key={opt.value}
-                      className="flex flex-col items-center gap-2 rounded-card border border-border p-4 cursor-pointer hover:border-veloce hover:bg-veloce/5 transition-colors has-[:checked]:border-veloce has-[:checked]:bg-veloce/10"
+                      className="flex flex-col items-center gap-2 rounded-card border border-border p-4 cursor-pointer hover:border-keeper hover:bg-keeper/5 transition-colors has-[:checked]:border-keeper has-[:checked]:bg-keeper/10"
                     >
                       <input type="radio" name="fuelType" value={opt.value} className="sr-only" defaultChecked={opt.value === 'thermal'} />
                       <Icon className="h-5 w-5" strokeWidth={1.5} />

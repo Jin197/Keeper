@@ -29,7 +29,7 @@ export async function KnownIssuesPanel({ report, variant = 'compact' }: Props) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 className="font-display text-base font-semibold flex items-center gap-2">
-            <FileSearch className="h-4 w-4 text-veloce" />
+            <FileSearch className="h-4 w-4 text-keeper" />
             {t('title')}
           </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-xl">{t('subtitle')}</p>
@@ -215,7 +215,7 @@ async function FailureStats({ profile, compact }: { profile: ModelFailureProfile
   const max = Math.max(0.05, ...shown.map((s) => Math.max(s.rate, s.fleetRate ?? 0)));
 
   return (
-    <section className="rounded-btn border border-veloce/20 bg-veloce/5 p-4 space-y-3">
+    <section className="rounded-btn border border-keeper/20 bg-keeper/5 p-4 space-y-3">
       <div>
         <h3 className="text-sm font-semibold">{t('statsTitle')}</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -253,7 +253,7 @@ async function FailureStats({ profile, compact }: { profile: ModelFailureProfile
                 </span>
               </div>
               <div className="relative h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                <div className={`h-full ${worse ? 'bg-amber-500' : 'bg-veloce'}`} style={{ width: `${Math.max(3, (s.rate / max) * 100)}%` }} />
+                <div className={`h-full ${worse ? 'bg-amber-500' : 'bg-keeper'}`} style={{ width: `${Math.max(3, (s.rate / max) * 100)}%` }} />
                 {s.fleetRate != null && (
                   <div className="absolute top-0 h-full w-px bg-foreground/60" style={{ left: `${Math.min(99, (s.fleetRate / max) * 100)}%` }} title={`${t('statsFleet')} ${pct(s.fleetRate)}`} />
                 )}

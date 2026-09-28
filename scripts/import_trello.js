@@ -1,5 +1,5 @@
 // scripts/import_trello.js
-// Script d'automatisation pour importer le Backlog VeloceWealth dans Trello
+// Script d'automatisation pour importer le Backlog Keeper dans Trello
 // Usage : TRELLO_API_KEY=... TRELLO_TOKEN=... TRELLO_LIST_ID=... node scripts/import_trello.js
 
 const https = require('https');

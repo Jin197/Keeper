@@ -12,7 +12,7 @@ const PUBLIC_PATHS = [
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://velocewealth.app';
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://keeperapp.app';
 
   return PUBLIC_PATHS.flatMap((path) =>
     locales.map((locale) => ({

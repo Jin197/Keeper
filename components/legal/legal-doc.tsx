@@ -33,7 +33,7 @@ export function LegalArticles({ doc, locale }: { doc: LegalDoc; locale: string }
         {doc.articles.map((article, i) => (
           <article key={article.title} className="space-y-3">
             <h2 className="font-display text-lg font-semibold flex gap-3">
-              <span className="text-veloce tabular-nums">{i + 1}.</span>
+              <span className="text-keeper tabular-nums">{i + 1}.</span>
               {article.title}
             </h2>
             <div className="space-y-3 text-muted-foreground ps-8">

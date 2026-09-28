@@ -9,7 +9,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 const fuelIcon = {
   thermal: { icon: Fuel, color: 'text-amber-500' },
   electric: { icon: Zap, color: 'text-eco' },
-  hybrid: { icon: Battery, color: 'text-veloce' },
+  hybrid: { icon: Battery, color: 'text-keeper' },
 };
 
 export async function VehicleCard({ vehicle }: { vehicle: Vehicle }) {

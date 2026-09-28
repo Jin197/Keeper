@@ -22,8 +22,8 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Velocewealth — Know what your car will cost you next',
-    template: '%s · Velocewealth',
+    default: 'Keeper — Know what your car will cost you next',
+    template: '%s · Keeper',
   },
   description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
   keywords: [
@@ -37,26 +37,26 @@ export const metadata: Metadata = {
     'carnet entretien',
     'prix carburant',
   ],
-  authors: [{ name: 'Velocewealth' }],
+  authors: [{ name: 'Keeper' }],
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   ),
   openGraph: {
     type: 'website',
-    title: 'Velocewealth — Know what your car will cost you next',
+    title: 'Keeper — Know what your car will cost you next',
     description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
     images: [
       {
         url: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&h=630&fit=crop&q=80',
         width: 1200,
         height: 630,
-        alt: 'Velocewealth — car running costs and maintenance forecast',
+        alt: 'Keeper — car running costs and maintenance forecast',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Velocewealth — Know what your car will cost you next',
+    title: 'Keeper — Know what your car will cost you next',
     description: 'Real cost per km from your receipts, the repairs coming up on your exact model, and the cheapest fuel near you. Built on official MOT, recall and fuel-price data.',
     images: ['https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1200&h=630&fit=crop&q=80'],
   },

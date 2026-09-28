@@ -116,10 +116,10 @@
       rgba(0, 122, 255, 0.02) 50%,
       rgba(46, 204, 113, 0.06) 100%
     );
-    @apply backdrop-blur-xl border border-veloce/20;
+    @apply backdrop-blur-xl border border-keeper/20;
   }
-  .text-gradient-veloce {
-    @apply bg-gradient-veloce bg-clip-text text-transparent;
+  .text-gradient-keeper {
+    @apply bg-gradient-keeper bg-clip-text text-transparent;
   }
   .text-gradient-eco {
     @apply bg-gradient-eco bg-clip-text text-transparent;

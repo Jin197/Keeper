@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Velocewealth",
+    "appName": "Keeper",
     "tagline": "Sachez ce que votre voiture va vous coûter — et payez moins.",
     "cancel": "Annuler",
     "save": "Enregistrer",
@@ -101,7 +101,7 @@
       "badge": "Données officielles · sans publicité",
       "titleLead": "Sachez ce que votre voiture va vous coûter le mois prochain.",
       "titleHighlight": "Et payez moins.",
-      "subtitle": "Pour ceux qui roulent tous les jours dans une voiture de 4 à 15 ans. Entrez la plaque, scannez un ticket, et Velocewealth vous montre votre vrai coût au km, les réparations qui arrivent et la station la moins chère près de vous.",
+      "subtitle": "Pour ceux qui roulent tous les jours dans une voiture de 4 à 15 ans. Entrez la plaque, scannez un ticket, et Keeper vous montre votre vrai coût au km, les réparations qui arrivent et la station la moins chère près de vous.",
       "ctaPrimary": "Ajouter ma voiture — gratuit",
       "ctaSecondary": "Voir comment ça marche",
       "trustFree": "Formule gratuite",
@@ -229,12 +229,12 @@
     "mentionsLink": "Mentions légales",
     "cookiesLink": "Cookies",
     "contact": "Contact",
-    "copyright": "© 2026 Velocewealth",
+    "copyright": "© 2026 Keeper",
     "rights": "Tous droits réservés"
   },
   "cookies": {
     "title": "Nous respectons votre vie privée et la sécurité de vos données automobiles",
-    "description": "VeloceWealth utilise des cookies essentiels pour assurer le bon fonctionnement de la plateforme (comme la mémorisation de votre session sécurisée). Avec votre accord, nous et nos partenaires utilisons également des cookies pour mesurer l'audience du site, optimiser les performances techniques et vous proposer des services d'entretien de proximité adaptés à votre véhicule. Vous pouvez modifier vos préférences à tout moment.",
+    "description": "Keeper utilise des cookies essentiels pour assurer le bon fonctionnement de la plateforme (comme la mémorisation de votre session sécurisée). Avec votre accord, nous et nos partenaires utilisons également des cookies pour mesurer l'audience du site, optimiser les performances techniques et vous proposer des services d'entretien de proximité adaptés à votre véhicule. Vous pouvez modifier vos préférences à tout moment.",
     "accept": "J'ai compris",
     "manage": "Gérer",
     "acceptAll": "Tout accepter",
@@ -399,7 +399,7 @@
     "purchaseCancelled": "Paiement annulé."
   },
   "onboarding": {
-    "welcome": "Bienvenue sur Velocewealth",
+    "welcome": "Bienvenue sur Keeper",
     "progress": "Étape {current} sur {total}",
     "step1Title": "Ce qui vous agace",
     "step2Title": "Votre moteur",
@@ -952,8 +952,8 @@
     "scheduledBodyOverdue": "Initialement prévue le {date}.",
     "welcomeTitle": "Votre première prévision est prête",
     "welcomeBody": "Ouvrez votre véhicule pour voir ce qui arrive dans les 30 prochains jours.",
-    "emailFooter": "Vous recevez ce message car les rappels sont activés dans Velocewealth → Réglages → Notifications.",
-    "emailOpen": "Ouvrir dans Velocewealth"
+    "emailFooter": "Vous recevez ce message car les rappels sont activés dans Keeper → Réglages → Notifications.",
+    "emailOpen": "Ouvrir dans Keeper"
   },
   "notificationSettings": {
     "title": "Notifications",
@@ -1070,15 +1070,15 @@
     "garage": "Garage indépendant"
   },
   "securityEmail": {
-    "newDeviceSubject": "Nouvelle connexion sur votre compte Velocewealth",
+    "newDeviceSubject": "Nouvelle connexion sur votre compte Keeper",
     "hello": "Bonjour {name},",
-    "newDeviceBody": "Une connexion à votre compte Velocewealth a été détectée depuis un appareil que vous n'avez pas utilisé auparavant.",
+    "newDeviceBody": "Une connexion à votre compte Keeper a été détectée depuis un appareil que vous n'avez pas utilisé auparavant.",
     "when": "Date",
     "location": "Lieu approximatif",
     "ip": "Adresse IP",
     "device": "Appareil",
     "wasYou": "S'il s'agit bien de vous, vous pouvez ignorer ce message.",
-    "wasNotYou": "Sinon, changez votre mot de passe immédiatement dans Velocewealth → Réglages → Sécurité, et activez la double authentification.",
+    "wasNotYou": "Sinon, changez votre mot de passe immédiatement dans Keeper → Réglages → Sécurité, et activez la double authentification.",
     "automated": "Message automatique — merci de ne pas y répondre."
   },
   "logPdf": {
@@ -1092,7 +1092,7 @@
     "chained": "{count, plural, one {# intervention chaînée} other {# interventions chaînées}} par SHA-256.",
     "locked": "Toute modification de l'historique est bloquée au niveau base de données par un trigger PostgreSQL.",
     "empty": "Aucune intervention enregistrée.",
-    "page": "Velocewealth — {current} / {total}",
-    "filename": "carnet-velocewealth"
+    "page": "Keeper — {current} / {total}",
+    "filename": "carnet-keeper"
   }
 }

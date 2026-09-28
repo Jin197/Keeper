@@ -7,8 +7,8 @@
  * the same `PRICE_TABLE` the app renders from, so the two cannot drift.
  *
  * What it creates
- *   Product "Velocewealth Pro"            → 6 recurring prices (3 bands × monthly|yearly)
- *   Product "Velocewealth sale dossier"   → 3 one-time prices (3 bands)
+ *   Product "Keeper Pro"            → 6 recurring prices (3 bands × monthly|yearly)
+ *   Product "Keeper sale dossier"   → 3 one-time prices (3 bands)
  * Each price is created in its band's base currency and carries
  * `currency_options` for every other currency of that band, so Checkout can
  * charge in the buyer's own currency.
@@ -91,14 +91,14 @@ const BASE_CURRENCY = { A: 'GBP', B: 'USD', C: 'USD' };
 const MAX_CURRENCY_OPTIONS = 20;
 
 const PRODUCTS = {
-  pro: { name: 'Velocewealth Pro', description: 'Unlimited vehicles and receipt scans, full maintenance forecast, known-fault data, certified sale dossier, tax-ready export.' },
-  dossier: { name: 'Velocewealth certified sale dossier', description: 'One-off certified PDF service record for a single vehicle, with hash-chain verification.' },
+  pro: { name: 'Keeper Pro', description: 'Unlimited vehicles and receipt scans, full maintenance forecast, known-fault data, certified sale dossier, tax-ready export.' },
+  dossier: { name: 'Keeper certified sale dossier', description: 'One-off certified PDF service record for a single vehicle, with hash-chain verification.' },
 };
 
 async function findOrCreateProduct(slug) {
   const meta = PRODUCTS[slug];
   const existing = await safeRead(
-    () => stripe.products.search({ query: `active:'true' AND metadata['vw_product']:'${slug}'` }),
+    () => stripe.products.search({ query: `active:'true' AND metadata['keeper_product']:'${slug}'` }),
     { data: [] },
     `product ${slug}`,
   );
@@ -113,7 +113,7 @@ async function findOrCreateProduct(slug) {
   const created = await stripe.products.create({
     name: meta.name,
     description: meta.description,
-    metadata: { vw_product: slug },
+    metadata: { keeper_product: slug },
   });
   console.log(`  product ${slug}: created ${created.id}`);
   return created;
@@ -159,9 +159,9 @@ async function syncPrice(product, spec) {
   );
   const match = list.data.find(
     (p) =>
-      p.metadata?.vw_kind === spec.kind &&
-      p.metadata?.vw_band === spec.band &&
-      p.metadata?.vw_interval === spec.interval &&
+      p.metadata?.keeper_kind === spec.kind &&
+      p.metadata?.keeper_band === spec.band &&
+      p.metadata?.keeper_interval === spec.interval &&
       p.currency === base.currency &&
       p.unit_amount === base.unit_amount,
   );
@@ -172,7 +172,7 @@ async function syncPrice(product, spec) {
   }
 
   const stale = list.data.filter(
-    (p) => p.metadata?.vw_kind === spec.kind && p.metadata?.vw_band === spec.band && p.metadata?.vw_interval === spec.interval,
+    (p) => p.metadata?.keeper_kind === spec.kind && p.metadata?.keeper_band === spec.band && p.metadata?.keeper_interval === spec.interval,
   );
 
   if (!APPLY) {
@@ -187,7 +187,7 @@ async function syncPrice(product, spec) {
     currency_options: options,
     ...(spec.interval === 'one_time' ? {} : { recurring: { interval: spec.interval === 'yearly' ? 'year' : 'month' } }),
     tax_behavior: 'inclusive', // prices in lib/pricing.ts are tax-inclusive; Stripe Tax breaks the tax out
-    metadata: { vw_kind: spec.kind, vw_band: spec.band, vw_interval: spec.interval },
+    metadata: { keeper_kind: spec.kind, keeper_band: spec.band, keeper_interval: spec.interval },
   });
   console.log(`  ${label}: created ${created.id} (${human} + ${Object.keys(options).length} currencies)`);
 

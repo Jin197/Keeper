@@ -36,7 +36,7 @@ export async function checkPasswordBreach(password: string): Promise<number> {
       headers: {
         // Padded responses defeat traffic analysis on the wire.
         'Add-Padding': 'true',
-        'User-Agent': 'velocewealth-signup',
+        'User-Agent': 'keeper-signup',
       },
       signal: controller.signal,
       // No cookies, no caching — privacy hygiene.

@@ -37,7 +37,7 @@ function AuthLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="hidden lg:flex relative bg-anthra overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-veloce/30 via-transparent to-eco/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-keeper/30 via-transparent to-eco/20" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(0,122,255,0.15),transparent_50%)]" />
         <div className="relative z-10 flex flex-col justify-end p-10 text-white">
           <blockquote className="font-display text-2xl font-semibold leading-snug max-w-md">

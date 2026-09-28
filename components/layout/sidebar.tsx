@@ -104,14 +104,14 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-3 rounded-btn px-3 py-2.5 text-sm transition-colors',
                 active
-                  ? 'bg-veloce/10 text-veloce font-medium'
+                  ? 'bg-keeper/10 text-keeper font-medium'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
               )}
             >
               <Icon className="h-4.5 w-4.5" strokeWidth={1.5} size={18} />
               {item.label}
               {active && (
-                <span className="ms-auto h-1.5 w-1.5 rounded-full bg-veloce" />
+                <span className="ms-auto h-1.5 w-1.5 rounded-full bg-keeper" />
               )}
             </Link>
           );
@@ -125,7 +125,7 @@ export function Sidebar() {
             className="block glass-premium rounded-card p-4 text-sm hover:scale-[1.02] transition-transform"
           >
             <div className="flex items-center gap-2 font-medium mb-1">
-              <Sparkles className="h-4 w-4 text-veloce" strokeWidth={1.5} />
+              <Sparkles className="h-4 w-4 text-keeper" strokeWidth={1.5} />
               Premium
             </div>
           </Link>

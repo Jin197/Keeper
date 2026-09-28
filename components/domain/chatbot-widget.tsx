@@ -14,7 +14,7 @@ type Message = {
 export function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Bonjour ! Je suis l\'assistant VeloceWealth. Comment puis-je vous aider avec votre flotte ou votre TCO aujourd\'hui ?' }
+    { role: 'assistant', content: 'Bonjour ! Je suis l\'assistant Keeper. Comment puis-je vous aider avec votre flotte ou votre TCO aujourd\'hui ?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -73,13 +73,13 @@ export function ChatbotWidget() {
               className="mb-4 w-[350px] max-w-[calc(100vw-3rem)] h-[500px] max-h-[calc(100vh-8rem)] bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border bg-veloce/5">
+              <div className="flex items-center justify-between p-4 border-b border-border bg-keeper/5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-veloce flex items-center justify-center text-primary-foreground">
+                  <div className="w-8 h-8 rounded-full bg-keeper flex items-center justify-center text-primary-foreground">
                     <Bot className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">VeloceWealth AI</h3>
+                    <h3 className="font-semibold text-sm">Keeper AI</h3>
                     <p className="text-xs text-muted-foreground">Expert Maintenance</p>
                   </div>
                 </div>
@@ -95,13 +95,13 @@ export function ChatbotWidget() {
                     key={i}
                     className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                   >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-secondary' : 'bg-veloce/10 text-veloce'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-secondary' : 'bg-keeper/10 text-keeper'}`}>
                       {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                     </div>
                     <div
                       className={`rounded-2xl px-4 py-2 text-sm max-w-[80%] ${
                         msg.role === 'user'
-                          ? 'bg-veloce text-primary-foreground rounded-tr-none'
+                          ? 'bg-keeper text-primary-foreground rounded-tr-none'
                           : 'bg-secondary text-foreground rounded-tl-none'
                       }`}
                     >
@@ -111,7 +111,7 @@ export function ChatbotWidget() {
                 ))}
                 {isLoading && (
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-veloce/10 text-veloce flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-keeper/10 text-keeper flex items-center justify-center flex-shrink-0">
                       <Bot className="w-4 h-4" />
                     </div>
                     <div className="rounded-2xl rounded-tl-none px-4 py-3 bg-secondary text-foreground flex items-center gap-1">
@@ -131,7 +131,7 @@ export function ChatbotWidget() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Posez votre question..."
-                    className="pr-12 rounded-full border-muted-foreground/20 focus-visible:ring-veloce"
+                    className="pr-12 rounded-full border-muted-foreground/20 focus-visible:ring-keeper"
                     disabled={isLoading}
                   />
                   <Button
@@ -152,8 +152,8 @@ export function ChatbotWidget() {
         <Button
           onClick={() => setIsOpen(!isOpen)}
           size="icon"
-          className="w-14 h-14 rounded-full shadow-lg bg-veloce hover:bg-veloce/90 transition-transform hover:scale-105"
-          aria-label={isOpen ? "Fermer l'assistant virtuel" : "Ouvrir l'assistant virtuel VeloceWealth"}
+          className="w-14 h-14 rounded-full shadow-lg bg-keeper hover:bg-keeper/90 transition-transform hover:scale-105"
+          aria-label={isOpen ? "Fermer l'assistant virtuel" : "Ouvrir l'assistant virtuel Keeper"}
         >
           {isOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <MessageSquareText className="w-6 h-6" aria-hidden="true" />}
         </Button>

@@ -1,4 +1,4 @@
-# Spécifications Produit · VeloceWealth
+# Spécifications Produit · Keeper
 > **Date de rédaction** : 21 Mai 2026  
 > **Auteur** : Antigravity (Architecte Fintech & Lead Frontend)  
 > **Statut** : Version 1.0 (Prêt pour Revue de Lancement)
@@ -7,7 +7,7 @@
 
 ## 1. Vision & Positionnement Stratégique
 
-**VeloceWealth** (anciennement AutoSmart Pro) est une plateforme SaaS Fintech haut de gamme conçue pour transformer la gestion automobile. Contrairement aux outils de suivi basiques, VeloceWealth aborde le véhicule non pas comme un simple centre de coût, mais comme un **actif financier optimisé**. 
+**Keeper** (anciennement AutoSmart Pro) est une plateforme SaaS Fintech haut de gamme conçue pour transformer la gestion automobile. Contrairement aux outils de suivi basiques, Keeper aborde le véhicule non pas comme un simple centre de coût, mais comme un **actif financier optimisé**. 
 
 ### Mission
 Fournir aux collectionneurs, propriétaires de véhicules premium et gestionnaires de flottes un instrument de contrôle absolu permettant de minimiser le coût total de possession (TCO) et de maximiser la valeur résiduelle de revente grâce à la certification et à la maintenance prédictive.
@@ -33,7 +33,7 @@ Le produit s'articule autour de six piliers technologiques majeurs :
 
 ```mermaid
 graph TD
-    A[Utilisateur VeloceWealth] --> B[Saisie Assistée OCR & Plates]
+    A[Utilisateur Keeper] --> B[Saisie Assistée OCR & Plates]
     A --> C[Calculateur TCO Financier]
     A --> D[Carnet Certifié Blockchain-like]
     A --> E[Intelligence Prédictive PHM]
@@ -71,7 +71,7 @@ Le module PHM (*Prognostics and Health Management*) simule des modèles avancés
 
 ### 3.5. Cartographie interactive (Mapbox)
 * **Stations-services & Bornes** : Affichage des stations-services locales et des bornes de recharge électrique à proximité avec le détail des connecteurs et puissances de charge disponibles.
-* **Réseau de Partenaires** : Cartographie des garages partenaires VeloceWealth identifiés (notation, services proposés, remises exclusives).
+* **Réseau de Partenaires** : Cartographie des garages partenaires Keeper identifiés (notation, services proposés, remises exclusives).
 
 ### 3.6. Module d'Abonnement (Stripe)
 * **Niveaux de Tarifs** : Standard, Premium, Flotte et Partenaire.
@@ -95,7 +95,7 @@ Le module PHM (*Prognostics and Health Management*) simule des modèles avancés
 
 ## 5. Modèle de Tarification (Pricing Structure)
 
-La tarification de VeloceWealth est alignée avec la configuration active de production (Stripe API) et les traductions de l'application :
+La tarification de Keeper est alignée avec la configuration active de production (Stripe API) et les traductions de l'application :
 
 | Fonctionnalité / Plan | Standard (Gratuit) | Pro (9,99€/mois ou 89€/an) | Fleet (19,99€/mois ou 199€/an) | Garage Partenaire (49€/mois) |
 | :--- | :---: | :---: | :---: | :---: |

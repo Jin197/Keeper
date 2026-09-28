@@ -9,11 +9,11 @@ interface DeletionOtpEmailOpts {
 }
 
 const SUBJECTS: Record<string, string> = {
-  fr: 'Code de confirmation : suppression de votre compte Velocewealth',
-  en: 'Confirmation code: delete your Velocewealth account',
-  es: 'Código de confirmación: eliminación de tu cuenta Velocewealth',
-  ar: 'رمز التأكيد: حذف حساب Velocewealth الخاص بك',
-  pt: 'Código de confirmação: exclusão da sua conta Velocewealth',
+  fr: 'Code de confirmation : suppression de votre compte Keeper',
+  en: 'Confirmation code: delete your Keeper account',
+  es: 'Código de confirmación: eliminación de tu cuenta Keeper',
+  ar: 'رمز التأكيد: حذف حساب Keeper الخاص بك',
+  pt: 'Código de confirmação: exclusão da sua conta Keeper',
 };
 
 const COPY: Record<
@@ -33,7 +33,7 @@ const COPY: Record<
   fr: {
     greeting: (n) => `Bonjour ${n},`,
     intro:
-      'Vous avez demandé la suppression définitive de votre compte Velocewealth. Saisissez le code ci-dessous dans la page de confirmation pour terminer la procédure.',
+      'Vous avez demandé la suppression définitive de votre compte Keeper. Saisissez le code ci-dessous dans la page de confirmation pour terminer la procédure.',
     codeLabel: 'Votre code de confirmation',
     validity: (m) => `Ce code est valable ${m} minutes.`,
     warningTitle: 'Action irréversible',
@@ -42,14 +42,14 @@ const COPY: Record<
     ignore:
       "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email et changez votre mot de passe par précaution.",
     footer:
-      'Cet email a été envoyé automatiquement. Ne pas répondre. Velocewealth · Sécurité.',
+      'Cet email a été envoyé automatiquement. Ne pas répondre. Keeper · Sécurité.',
     altDirective:
-      'Saisissez le code de suppression suivant dans Velocewealth.',
+      'Saisissez le code de suppression suivant dans Keeper.',
   },
   en: {
     greeting: (n) => `Hi ${n},`,
     intro:
-      'You requested the permanent deletion of your Velocewealth account. Enter the code below on the confirmation page to complete the process.',
+      'You requested the permanent deletion of your Keeper account. Enter the code below on the confirmation page to complete the process.',
     codeLabel: 'Your confirmation code',
     validity: (m) => `This code is valid for ${m} minutes.`,
     warningTitle: 'Irreversible action',
@@ -58,14 +58,14 @@ const COPY: Record<
     ignore:
       "If you didn't initiate this request, ignore this email and change your password as a precaution.",
     footer:
-      'This email was sent automatically. Do not reply. Velocewealth · Security.',
+      'This email was sent automatically. Do not reply. Keeper · Security.',
     altDirective:
-      'Enter the following deletion code in Velocewealth.',
+      'Enter the following deletion code in Keeper.',
   },
   es: {
     greeting: (n) => `Hola ${n},`,
     intro:
-      'Has solicitado la eliminación definitiva de tu cuenta Velocewealth. Introduce el código que aparece a continuación en la página de confirmación para completar el proceso.',
+      'Has solicitado la eliminación definitiva de tu cuenta Keeper. Introduce el código que aparece a continuación en la página de confirmación para completar el proceso.',
     codeLabel: 'Tu código de confirmación',
     validity: (m) => `Este código es válido durante ${m} minutos.`,
     warningTitle: 'Acción irreversible',
@@ -74,14 +74,14 @@ const COPY: Record<
     ignore:
       'Si no iniciaste esta solicitud, ignora este correo y cambia tu contraseña como precaución.',
     footer:
-      'Este correo se envió automáticamente. No responder. Velocewealth · Seguridad.',
+      'Este correo se envió automáticamente. No responder. Keeper · Seguridad.',
     altDirective:
-      'Introduce el siguiente código de eliminación en Velocewealth.',
+      'Introduce el siguiente código de eliminación en Keeper.',
   },
   ar: {
     greeting: (n) => `مرحباً ${n}،`,
     intro:
-      'لقد طلبت حذف حسابك في Velocewealth بشكل دائم. أدخل الرمز أدناه في صفحة التأكيد لإكمال العملية.',
+      'لقد طلبت حذف حسابك في Keeper بشكل دائم. أدخل الرمز أدناه في صفحة التأكيد لإكمال العملية.',
     codeLabel: 'رمز التأكيد الخاص بك',
     validity: (m) => `هذا الرمز صالح لمدة ${m} دقيقة.`,
     warningTitle: 'إجراء لا رجعة فيه',
@@ -90,14 +90,14 @@ const COPY: Record<
     ignore:
       'إذا لم تكن قد بدأت هذا الطلب، تجاهل هذا البريد الإلكتروني وقم بتغيير كلمة المرور احتياطاً.',
     footer:
-      'تم إرسال هذا البريد الإلكتروني تلقائياً. لا ترد. Velocewealth · الأمن.',
+      'تم إرسال هذا البريد الإلكتروني تلقائياً. لا ترد. Keeper · الأمن.',
     altDirective:
-      'أدخل رمز الحذف التالي في Velocewealth.',
+      'أدخل رمز الحذف التالي في Keeper.',
   },
   pt: {
     greeting: (n) => `Olá ${n},`,
     intro:
-      'Solicitou a exclusão permanente da sua conta Velocewealth. Introduza o código abaixo na página de confirmação para concluir o processo.',
+      'Solicitou a exclusão permanente da sua conta Keeper. Introduza o código abaixo na página de confirmação para concluir o processo.',
     codeLabel: 'O seu código de confirmação',
     validity: (m) => `Este código é válido durante ${m} minutos.`,
     warningTitle: 'Ação irreversível',
@@ -106,9 +106,9 @@ const COPY: Record<
     ignore:
       'Se não iniciou este pedido, ignore este email e altere a sua palavra-passe por precaução.',
     footer:
-      'Este email foi enviado automaticamente. Não responder. Velocewealth · Segurança.',
+      'Este email foi enviado automaticamente. Não responder. Keeper · Segurança.',
     altDirective:
-      'Introduza o seguinte código de exclusão no Velocewealth.',
+      'Introduza o seguinte código de exclusão no Keeper.',
   },
 };
 
@@ -121,7 +121,7 @@ export interface AccountDeletionEmail {
 /**
  * Render the dark-themed account-deletion OTP email.
  *
- * Style targets: anthracite background (#121212), Veloce accent (#007AFF),
+ * Style targets: anthracite background (#121212), Keeper accent (#007AFF),
  * Eco green for the "warning resolved if ignored" tone (#2ECC71).
  * Hand-rolled HTML with inline styles + table layout — the email rendering
  * subset (Gmail/Outlook/iOS Mail) doesn't tolerate modern CSS.
@@ -153,7 +153,7 @@ export function renderAccountDeletionEmail(
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td style="font-size:18px;font-weight:700;letter-spacing:-0.01em;color:#ffffff;">
-                    velocewealth
+                    keeper
                   </td>
                   <td align="right" style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;">
                     SÉCURITÉ

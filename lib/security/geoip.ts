@@ -33,7 +33,7 @@ export async function resolveGeoLocation(ip: string): Promise<GeoLocation> {
   try {
     const res = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
       signal: controller.signal,
-      headers: { 'User-Agent': 'velocewealth-security' },
+      headers: { 'User-Agent': 'keeper-security' },
       cache: 'no-store',
     });
     clearTimeout(timer);

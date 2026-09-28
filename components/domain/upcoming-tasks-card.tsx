@@ -50,7 +50,7 @@ export async function UpcomingTasksCard({ tasks, vehicleLabels = {} }: Props) {
         </div>
         <Link
           href="/maintenance/agenda"
-          className="text-xs text-veloce hover:underline flex items-center gap-1 shrink-0"
+          className="text-xs text-keeper hover:underline flex items-center gap-1 shrink-0"
         >
           {t('agenda')}
           <ChevronRight className="h-3 w-3" />
@@ -63,12 +63,12 @@ export async function UpcomingTasksCard({ tasks, vehicleLabels = {} }: Props) {
     <Card className="p-5">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <CalendarClock className="h-3.5 w-3.5 text-veloce" />
+          <CalendarClock className="h-3.5 w-3.5 text-keeper" />
           {t('tasksTitle')}
         </div>
         <Link
           href="/maintenance/agenda"
-          className="text-xs text-veloce hover:underline flex items-center gap-1"
+          className="text-xs text-keeper hover:underline flex items-center gap-1"
         >
           {t('viewAll')}
           <ChevronRight className="h-3 w-3" />
@@ -105,7 +105,7 @@ export async function UpcomingTasksCard({ tasks, vehicleLabels = {} }: Props) {
                     'rounded-btn p-1.5 shrink-0 ' +
                     (isOverdue
                       ? 'bg-destructive/15 text-destructive'
-                      : 'bg-veloce/10 text-veloce')
+                      : 'bg-keeper/10 text-keeper')
                   }
                 >
                   {isOverdue ? (

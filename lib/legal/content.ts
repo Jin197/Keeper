@@ -28,14 +28,14 @@ type Bilingual<T> = Record<Lang, T>;
 export const TERMS: Bilingual<LegalDoc> = {
   en: {
     title: 'Terms of service',
-    intro: 'These terms govern your use of Velocewealth. They apply to adults using the service for their own vehicles.',
+    intro: 'These terms govern your use of Keeper. They apply to adults using the service for their own vehicles.',
     articles: [
       {
         title: 'What the service is',
         body: [
-          'Velocewealth is a web application that helps a private car owner understand and reduce what their vehicle costs: cost per kilometre from scanned receipts, a maintenance forecast, reminders, the cheapest fuel nearby where a public price feed exists, and an exportable service record.',
+          'Keeper is a web application that helps a private car owner understand and reduce what their vehicle costs: cost per kilometre from scanned receipts, a maintenance forecast, reminders, the cheapest fuel nearby where a public price feed exists, and an exportable service record.',
           'Creating an account means you accept these terms and the privacy policy.',
-          'Velocewealth is an information tool. It is not a garage, not an insurer, not a broker, and it does not inspect your vehicle.',
+          'Keeper is an information tool. It is not a garage, not an insurer, not a broker, and it does not inspect your vehicle.',
         ],
       },
       {
@@ -118,14 +118,14 @@ export const TERMS: Bilingual<LegalDoc> = {
   },
   fr: {
     title: "Conditions générales d'utilisation",
-    intro: "Les présentes conditions régissent votre utilisation de Velocewealth. Elles s'appliquent aux personnes majeures utilisant le service pour leurs propres véhicules.",
+    intro: "Les présentes conditions régissent votre utilisation de Keeper. Elles s'appliquent aux personnes majeures utilisant le service pour leurs propres véhicules.",
     articles: [
       {
         title: 'Objet du service',
         body: [
-          "Velocewealth est une application web qui aide un particulier à comprendre et réduire ce que sa voiture lui coûte : coût au kilomètre à partir de tickets scannés, prévision d'entretien, rappels, carburant le moins cher à proximité là où un flux public de prix existe, et un carnet d'entretien exportable.",
+          "Keeper est une application web qui aide un particulier à comprendre et réduire ce que sa voiture lui coûte : coût au kilomètre à partir de tickets scannés, prévision d'entretien, rappels, carburant le moins cher à proximité là où un flux public de prix existe, et un carnet d'entretien exportable.",
           "Créer un compte vaut acceptation des présentes conditions et de la politique de confidentialité.",
-          "Velocewealth est un outil d'information. Ce n'est ni un garage, ni un assureur, ni un courtier, et il n'inspecte pas votre véhicule.",
+          "Keeper est un outil d'information. Ce n'est ni un garage, ni un assureur, ni un courtier, et il n'inspecte pas votre véhicule.",
         ],
       },
       {
@@ -406,17 +406,17 @@ export const COOKIES: Bilingual<{ title: string; intro: string[]; columns: [stri
   en: {
     title: 'Cookie policy',
     intro: [
-      'Velocewealth uses only the cookies and local storage the service needs to work. No advertising cookie, no third-party tracking pixel, no sale of behavioural data.',
+      'Keeper uses only the cookies and local storage the service needs to work. No advertising cookie, no third-party tracking pixel, no sale of behavioural data.',
       'Because there is nothing optional to consent to, refusing the banner does not degrade the service: it only records that you were asked.',
     ],
     columns: ['Name', 'Purpose', 'Duration', 'Set by'],
     rows: [
-      { name: 'sb-access-token', purpose: 'Authenticated session', duration: '1 hour (renewed)', issuer: 'Velocewealth (Supabase)' },
-      { name: 'sb-refresh-token', purpose: 'Session renewal', duration: '30 days', issuer: 'Velocewealth (Supabase)' },
-      { name: 'NEXT_LOCALE', purpose: 'Remembers your language', duration: '1 year', issuer: 'Velocewealth (next-intl)' },
-      { name: 'velocewealth-cookies-acknowledged', purpose: 'Remembers your answer to the banner', duration: '1 year (local storage)', issuer: 'Velocewealth' },
-      { name: 'theme', purpose: 'Remembers light or dark mode', duration: '1 year (local storage)', issuer: 'Velocewealth' },
-      { name: 'vw-trusted-device', purpose: 'Marks a device as trusted so two-factor is not asked every time', duration: '30 days', issuer: 'Velocewealth' },
+      { name: 'sb-access-token', purpose: 'Authenticated session', duration: '1 hour (renewed)', issuer: 'Keeper (Supabase)' },
+      { name: 'sb-refresh-token', purpose: 'Session renewal', duration: '30 days', issuer: 'Keeper (Supabase)' },
+      { name: 'NEXT_LOCALE', purpose: 'Remembers your language', duration: '1 year', issuer: 'Keeper (next-intl)' },
+      { name: 'keeper-cookies-acknowledged', purpose: 'Remembers your answer to the banner', duration: '1 year (local storage)', issuer: 'Keeper' },
+      { name: 'theme', purpose: 'Remembers light or dark mode', duration: '1 year (local storage)', issuer: 'Keeper' },
+      { name: 'vw-trusted-device', purpose: 'Marks a device as trusted so two-factor is not asked every time', duration: '30 days', issuer: 'Keeper' },
     ],
     outro: [
       'Stripe sets its own cookies on its checkout and billing pages, which are hosted by Stripe, not by us. Their use is governed by Stripe\'s privacy policy.',
@@ -426,17 +426,17 @@ export const COOKIES: Bilingual<{ title: string; intro: string[]; columns: [stri
   fr: {
     title: 'Politique de cookies',
     intro: [
-      "Velocewealth n'utilise que les cookies et le stockage local nécessaires au fonctionnement du service. Aucun cookie publicitaire, aucun pixel de suivi tiers, aucune revente de données comportementales.",
+      "Keeper n'utilise que les cookies et le stockage local nécessaires au fonctionnement du service. Aucun cookie publicitaire, aucun pixel de suivi tiers, aucune revente de données comportementales.",
       "Comme il n'y a rien d'optionnel à accepter, refuser la bannière ne dégrade pas le service : cela enregistre seulement que la question vous a été posée.",
     ],
     columns: ['Nom', 'Finalité', 'Durée', 'Émetteur'],
     rows: [
-      { name: 'sb-access-token', purpose: "Session d'authentification", duration: '1 heure (renouvelée)', issuer: 'Velocewealth (Supabase)' },
-      { name: 'sb-refresh-token', purpose: 'Renouvellement de session', duration: '30 jours', issuer: 'Velocewealth (Supabase)' },
-      { name: 'NEXT_LOCALE', purpose: 'Mémorise votre langue', duration: '1 an', issuer: 'Velocewealth (next-intl)' },
-      { name: 'velocewealth-cookies-acknowledged', purpose: 'Mémorise votre réponse à la bannière', duration: '1 an (stockage local)', issuer: 'Velocewealth' },
-      { name: 'theme', purpose: 'Mémorise le mode clair ou sombre', duration: '1 an (stockage local)', issuer: 'Velocewealth' },
-      { name: 'vw-trusted-device', purpose: 'Marque un appareil comme fiable pour ne pas redemander la double authentification', duration: '30 jours', issuer: 'Velocewealth' },
+      { name: 'sb-access-token', purpose: "Session d'authentification", duration: '1 heure (renouvelée)', issuer: 'Keeper (Supabase)' },
+      { name: 'sb-refresh-token', purpose: 'Renouvellement de session', duration: '30 jours', issuer: 'Keeper (Supabase)' },
+      { name: 'NEXT_LOCALE', purpose: 'Mémorise votre langue', duration: '1 an', issuer: 'Keeper (next-intl)' },
+      { name: 'keeper-cookies-acknowledged', purpose: 'Mémorise votre réponse à la bannière', duration: '1 an (stockage local)', issuer: 'Keeper' },
+      { name: 'theme', purpose: 'Mémorise le mode clair ou sombre', duration: '1 an (stockage local)', issuer: 'Keeper' },
+      { name: 'vw-trusted-device', purpose: 'Marque un appareil comme fiable pour ne pas redemander la double authentification', duration: '30 jours', issuer: 'Keeper' },
     ],
     outro: [
       "Stripe dépose ses propres cookies sur ses pages de paiement et de facturation, hébergées par Stripe et non par nous. Leur usage est régi par la politique de confidentialité de Stripe.",

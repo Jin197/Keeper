@@ -191,7 +191,7 @@ export function NearbyFuelClient({ defaultGrade, profileCountry, coverage }: Pro
                         href={`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] text-veloce hover:underline inline-flex items-center gap-1"
+                        className="text-[11px] text-keeper hover:underline inline-flex items-center gap-1"
                       >
                         <Navigation className="h-3 w-3" /> {t('navigate')}
                       </a>

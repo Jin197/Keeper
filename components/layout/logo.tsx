@@ -19,7 +19,7 @@ export function Logo({
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="velo-grad" x1="0" y1="0" x2="32" y2="32">
+            <linearGradient id="keeper-grad" x1="0" y1="0" x2="32" y2="32">
               <stop offset="0%" stopColor="#007AFF" />
               <stop offset="100%" stopColor="#2ECC71" />
             </linearGradient>
@@ -27,7 +27,7 @@ export function Logo({
           {/* Hood silhouette */}
           <path
             d="M3 22 C 7 14, 13 10, 16 10 C 19 10, 25 14, 29 22"
-            stroke="url(#velo-grad)"
+            stroke="url(#keeper-grad)"
             strokeWidth="2.5"
             strokeLinecap="round"
             fill="none"
@@ -35,7 +35,7 @@ export function Logo({
           {/* Growth curve */}
           <path
             d="M5 26 L 12 19 L 17 23 L 27 11"
-            stroke="url(#velo-grad)"
+            stroke="url(#keeper-grad)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -51,7 +51,7 @@ export function Logo({
             wordmarkResponsive && 'hidden sm:inline',
           )}
         >
-          velocewealth
+          keeper
         </span>
       )}
     </div>

@@ -153,7 +153,7 @@ function TrialWarningBanner({ profile, t }: { profile: any; t: any }) {
         <div className="flex items-center gap-2">
           <span className={cn(
             "h-2 w-2 rounded-full",
-            isUrgent ? "bg-amber-400 animate-pulse" : "bg-veloce animate-pulse"
+            isUrgent ? "bg-amber-400 animate-pulse" : "bg-keeper animate-pulse"
           )} />
           <span>
             {isUrgent ? (

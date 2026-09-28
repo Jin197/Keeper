@@ -44,7 +44,7 @@ export function KpiCard({
           {explain && <InfoTip text={explain} />}
         </div>
         {icon && (
-          <div className="rounded-btn bg-veloce/10 p-1.5 text-veloce">
+          <div className="rounded-btn bg-keeper/10 p-1.5 text-keeper">
             {icon}
           </div>
         )}

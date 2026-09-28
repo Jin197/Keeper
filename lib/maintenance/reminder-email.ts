@@ -142,9 +142,9 @@ const LABELS = {
     taskHeader: 'Intervention',
     toolsHeader: 'Outils nécessaires',
     tutorialLink: 'Voir le tutoriel détaillé',
-    cta: 'Ouvrir mon agenda Velocewealth',
+    cta: 'Ouvrir mon agenda Keeper',
     footer:
-      'Cet email a été envoyé automatiquement par Velocewealth. Ne pas répondre.',
+      'Cet email a été envoyé automatiquement par Keeper. Ne pas répondre.',
   },
   en: {
     phaseWarning: 'Reminder',
@@ -159,8 +159,8 @@ const LABELS = {
     taskHeader: 'Service',
     toolsHeader: 'Tools needed',
     tutorialLink: 'View tutorial',
-    cta: 'Open my Velocewealth agenda',
-    footer: 'Sent automatically by Velocewealth. Please do not reply.',
+    cta: 'Open my Keeper agenda',
+    footer: 'Sent automatically by Keeper. Please do not reply.',
   },
   es: {
     phaseWarning: 'Recordatorio',
@@ -175,8 +175,8 @@ const LABELS = {
     taskHeader: 'Intervención',
     toolsHeader: 'Herramientas necesarias',
     tutorialLink: 'Ver tutorial',
-    cta: 'Abrir mi agenda Velocewealth',
-    footer: 'Enviado automáticamente por Velocewealth. No responda.',
+    cta: 'Abrir mi agenda Keeper',
+    footer: 'Enviado automáticamente por Keeper. No responda.',
   },
   ar: {
     phaseWarning: 'تذكير',
@@ -191,8 +191,8 @@ const LABELS = {
     taskHeader: 'الخدمة',
     toolsHeader: 'الأدوات المطلوبة',
     tutorialLink: 'عرض الدليل',
-    cta: 'فتح جدول Velocewealth',
-    footer: 'تم الإرسال تلقائياً من Velocewealth. الرجاء عدم الرد.',
+    cta: 'فتح جدول Keeper',
+    footer: 'تم الإرسال تلقائياً من Keeper. الرجاء عدم الرد.',
   },
   pt: {
     phaseWarning: 'Lembrete',
@@ -207,8 +207,8 @@ const LABELS = {
     taskHeader: 'Serviço',
     toolsHeader: 'Ferramentas necessárias',
     tutorialLink: 'Ver tutorial',
-    cta: 'Abrir minha agenda Velocewealth',
-    footer: 'Enviado automaticamente pela Velocewealth. Por favor não responda.',
+    cta: 'Abrir minha agenda Keeper',
+    footer: 'Enviado automaticamente pela Keeper. Por favor não responda.',
   },
 } as const;
 

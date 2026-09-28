@@ -42,7 +42,7 @@ export async function GettingStartedCard({ vehicle, fuel, maintenance }: Props) 
               {!s.done && <div className="text-xs text-muted-foreground">{t(`${s.key}Hint`)}</div>}
             </div>
             {!s.done && (
-              <Link href={s.href} className="text-xs font-medium text-veloce hover:underline inline-flex items-center gap-1 shrink-0">
+              <Link href={s.href} className="text-xs font-medium text-keeper hover:underline inline-flex items-center gap-1 shrink-0">
                 {t(`${s.key}Cta`)} <ArrowRight className="h-3 w-3" />
               </Link>
             )}

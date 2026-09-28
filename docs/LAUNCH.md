@@ -1,4 +1,4 @@
-# Velocewealth — Launch notes (September 2026 pivot)
+# Keeper — Launch notes (September 2026 pivot)
 
 This document is the source of truth for what the product *is* at launch. It
 replaces the positioning in `product_specifications.md` (kept for history).

@@ -8,7 +8,7 @@ import { translatorFor, intlTagFor } from '@/lib/i18n/messages';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const VELOCE = rgb(0, 0.478, 1);
+const KEEPER = rgb(0, 0.478, 1);
 const ECO = rgb(0.18, 0.8, 0.443);
 const ANTHRA = rgb(0.07, 0.07, 0.07);
 const MUTED = rgb(0.45, 0.45, 0.45);
@@ -45,10 +45,10 @@ export async function GET() {
 
   const pdf = await PDFDocument.create();
   pdf.setTitle(t('docTitle', { name: profile.fullName }));
-  pdf.setAuthor('Velocewealth');
+  pdf.setAuthor('Keeper');
   pdf.setSubject(t('subject'));
-  pdf.setProducer('Velocewealth');
-  pdf.setCreator('Velocewealth');
+  pdf.setProducer('Keeper');
+  pdf.setCreator('Keeper');
   pdf.setCreationDate(new Date());
 
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -61,12 +61,12 @@ export async function GET() {
   let y = A4.h - margin;
 
   const drawHeader = () => {
-    page.drawText('VELOCEWEALTH', {
+    page.drawText('KEEPER', {
       x: margin,
       y,
       size: 10,
       font: fontBold,
-      color: VELOCE,
+      color: KEEPER,
     });
     page.drawText(t('title'), {
       x: margin,
@@ -156,7 +156,7 @@ export async function GET() {
       year: 'numeric',
     });
 
-    page.drawText(date, { x: margin, y, size: 9, font: fontBold, color: VELOCE });
+    page.drawText(date, { x: margin, y, size: 9, font: fontBold, color: KEEPER });
     page.drawText(`${e.mileageKm.toLocaleString(intl)} km`, {
       x: margin + 90,
       y,
@@ -232,12 +232,12 @@ export async function GET() {
       font,
       color: MUTED,
     });
-    p.drawText('velocewealth.app', {
+    p.drawText('keeperapp.app', {
       x: A4.w - margin - 80,
       y: 30,
       size: 8,
       font,
-      color: VELOCE,
+      color: KEEPER,
     });
   });
 

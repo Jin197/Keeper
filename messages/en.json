@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Velocewealth",
+    "appName": "Keeper",
     "tagline": "Know what your car will cost you next — and pay less.",
     "cancel": "Cancel",
     "save": "Save",
@@ -101,7 +101,7 @@
       "badge": "Built on official data · no ads",
       "titleLead": "Know what your car will cost you next month.",
       "titleHighlight": "And pay less.",
-      "subtitle": "For everyday drivers of 4-to-15-year-old cars. Add your plate, scan a fuel receipt, and Velocewealth shows your real cost per km, the repairs coming up, and where fuel is cheapest near you.",
+      "subtitle": "For everyday drivers of 4-to-15-year-old cars. Add your plate, scan a fuel receipt, and Keeper shows your real cost per km, the repairs coming up, and where fuel is cheapest near you.",
       "ctaPrimary": "Add my car — free",
       "ctaSecondary": "See how it works",
       "trustFree": "Free plan",
@@ -229,12 +229,12 @@
     "mentionsLink": "Imprint",
     "cookiesLink": "Cookies",
     "contact": "Contact",
-    "copyright": "© 2026 Velocewealth",
+    "copyright": "© 2026 Keeper",
     "rights": "All rights reserved"
   },
   "cookies": {
     "title": "We respect your privacy and the security of your automotive data",
-    "description": "VeloceWealth uses essential cookies to ensure the proper functioning of the platform (such as remembering your secure session). With your agreement, we and our partners also use cookies to measure the site audience, optimize technical performance and offer you local maintenance services adapted to your vehicle. You can change your preferences at any time.",
+    "description": "Keeper uses essential cookies to ensure the proper functioning of the platform (such as remembering your secure session). With your agreement, we and our partners also use cookies to measure the site audience, optimize technical performance and offer you local maintenance services adapted to your vehicle. You can change your preferences at any time.",
     "accept": "Got it",
     "manage": "Manage",
     "acceptAll": "Accept all",
@@ -399,7 +399,7 @@
     "purchaseCancelled": "Payment cancelled."
   },
   "onboarding": {
-    "welcome": "Welcome to Velocewealth",
+    "welcome": "Welcome to Keeper",
     "progress": "Step {current} of {total}",
     "step1Title": "What bothers you most",
     "step2Title": "Your engine",
@@ -952,8 +952,8 @@
     "scheduledBodyOverdue": "Originally planned for {date}.",
     "welcomeTitle": "Your first forecast is ready",
     "welcomeBody": "Open your vehicle to see what's coming in the next 30 days.",
-    "emailFooter": "You receive this because reminders are on in Velocewealth → Settings → Notifications.",
-    "emailOpen": "Open in Velocewealth"
+    "emailFooter": "You receive this because reminders are on in Keeper → Settings → Notifications.",
+    "emailOpen": "Open in Keeper"
   },
   "notificationSettings": {
     "title": "Notifications",
@@ -1070,15 +1070,15 @@
     "garage": "Independent garage"
   },
   "securityEmail": {
-    "newDeviceSubject": "New sign-in on your Velocewealth account",
+    "newDeviceSubject": "New sign-in on your Keeper account",
     "hello": "Hello {name},",
-    "newDeviceBody": "We saw a sign-in to your Velocewealth account from a device you have not used before.",
+    "newDeviceBody": "We saw a sign-in to your Keeper account from a device you have not used before.",
     "when": "When",
     "location": "Approximate location",
     "ip": "IP address",
     "device": "Device",
     "wasYou": "If this was you, you can ignore this message.",
-    "wasNotYou": "If it was not, change your password immediately in Velocewealth → Settings → Security, and turn on two-factor authentication.",
+    "wasNotYou": "If it was not, change your password immediately in Keeper → Settings → Security, and turn on two-factor authentication.",
     "automated": "This is an automated message — please do not reply."
   },
   "logPdf": {
@@ -1092,7 +1092,7 @@
     "chained": "{count, plural, one {# service} other {# services}} chained with SHA-256.",
     "locked": "Any change to the history is rejected at database level by a PostgreSQL trigger.",
     "empty": "No service logged yet.",
-    "page": "Velocewealth — {current} / {total}",
-    "filename": "velocewealth-log"
+    "page": "Keeper — {current} / {total}",
+    "filename": "keeper-log"
   }
 }

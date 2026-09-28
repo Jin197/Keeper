@@ -52,7 +52,7 @@ export default async function ImprintPage() {
                   <dt className="text-xs uppercase tracking-wider text-muted-foreground/70">{label}</dt>
                   <dd className="text-foreground">
                     {label === t.labels.email ? (
-                      <a href={`mailto:${value}`} className="text-veloce hover:underline">
+                      <a href={`mailto:${value}`} className="text-keeper hover:underline">
                         {value}
                       </a>
                     ) : (
@@ -79,7 +79,7 @@ export default async function ImprintPage() {
         <Block title={t.dataTitle}>
           <p>
             {t.dataBody}{' '}
-            <Link href="/legal/privacy" className="text-veloce hover:underline">
+            <Link href="/legal/privacy" className="text-keeper hover:underline">
               {locale === 'fr' ? 'Politique de confidentialité' : 'Privacy policy'}
             </Link>
             .

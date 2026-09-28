@@ -265,7 +265,7 @@ export function VehicleEditForm({ vehicle, initialInsuranceRecords }: Props) {
         <Button
           type="submit"
           disabled={pending}
-          className="bg-veloce hover:bg-veloce/90 text-white gap-1.5"
+          className="bg-keeper hover:bg-keeper/90 text-white gap-1.5"
         >
           <Save className="h-4 w-4" />
           {pending ? t('saving') : t('save')}

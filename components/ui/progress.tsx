@@ -3,18 +3,18 @@ import { cn } from '@/lib/utils';
 
 interface ProgressProps extends React.HTMLAttributes<HTMLDivElement> {
   value: number; // 0-100
-  variant?: 'veloce' | 'eco' | 'warning' | 'danger';
+  variant?: 'keeper' | 'eco' | 'warning' | 'danger';
 }
 
 export function Progress({
   value,
-  variant = 'veloce',
+  variant = 'keeper',
   className,
   ...props
 }: ProgressProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const colors = {
-    veloce: 'bg-veloce',
+    keeper: 'bg-keeper',
     eco: 'bg-eco',
     warning: 'bg-amber-500',
     danger: 'bg-destructive',

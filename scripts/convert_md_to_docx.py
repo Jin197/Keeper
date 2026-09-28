@@ -117,7 +117,7 @@ def convert_md_to_docx(md_path, docx_path, title_text):
     subtitle_p = doc.add_paragraph()
     style_paragraph(subtitle_p, before_pt=0, after_pt=24)
     subtitle_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    sub_run = subtitle_p.add_run("VeloceWealth · Instrument de Contrôle Financier Automobile")
+    sub_run = subtitle_p.add_run("Keeper · Instrument de Contrôle Financier Automobile")
     style_run_default(sub_run, font_name='Calibri', size_pt=12, color_rgb=COLOR_SECONDARY)
     sub_run.italic = True
     
@@ -422,12 +422,12 @@ if __name__ == "__main__":
     
     # 1. Convert Strategy Document
     strategy_md = os.path.join(brain_dir, "launch_and_marketing_strategy.md")
-    strategy_docx = os.path.join(brain_dir, "VeloceWealth_Launch_And_Marketing_Strategy.docx")
+    strategy_docx = os.path.join(brain_dir, "Keeper_Launch_And_Marketing_Strategy.docx")
     if os.path.exists(strategy_md):
         convert_md_to_docx(strategy_md, strategy_docx, "Stratégie de Lancement & Marketing")
         
     # 2. Convert Product Specifications
     prd_md = os.path.join(brain_dir, "product_specifications.md")
-    prd_docx = os.path.join(brain_dir, "VeloceWealth_Product_Specifications.docx")
+    prd_docx = os.path.join(brain_dir, "Keeper_Product_Specifications.docx")
     if os.path.exists(prd_md):
         convert_md_to_docx(prd_md, prd_docx, "Spécifications Fonctionnelles & Produit")

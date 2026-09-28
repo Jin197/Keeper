@@ -124,7 +124,7 @@ const GUIDE_DETAILS_LOCALIZED: Record<string, Record<string, GuideDetail>> = {
         },
         {
           subtitle: '3. Export Certifié PDF',
-          content: 'Générez un rapport PDF officiel flouté avec filigrane "VeloceWealth Verified" et QR code unique. Un acheteur potentiel peut scanner le QR code pour confirmer instantanément l\'authenticité des factures sur notre portail de vérification publique.',
+          content: 'Générez un rapport PDF officiel flouté avec filigrane "Keeper Verified" et QR code unique. Un acheteur potentiel peut scanner le QR code pour confirmer instantanément l\'authenticité des factures sur notre portail de vérification publique.',
         },
       ],
     },
@@ -215,7 +215,7 @@ const GUIDE_DETAILS_LOCALIZED: Record<string, Record<string, GuideDetail>> = {
       sections: [
         {
           subtitle: '1. Instant TCO Processing',
-          content: 'Velocewealth consolidates electricity recharges, fuel fill-ups, recurring insurance, and maintenance records to calculate your true running cost:',
+          content: 'Keeper consolidates electricity recharges, fuel fill-ups, recurring insurance, and maintenance records to calculate your true running cost:',
           points: [
             'Formula: Cost/km = (Energy + Maintenance + Insurance) / Logged Distance',
             'Recalculated instantly on any newly logged invoice or trip',
@@ -247,7 +247,7 @@ const GUIDE_DETAILS_LOCALIZED: Record<string, Record<string, GuideDetail>> = {
         },
         {
           subtitle: '3. Certified PDF Export',
-          content: 'Generate a watermarked "VeloceWealth Verified" PDF statement complete with a secure verification QR code. Potential buyers scan it to authenticate matching server-side records instantly.',
+          content: 'Generate a watermarked "Keeper Verified" PDF statement complete with a secure verification QR code. Potential buyers scan it to authenticate matching server-side records instantly.',
         },
       ],
     },
@@ -422,7 +422,7 @@ export function HelpCenterContent({ currentLocale, backUrl }: HelpCenterContentP
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight text-white">
-              {currentLocale === 'fr' ? "Centre d'aide VeloceWealth" : "VeloceWealth Help Center"}
+              {currentLocale === 'fr' ? "Centre d'aide Keeper" : "Keeper Help Center"}
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               {currentLocale === 'fr'
@@ -571,7 +571,7 @@ export function HelpCenterContent({ currentLocale, backUrl }: HelpCenterContentP
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-white">
-                  {currentLocale === 'fr' ? "Assistance VeloceWealth" : "VeloceWealth Support"}
+                  {currentLocale === 'fr' ? "Assistance Keeper" : "Keeper Support"}
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   {currentLocale === 'fr'
@@ -581,7 +581,7 @@ export function HelpCenterContent({ currentLocale, backUrl }: HelpCenterContentP
               </div>
             </div>
             <Button variant="outline" size="sm" className="shrink-0 rounded-full border-white/10 hover:bg-white/5" asChild>
-              <a href="mailto:support@velocewealth.app" className="flex items-center gap-1.5 text-xs font-semibold text-white">
+              <a href="mailto:support@keeperapp.app" className="flex items-center gap-1.5 text-xs font-semibold text-white">
                 <Mail className="h-4 w-4" /> {currentLocale === 'fr' ? 'Contacter le support' : 'Contact Support'}
               </a>
             </Button>

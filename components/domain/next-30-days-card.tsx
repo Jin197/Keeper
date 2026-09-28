@@ -48,7 +48,7 @@ export async function Next30DaysCard({ vehicle, fuel, maintenance }: Props) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-veloce animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-keeper animate-pulse" />
             <h2 className="font-display text-base font-semibold uppercase tracking-wider">{t('title')}</h2>
             <InfoTip text={[t('whyFuel'), t('whyService'), t('whyInspection'), t('whyInsurance')].join(' ')} label={t('whyTitle')} />
           </div>
@@ -74,7 +74,7 @@ export async function Next30DaysCard({ vehicle, fuel, maintenance }: Props) {
         />
         <Tile
           icon={ShieldCheck}
-          tone={inspection && inspection.daysUntilDue <= 30 ? 'text-amber-400' : 'text-veloce'}
+          tone={inspection && inspection.daysUntilDue <= 30 ? 'text-amber-400' : 'text-keeper'}
           label={t('inspection')}
           value={inspection ? when(inspection.daysUntilDue) : '—'}
           hint={inspection ? new Date(inspection.dueAtDate).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
@@ -88,7 +88,7 @@ export async function Next30DaysCard({ vehicle, fuel, maintenance }: Props) {
         />
       </div>
 
-      <Link href={`/maintenance/prognostics/${vehicle.id}`} className="mt-4 inline-flex items-center gap-1.5 text-sm text-veloce hover:underline">
+      <Link href={`/maintenance/prognostics/${vehicle.id}`} className="mt-4 inline-flex items-center gap-1.5 text-sm text-keeper hover:underline">
         {t('open')} <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </Card>

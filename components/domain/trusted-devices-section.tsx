@@ -143,7 +143,7 @@ export function TrustedDevicesSection() {
   return (
     <Card className="p-6 space-y-4">
       <div className="flex items-start gap-3">
-        <div className="rounded-btn bg-veloce/10 text-veloce p-2 shrink-0">
+        <div className="rounded-btn bg-keeper/10 text-keeper p-2 shrink-0">
           <Monitor className="h-4 w-4" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">

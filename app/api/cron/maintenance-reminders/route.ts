@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? 'https://velocewealth.com';
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://keeperapp.app';
 
   let dispatched = 0;
   let failed = 0;

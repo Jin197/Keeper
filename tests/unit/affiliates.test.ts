@@ -22,10 +22,10 @@ describe('parts links', () => {
 
   it('adds tracking ids when configured', () => {
     process.env.NEXT_PUBLIC_AFFILIATE_AUTODOC_ID = 'vw123';
-    process.env.NEXT_PUBLIC_AFFILIATE_AMAZON_TAG = 'veloce-21';
+    process.env.NEXT_PUBLIC_AFFILIATE_AMAZON_TAG = 'keeper-21';
     expect(partsLink('DE', 'oil')?.url).toContain('ref=vw123');
     expect(partsLink('DE', 'oil')?.tracked).toBe(true);
-    expect(partsLink('US', 'oil')?.url).toContain('tag=veloce-21');
+    expect(partsLink('US', 'oil')?.url).toContain('tag=keeper-21');
   });
 
   it('returns null for countries with no retailer', () => {

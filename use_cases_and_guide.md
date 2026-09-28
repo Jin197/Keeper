@@ -1,12 +1,12 @@
-# 📖 Guide d'Utilisation & Cas d'Usage (Use Cases) · VeloceWealth
+# 📖 Guide d'Utilisation & Cas d'Usage (Use Cases) · Keeper
 
-Ce document détaille le fonctionnement opérationnel de **VeloceWealth** (l'instrument financier de gestion de patrimoine automobile) et formalise les cas d'utilisation clés permettant d'extraire la rentabilité maximale de votre capital roulant.
+Ce document détaille le fonctionnement opérationnel de **Keeper** (l'instrument financier de gestion de patrimoine automobile) et formalise les cas d'utilisation clés permettant d'extraire la rentabilité maximale de votre capital roulant.
 
 ---
 
-## 🏎️ 1. Introduction à VeloceWealth
+## 🏎️ 1. Introduction à Keeper
 
-**VeloceWealth** n'est pas une simple application de suivi de factures ou d'essence. C'est un **tableau de bord analytique et décisionnel** qui aborde votre véhicule comme un actif financier de valeur. 
+**Keeper** n'est pas une simple application de suivi de factures ou d'essence. C'est un **tableau de bord analytique et décisionnel** qui aborde votre véhicule comme un actif financier de valeur. 
 
 Sa mission est double :
 1. **Minimiser le TCO** (*Total Cost of Ownership* / Coût Total de Possession) par l'analyse et la prédiction.
@@ -92,7 +92,7 @@ usecaseDiagram
 * **Acteur Principal** : Conducteur / Investisseur
 * **Description** : Permet à l'utilisateur d'ajouter un véhicule à son portefeuille d'actifs en saisissant uniquement sa plaque d'immatriculation.
 * **Préconditions** : 
-  - L'utilisateur est authentifié sur son compte VeloceWealth.
+  - L'utilisateur est authentifié sur son compte Keeper.
   - Le plan d'abonnement actuel de l'utilisateur autorise l'ajout d'un véhicule supplémentaire (Standard = 1, Premium = Illimité).
 * **Flux Principal (Nominal)** :
   1. L'utilisateur clique sur "Ajouter un véhicule".
@@ -143,10 +143,10 @@ usecaseDiagram
   1. L'utilisateur se rend dans la section "Carnet d'entretien" de son véhicule de collection ou premium.
   2. L'utilisateur clique sur "Générer le Carnet Certifié PDF".
   3. Le système vérifie l'intégrité de la chaîne cryptographique (vérification que chaque hash SHA-256 d'intervention correspond bien aux données réelles et que la chaîne n'a subie aucune altération manuelle en base de données).
-  4. Le système compile l'ensemble de l'historique d'entretien (dates, kilométrages, natures des travaux, montants) dans un document PDF premium avec filigrane officiel "VeloceWealth Verified".
+  4. Le système compile l'ensemble de l'historique d'entretien (dates, kilométrages, natures des travaux, montants) dans un document PDF premium avec filigrane officiel "Keeper Verified".
   5. Le système signe numériquement le PDF et génère un QR Code de validation publique.
   6. L'utilisateur télécharge le rapport et le transmet à l'acheteur potentiel.
-  7. L'acheteur scanne le QR Code et accède à la page de validation publique hébergée par VeloceWealth, confirmant l'authenticité absolue des factures présentées.
+  7. L'acheteur scanne le QR Code et accède à la page de validation publique hébergée par Keeper, confirmant l'authenticité absolue des factures présentées.
 * **Flux Alternatifs** :
   - *Flux A (Détection de fraude ou de rupture d'intégrité)* : Si une modification directe a été tentée sur la base de données sans passer par le protocole sécurisé, le calcul de validation SHA-256 échoue. Le système refuse la génération du carnet et lève une alerte de sécurité critique de priorité maximale vers le système d'audit.
 * **Postconditions** : L'utilisateur dispose d'un document légal et irréfutable attestant de la qualité de suivi de son actif, augmentant sa valeur de revente de 10% à 15% par rapport aux véhicules sans traçabilité claire.
@@ -176,8 +176,8 @@ usecaseDiagram
 > [!IMPORTANT]
 > [!IMPORTANT]
 > **Bannière cookies CNIL et conformité RGPD**
-> La `CookieBanner` de VeloceWealth respecte scrupuleusement les exigences de la CNIL française et du RGPD. Les boutons **"Tout accepter"** et **"Refuser tout"** sont présentés avec la **même importance visuelle et ergonomique** (sélecteurs de taille et contraste équivalents) pour garantir un choix libre et sans incitation.
+> La `CookieBanner` de Keeper respecte scrupuleusement les exigences de la CNIL française et du RGPD. Les boutons **"Tout accepter"** et **"Refuser tout"** sont présentés avec la **même importance visuelle et ergonomique** (sélecteurs de taille et contraste équivalents) pour garantir un choix libre et sans incitation.
 >
-> Une ligne de mention de transparence avec le mail du DPO de la marque (`dpo@velocewealth.app`) est affichée de manière lisible et localisée dans les 5 langues principales.
+> Une ligne de mention de transparence avec le mail du DPO de la marque (`dpo@keeperapp.app`) est affichée de manière lisible et localisée dans les 5 langues principales.
 > Par défaut, tous les scripts de traçage tiers de performance (comme Plausible) sont **strictement bloqués** tant que l'utilisateur n'a pas manifesté un consentement explicite par clic.
 

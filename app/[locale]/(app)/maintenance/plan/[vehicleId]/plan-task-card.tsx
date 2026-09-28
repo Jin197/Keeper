@@ -68,7 +68,7 @@ export function PlanTaskCard({ task, vehicleId, vehicleCurrency, country, vehicl
                   ? 'rounded-btn bg-destructive/15 text-destructive p-2 shrink-0'
                   : task.severity === 'warning'
                     ? 'rounded-btn bg-amber-500/15 text-amber-500 p-2 shrink-0'
-                    : 'rounded-btn bg-veloce/10 text-veloce p-2 shrink-0'
+                    : 'rounded-btn bg-keeper/10 text-keeper p-2 shrink-0'
               }
             >
               {isOverdue ? (

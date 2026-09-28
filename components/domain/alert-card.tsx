@@ -9,9 +9,9 @@ import { cn, formatDistance } from '@/lib/utils';
 const severityMap = {
   info: {
     Icon: Info,
-    color: 'text-veloce',
-    bg: 'bg-veloce/10',
-    border: 'border-veloce/20',
+    color: 'text-keeper',
+    bg: 'bg-keeper/10',
+    border: 'border-keeper/20',
   },
   warning: {
     Icon: AlertTriangle,

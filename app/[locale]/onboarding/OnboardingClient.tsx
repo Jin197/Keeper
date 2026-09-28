@@ -288,11 +288,11 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
         disabled={pending}
         className={`w-full text-left p-6 rounded-[1.8rem] border backdrop-blur-xl transition-all duration-300 flex items-start gap-4 ${
           selected
-            ? 'border-veloce bg-veloce/10 text-white shadow-glow-veloce scale-[1.02]'
+            ? 'border-keeper bg-keeper/10 text-white shadow-glow-keeper scale-[1.02]'
             : 'border-white/[0.08] bg-[#1C1C24]/40 hover:bg-[#1C1C24]/80 text-muted-foreground hover:text-white'
         }`}
       >
-        <div className={`p-3.5 rounded-2xl flex items-center justify-center ${selected ? 'bg-veloce text-white' : 'bg-white/[0.04]'}`}>
+        <div className={`p-3.5 rounded-2xl flex items-center justify-center ${selected ? 'bg-keeper text-white' : 'bg-white/[0.04]'}`}>
           <Icon className="h-6 w-6" strokeWidth={1.5} />
         </div>
         <div className="space-y-1">
@@ -317,7 +317,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
           </div>
           <div className="bg-white/[0.04] h-1 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-veloce rounded-full shadow-glow-veloce"
+              className="h-full bg-gradient-keeper rounded-full shadow-glow-keeper"
               initial={{ width: 0 }}
               animate={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -327,7 +327,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 py-8 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-veloce/5 blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-keeper/5 blur-[120px] pointer-events-none" />
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait" custom={direction}>
             {step === 0 && (
@@ -399,7 +399,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                     <div className="flex-1 h-px bg-white/[0.04]" />
                   </div>
 
-                  <Card className="p-6 space-y-5 border-veloce bg-veloce/5 shadow-glow-veloce relative overflow-hidden rounded-[2.2rem]">
+                  <Card className="p-6 space-y-5 border-keeper bg-keeper/5 shadow-glow-keeper relative overflow-hidden rounded-[2.2rem]">
                     {isLookingUp && (
                       <div className="absolute inset-0 pointer-events-none z-10">
                         <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#007AFF] to-transparent animate-laser-sweep" />
@@ -410,7 +410,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                         {isFrenchMarket ? 'SIV · VIN' : 'DVLA · MOT · VIN'}
                       </span>
                       {isLookingUp ? (
-                        <span className="text-veloce flex items-center gap-1.5">
+                        <span className="text-keeper flex items-center gap-1.5">
                           <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('identifying')}
                         </span>
                       ) : (
@@ -433,7 +433,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                             onChange={(e) => setPlate(e.target.value)}
                             onBlur={(e) => handleLookup(e.target.value)}
                             placeholder={platePlaceholder}
-                            className="font-mono pl-10 text-lg uppercase tracking-widest bg-black/40 border-white/[0.08] focus:border-veloce rounded-xl"
+                            className="font-mono pl-10 text-lg uppercase tracking-widest bg-black/40 border-white/[0.08] focus:border-keeper rounded-xl"
                             required
                             autoComplete="off"
                           />
@@ -454,7 +454,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                           value={mileage}
                           onChange={(e) => setMileage(e.target.value)}
                           placeholder="112480"
-                          className="font-mono text-lg bg-black/40 border-white/[0.08] focus:border-veloce rounded-xl"
+                          className="font-mono text-lg bg-black/40 border-white/[0.08] focus:border-keeper rounded-xl"
                           required
                         />
                       </div>
@@ -548,7 +548,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
                     <Button
                       type="submit"
                       disabled={pending || !plate.trim() || !mileage || Number(mileage) <= 0}
-                      className="w-full py-6 bg-[#007AFF] hover:bg-[#007AFF]/90 rounded-full font-bold text-white shadow-glow-veloce flex items-center justify-center gap-2 text-base disabled:opacity-50"
+                      className="w-full py-6 bg-[#007AFF] hover:bg-[#007AFF]/90 rounded-full font-bold text-white shadow-glow-keeper flex items-center justify-center gap-2 text-base disabled:opacity-50"
                     >
                       {pending ? (
                         <>
@@ -572,7 +572,7 @@ export default function OnboardingClient({ initialUser, locale }: OnboardingClie
       </main>
 
       <footer className="w-full max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-muted-foreground">
-        <div>Velocewealth &copy; {new Date().getFullYear()}</div>
+        <div>Keeper &copy; {new Date().getFullYear()}</div>
         <div className="flex items-center gap-1.5 font-mono text-[10px]">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
           <span>{t('footerStatus')}</span>

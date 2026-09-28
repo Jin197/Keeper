@@ -24,7 +24,7 @@ export default async function NewMaintenancePage({
     return (
       <div className="container py-12">
         <Card className="p-10 max-w-xl mx-auto text-center">
-          <div className="rounded-full bg-veloce/10 text-veloce h-14 w-14 mx-auto flex items-center justify-center">
+          <div className="rounded-full bg-keeper/10 text-keeper h-14 w-14 mx-auto flex items-center justify-center">
             <Car className="h-7 w-7" strokeWidth={1.5} />
           </div>
           <h1 className="font-display text-xl font-bold mt-5">

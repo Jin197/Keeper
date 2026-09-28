@@ -19,12 +19,12 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   const t = await getTranslations({ locale, namespace: 'common' });
   const tLanding = await getTranslations({ locale, namespace: 'landing.hero' });
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://velocewealth.app';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://keeperapp.app';
 
   return {
     title: {
-      default: `Velocewealth — ${t('tagline')}`,
-      template: '%s · Velocewealth',
+      default: `Keeper — ${t('tagline')}`,
+      template: '%s · Keeper',
     },
     description: tLanding('subtitle'),
     alternates: {
@@ -40,14 +40,14 @@ export async function generateMetadata({
     openGraph: {
       type: 'website',
       locale: locale,
-      title: `Velocewealth — ${t('tagline')}`,
+      title: `Keeper — ${t('tagline')}`,
       description: tLanding('subtitle'),
       url: locale === defaultLocale ? `${base}/` : `${base}/${locale}`,
-      siteName: 'Velocewealth',
+      siteName: 'Keeper',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `Velocewealth — ${t('tagline')}`,
+      title: `Keeper — ${t('tagline')}`,
       description: tLanding('subtitle'),
     },
   };
@@ -79,11 +79,11 @@ export default async function LocaleLayout({
 }
 
 function StructuredData() {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://velocewealth.app';
+  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://keeperapp.app';
   const data = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'Velocewealth',
+    name: 'Keeper',
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'Web',
     // Free tier exists, so the lowest price is 0. No aggregateRating: we have
