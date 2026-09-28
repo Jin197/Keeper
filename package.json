@@ -16,13 +16,14 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "audit:rls": "node tests/audit/rls-audit.mjs",
-    "db:push": "supabase db push",
+    "db:push": "npx supabase@latest db push",
     "db:sql": "node scripts/db/pending-sql.mjs",
     "dvsa:build": "node scripts/dvsa/build-failure-rates.mjs --dir data/dvsa/2024 --db data/dvsa/work.sqlite --out data/model-failure-rates.json",
     "dvsa:upload": "node scripts/dvsa/build-failure-rates.mjs --skip-load --db data/dvsa/work.sqlite --out data/model-failure-rates.json --upload",
     "stripe:prices": "node scripts/stripe/sync-prices.mjs",
     "stripe:prices:apply": "node scripts/stripe/sync-prices.mjs --apply",
-    "dvsa:reupload": "node scripts/dvsa/build-failure-rates.mjs --from-json --out data/model-failure-rates.json"
+    "dvsa:reupload": "node scripts/dvsa/build-failure-rates.mjs --from-json --out data/model-failure-rates.json",
+    "db:link": "npx supabase@latest link --project-ref"
   },
   "dependencies": {
     "@google-cloud/vision": "^5.3.6",
