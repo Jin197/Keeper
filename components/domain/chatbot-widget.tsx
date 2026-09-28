@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquareText, X, Send, Loader2, Bot, User } from 'lucide-react';
@@ -12,9 +14,12 @@ type Message = {
 };
 
 export function ChatbotWidget() {
+  const t = useTranslations('chat');
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Bonjour ! Je suis l\'assistant Keeper. Comment puis-je vous aider avec votre flotte ou votre TCO aujourd\'hui ?' }
+  // Lazy initialiser: the greeting is read once, in the active locale, rather
+  // than being rebuilt on every render.
+  const [messages, setMessages] = useState<Message[]>(() => [
+    { role: 'assistant', content: t('greeting') },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -45,15 +50,26 @@ export function ChatbotWidget() {
         body: JSON.stringify({ messages: newMessages }),
       });
 
-      if (!res.ok) throw new Error('API Error');
+      const data = await res.json().catch(() => null);
 
-      const data = await res.json();
+      // The route answers 401/403/429 with a specific, already-translated
+      // reason ("reserved for Premium members", "too many requests"). Throwing
+      // on !res.ok replaced all of them with a generic failure, so the reader
+      // was told something broke when nothing had.
+      if (!res.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: data?.error ?? t('genericError') },
+        ]);
+        return;
+      }
+
       setMessages((prev) => [...prev, data]);
     } catch (error) {
       console.error(error);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: 'Une erreur est survenue. Veuillez réessayer.' }
+        { role: 'assistant', content: t('genericError') }
       ]);
     } finally {
       setIsLoading(false);
@@ -79,11 +95,11 @@ export function ChatbotWidget() {
                     <Bot className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">Keeper AI</h3>
-                    <p className="text-xs text-muted-foreground">Expert Maintenance</p>
+                    <h3 className="font-semibold text-sm">{t('title')}</h3>
+                    <p className="text-xs text-muted-foreground">{t('subtitle')}</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)} aria-label="Fermer le chat">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)} aria-label={t('close')}>
                   <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
@@ -130,7 +146,7 @@ export function ChatbotWidget() {
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Posez votre question..."
+                    placeholder={t('placeholder')}
                     className="pr-12 rounded-full border-muted-foreground/20 focus-visible:ring-keeper"
                     disabled={isLoading}
                   />
@@ -139,7 +155,7 @@ export function ChatbotWidget() {
                     size="icon"
                     className="absolute right-1 w-8 h-8 rounded-full"
                     disabled={!input.trim() || isLoading}
-                    aria-label="Envoyer le message"
+                    aria-label={t('send')}
                   >
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Send className="w-4 h-4" aria-hidden="true" />}
                   </Button>
@@ -153,7 +169,7 @@ export function ChatbotWidget() {
           onClick={() => setIsOpen(!isOpen)}
           size="icon"
           className="w-14 h-14 rounded-full shadow-lg bg-keeper hover:bg-keeper/90 transition-transform hover:scale-105"
-          aria-label={isOpen ? "Fermer l'assistant virtuel" : "Ouvrir l'assistant virtuel Keeper"}
+          aria-label={isOpen ? t('close') : t('open')}
         >
           {isOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <MessageSquareText className="w-6 h-6" aria-hidden="true" />}
         </Button>

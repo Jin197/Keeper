@@ -1097,5 +1097,15 @@
     "empty": "No service logged yet.",
     "page": "Keeper — {current} / {total}",
     "filename": "keeper-log"
+  },
+  "chat": {
+    "title": "Keeper Assistant",
+    "subtitle": "Answers from the help centre",
+    "greeting": "Hello. Ask me about your cars, your running costs or what the forecast is telling you.",
+    "placeholder": "Ask a question…",
+    "send": "Send message",
+    "close": "Close the assistant",
+    "open": "Open the Keeper assistant",
+    "genericError": "Could not reach the assistant. Please try again."
   }
 }

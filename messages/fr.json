@@ -1097,5 +1097,15 @@
     "empty": "Aucune intervention enregistrée.",
     "page": "Keeper — {current} / {total}",
     "filename": "carnet-keeper"
+  },
+  "chat": {
+    "title": "Assistant Keeper",
+    "subtitle": "Réponses tirées du centre d'aide",
+    "greeting": "Bonjour. Posez-moi une question sur vos voitures, vos coûts ou votre prévision d'entretien.",
+    "placeholder": "Posez votre question…",
+    "send": "Envoyer le message",
+    "close": "Fermer l'assistant",
+    "open": "Ouvrir l'assistant Keeper",
+    "genericError": "Impossible de joindre l'assistant. Réessayez."
   }
 }

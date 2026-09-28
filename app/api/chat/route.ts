@@ -4,9 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
 import { isTrialActive } from '@/lib/trial';
 
-// Simulated delay to mimic AI thinking
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export async function POST(req: Request) {
   try {
     const supabase = createClient();
@@ -92,8 +89,10 @@ export async function POST(req: Request) {
       });
     }
 
-    // FALLBACK SIMULÉ : Recherche locale dans la Knowledge Base
-    await delay(1000); // 1s delay
+    // No model key: answer from the local FAQ instead. This is a keyword
+    // lookup, not a model — it used to sleep for a second first so it would
+    // look like one, which is the same dishonesty as the simulated confidence
+    // score this project already removed.
     const fallbackAnswer = searchKnowledgeBase(lastMessage);
 
     return NextResponse.json({
