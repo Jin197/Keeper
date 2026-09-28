@@ -7,6 +7,7 @@ import { getProfile } from '@/lib/data';
 import { isSupabaseConfigured } from '@/lib/env';
 import { TRIAL_DAYS, trialDaysRemaining } from '@/lib/trial';
 import { resolvePricing, formatPrice } from '@/lib/pricing';
+import { isStripeConfigured } from '@/lib/stripe';
 import { resolveRequestCountry } from '@/lib/geo';
 import { ManageSubscriptionButton } from './manage-button';
 import { BillingPricingSelector } from './billing-pricing';
@@ -232,7 +233,9 @@ export default async function BillingPage({ params }: PageProps) {
       </Card>
 
       {/* Renders pricing selector directly inside settings for unsubscribed users */}
-      {!isSubscribed && <BillingPricingSelector pricing={pricing} locale={locale} />}
+      {!isSubscribed && (
+        <BillingPricingSelector pricing={pricing} locale={locale} checkoutReady={isStripeConfigured()} />
+      )}
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">

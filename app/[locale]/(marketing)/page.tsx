@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { LandingPageClient } from './landing-page-client';
 import { resolvePricing } from '@/lib/pricing';
+import { isStripeConfigured } from '@/lib/stripe';
 import { resolveRequestCountry } from '@/lib/geo';
 
 export const dynamic = 'force-dynamic';
@@ -18,5 +19,5 @@ export default async function LandingPage({
   const country = resolveRequestCountry(null, locale === 'fr' ? 'FR' : 'GB');
   const pricing = resolvePricing(country);
 
-  return <LandingPageClient locale={locale} pricing={pricing} />;
+  return <LandingPageClient locale={locale} pricing={pricing} checkoutReady={isStripeConfigured()} />;
 }

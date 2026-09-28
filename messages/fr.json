@@ -203,6 +203,7 @@
     "perYear": "/ an",
     "billedYearly": "{amount} facturés par an · {perMonth} / mois · −{pct} %",
     "trialCta": "Essayer 30 jours",
+    "trialNoCard": "Sans carte — l'essai de 30 jours démarre dès l'inscription. Les formules payantes ouvrent prochainement.",
     "premiumF1": "Véhicules & scans illimités",
     "premiumF2": "Prévision entretien 12 mois avec coûts",
     "premiumF3": "Pannes connues de votre voiture (CT, rappels, plaintes)",

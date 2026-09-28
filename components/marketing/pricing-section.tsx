@@ -17,6 +17,13 @@ interface Props {
   compact?: boolean;
   /** Hide the one-off dossier note (already purchased, or on a vehicle page). */
   hideOneOff?: boolean;
+  /**
+   * False when Stripe has no key yet. The reverse trial needs no card and no
+   * Stripe (see lib/trial.ts — it is keyed on profiles.created_at), so the CTA
+   * sends people to signup instead of a Checkout call that would 500 and
+   * surface as a bare "Erreur" toast on the page's primary button.
+   */
+  checkoutReady?: boolean;
 }
 
 /**
@@ -24,7 +31,7 @@ interface Props {
  * Every amount comes from `resolvePricing` — never hard-coded here — so the
  * copy can't drift from what Stripe charges.
  */
-export function PricingSection({ pricing, locale, compact = false, hideOneOff = false }: Props) {
+export function PricingSection({ pricing, locale, compact = false, hideOneOff = false, checkoutReady = true }: Props) {
   const t = useTranslations('pricing');
   const [interval, setInterval] = useState<'monthly' | 'yearly'>('yearly');
 
@@ -130,12 +137,24 @@ export function PricingSection({ pricing, locale, compact = false, hideOneOff = 
               ))}
             </ul>
           </div>
-          <div className="mt-8">
-            <CheckoutButton
-              interval={interval}
-              label={t('trialCta')}
-              className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-veloce"
-            />
+          <div className="mt-8 space-y-2">
+            {checkoutReady ? (
+              <CheckoutButton
+                interval={interval}
+                label={t('trialCta')}
+                className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-veloce"
+              />
+            ) : (
+              <>
+                <Button
+                  asChild
+                  className="w-full rounded-full py-6 bg-[#007AFF] text-white hover:bg-[#005bb5] font-semibold shadow-glow-veloce"
+                >
+                  <Link href="/signup">{t('trialCta')}</Link>
+                </Button>
+                <p className="text-[11px] text-muted-foreground text-center">{t('trialNoCard')}</p>
+              </>
+            )}
           </div>
         </Card>
       </div>

@@ -30,9 +30,11 @@ if (typeof window !== 'undefined') {
 interface Props {
   locale: string;
   pricing: ResolvedPricing;
+  /** False until Stripe has a key; the CTA then starts the card-free trial. */
+  checkoutReady?: boolean;
 }
 
-export function LandingPageClient({ locale, pricing }: Props) {
+export function LandingPageClient({ locale, pricing, checkoutReady }: Props) {
   const t = useTranslations('landing.hero');
   const tPains = useTranslations('landing.pains');
   const tHow = useTranslations('landing.howItWorks');
@@ -261,7 +263,7 @@ export function LandingPageClient({ locale, pricing }: Props) {
 
       {/* ── 5. PRICING ──────────────────────────────────────────── */}
       <section id="pricing" className="container py-24 px-4">
-        <PricingSection pricing={pricing} locale={locale} />
+        <PricingSection pricing={pricing} locale={locale} checkoutReady={checkoutReady} />
       </section>
 
       {/* ── 6. FAQ ──────────────────────────────────────────────── */}
