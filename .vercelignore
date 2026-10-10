@@ -1,0 +1,14 @@
+# Vercel does not read .gitignore for CLI deploys, so the DVSA working data —
+# 20 GB of extracted MOT CSVs and a SQLite database — was being uploaded with
+# every deployment. It is build-time input for scripts/dvsa only; the result
+# lives in Supabase, not in the bundle.
+/data/
+
+# Build output and local state: Vercel rebuilds from source.
+/.next/
+/supabase/.temp/
+/catchup.sql
+/.mcp.json
+
+# Local notes that are not part of the app.
+*.pdf
