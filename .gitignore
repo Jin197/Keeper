@@ -43,3 +43,4 @@ supabase/.temp/
 
 # Local MCP config: names one developer's Supabase project, not shared state.
 /.mcp.json
+.env*

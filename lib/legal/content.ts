@@ -4,7 +4,7 @@
  * Kept as data rather than JSX so the two languages sit side by side and can't
  * drift, and so the facts they state are in one place. Everything here
  * describes what the app actually does at launch (see docs/LAUNCH.md):
- * two tiers, a one-off dossier, 30-day trial, 10-character passwords, the
+ * two tiers, a one-off dossier, 14-day trial, 10-character passwords, the
  * public data sources, and the affiliate links we now show.
  */
 
@@ -50,7 +50,7 @@ export const TERMS: Bilingual<LegalDoc> = {
         title: 'Plans, trial and cancellation',
         body: [
           'Two plans: Free (one vehicle, three receipt scans a month, cost per km, reminders) and Pro (unlimited vehicles and scans, the full maintenance forecast, known-fault data, the certified sale dossier, tax-ready export). A certified sale dossier for a single vehicle can also be bought once, without a subscription.',
-          'New accounts get 30 days with every Pro feature, without a card. Prices are shown before you pay and vary by country; taxes are calculated by Stripe for your country.',
+          'New accounts get 14 days with every Pro feature, without a card. Prices are shown before you pay and vary by country; taxes are calculated by Stripe for your country.',
           'Payment is handled by Stripe. We never see or store your card details.',
           'You can cancel at any time in Settings → Subscription. You keep Pro until the end of the period already paid for; we do not pro-rate a part-used period. A one-off dossier purchase is not a subscription and is not refundable once the PDF has been generated, except where the law says otherwise.',
         ],
@@ -140,7 +140,7 @@ export const TERMS: Bilingual<LegalDoc> = {
         title: 'Offres, essai et résiliation',
         body: [
           "Deux offres : Gratuit (un véhicule, trois scans de tickets par mois, coût au km, rappels) et Pro (véhicules et scans illimités, prévision d'entretien complète, données de pannes connues, dossier de vente certifié, export fiscal). Le dossier de vente certifié d'un véhicule peut aussi être acheté à l'unité, sans abonnement.",
-          "Tout nouveau compte bénéficie de 30 jours avec l'ensemble des fonctions Pro, sans carte bancaire. Les prix sont affichés avant paiement et varient selon le pays ; les taxes sont calculées par Stripe selon votre pays.",
+          "Tout nouveau compte bénéficie de 14 jours avec l'ensemble des fonctions Pro, sans carte bancaire. Les prix sont affichés avant paiement et varient selon le pays ; les taxes sont calculées par Stripe selon votre pays.",
           "Le paiement est traité par Stripe. Nous ne voyons ni ne conservons vos données bancaires.",
           "Vous pouvez résilier à tout moment dans Réglages → Abonnement. Vous conservez Pro jusqu'à la fin de la période déjà payée ; une période entamée n'est pas remboursée au prorata. L'achat d'un dossier à l'unité n'est pas un abonnement et n'est pas remboursable une fois le PDF généré, sauf disposition légale contraire.",
         ],
